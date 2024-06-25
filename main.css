@@ -1,0 +1,75 @@
+#window-mid {
+    position: fixed; 
+    background-color: rgba(220,220,220, 0.1); 
+    width: 90vw; 
+    height: calc(87vh - 10px); 
+    z-index: 10; 
+    border-radius: 20px 20px 20px 0px; 
+    margin-left:5vw; 
+    margin-top: 5vh;
+
+    overflow: hidden;
+}
+
+#window-mid #window-mid-content {
+    position: relative;
+    left: 0vw;
+    overflow: visible;
+
+    transition: left 1s;
+}
+
+#window-mid .tab {
+    float: left;
+    width: 90vw; 
+    height: 87vh;
+    z-index: 10;
+
+    overflow-y: scroll;
+    scrollbar-color: rgba(73,73,73, 1) rgba(0,0,0,0);
+}
+
+#window-mid .selected {
+    display: block;
+}
+
+.tab h1 {
+    margin: 0;
+    width: 100%; 
+    z-index: 10; 
+    text-align: center; 
+    font-size: clamp(30px, 10vw, 10vh);
+}
+
+
+#tabs {
+    position: fixed; 
+    width: 90vw; 
+    height: 8vh;
+    z-index: 10; 
+    left: 5vw; 
+    top: 92vh;
+}
+
+#tabs span {
+    background-color: rgba(73,73,73, 0.3); 
+    border-radius: 0px 0px 20px 20px; 
+    font-size: clamp(20px, 5vw, 4vh);
+
+    padding: 10px;
+
+    position: relative;
+    top: 5px;
+
+    transition: top 0.5s, background-color 0.5s;
+
+}
+
+#tabs span:hover {
+    top: -1px;
+}
+
+#tabs .selected {
+    top: -1px;
+    background-color: rgba(220,220,220, 0.1);
+}

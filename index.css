@@ -2,6 +2,7 @@ html {
   border:0; 
   background-color: #494949; 
   color: white;
+  user-select: none;
 }
 
 body {
