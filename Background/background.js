@@ -5,7 +5,7 @@ const amountCircles = 15;
 const leftColorSpectrum = 0x546187;
 const rightColorSpectrum = 0x3F4F75;
 const minVelocity = 1;
-const maxVelocity = 3;
+const maxVelocity = 6;
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;

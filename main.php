@@ -15,11 +15,57 @@
     </script>
     <div id="window-mid-content">
       <!-- Displayed windows on tab click -->
+      <div class="tab" id="voorstellen">
+
+        <h1>Stel iets voor</h1>
+
+      </div>
       <div class="tab" id="projecten">
 
         <h1>Projecten</h1>
+        <div id="project-content"></div>
+        <script>
+          fetch("/Data/projecten.json")
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+              }
+              return response.text();
+            })
+            .then((text) => {
+              var data = JSON.parse(text);
+              var projectTab = document.getElementById("project-content");
+              for(var i = 0; i < data.length; i++) {
+                var projectData = data[i];
+                var projectDiv = document.createElement("div");
+                projectDiv.className = "project";
+                var innerHTML = '<div class="name">' + projectData.name + 
+                '</div>\n<div class="requester">Vanuit ' + projectData.requester + 
+                '</div>\n<div class="description">' + projectData.description + '</div>';
 
-        
+                if(projectData.link.length != 0) {
+                  innerHTML += '<hr>';
+                  if(typeof projectData.link === 'string' || projectData.link instanceof String) {
+                    // It is a string
+                    var url = new URL(projectData.link);
+                    innerHTML += '<div class="links"><a href="' + projectData.link + '">' + url.hostname + '</a></div>';
+                  }
+                  else {
+                    // It is an array
+                    innerHTML += '<div class="links">';
+                    for(var j = 0; j < projectData.link.length; j++) {
+                      var url = new URL(projectData.link[j]);
+                      innerHTML += '<a href="' + projectData.link[j] + '">' + url.hostname + '</a>';
+                    }
+                    innerHTML += '</div>';
+                  }
+                }
+
+                projectDiv.innerHTML = innerHTML;
+                projectTab.appendChild(projectDiv);
+              }
+            });
+        </script>
 
       </div>
       <div class="tab" id="inspiratie">
@@ -75,6 +121,7 @@
     });
   </script>
   <div id="tabs">
+    <span target="voorstellen" onmousedown="selectTab('voorstellen');">Stel iets voor</span>
     <span target="projecten" onmousedown="selectTab('projecten');">Projecten</span>
     <span target="inspiratie" onmousedown="selectTab('inspiratie');">Inspiratie</span>
     <span target="hoekje-tom" onmousedown="selectTab('hoekje-tom');">Toms hoekje</span>
