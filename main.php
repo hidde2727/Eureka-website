@@ -116,7 +116,7 @@
       try {
         selectTab(tabName);
       } catch(error) {
-        selectTab("home");
+        selectTab("voorstellen");
       }
     });
   </script>
