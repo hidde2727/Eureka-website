@@ -11,7 +11,7 @@
 
 <?php
 
-include("main.php");
+include("main.html");
 
 ?>
 

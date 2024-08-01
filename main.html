@@ -1,0 +1,230 @@
+<link rel="stylesheet" type="text/css" href="Background/background.css" />
+<script src="Background/background.js"></script> 
+
+<link rel="stylesheet" href="main.css">
+
+<div id="background">
+  <!-- Displayed windows on tab click -->
+  <div id="window-mid">
+    <script>
+      // Make sure the window container can contain all of it's childeren side by side
+      document.addEventListener("DOMContentLoaded", function() {
+        var windowContent = document.getElementById("window-mid-content");
+        windowContent.style.width= (windowContent.childElementCount*90) + "vw";
+      });
+    </script>
+    <div id="window-mid-content">
+      <!-- Displayed windows on tab click -->
+      <div class="tab" id="voorstellen">
+
+        <script>
+          // Make sure the suggestion-page container can contain all of it's childeren side by side
+          document.addEventListener("DOMContentLoaded", function() {
+            var windowContent = document.getElementById("suggestion-pages");
+            windowContent.style.width= (windowContent.childElementCount*90) + "vw";
+          });
+        </script>
+        <div id="suggestion-pages">
+          <div class="suggestion-page" id="suggestion-type-selector">
+
+            <h1>Stel iets voor</h1>
+            <script>
+              var selectedPage = null;
+              function GoToClickedPage() {
+                if(selectedPage)
+                  selectedPage.style.display = "none";
+                var selectedRadial = document.querySelector("#suggestion-type-selector input:checked").value;
+                selectedPage = document.querySelector("#" + selectedRadial);
+                selectedPage.style.display = "block";
+                var suggestionPage = document.getElementById("suggestion-pages");
+                suggestionPage.style.left = "-90vw";
+              }
+            </script>
+            <form class="centerChild" style="margin-top: 4vh" autocomplete="off"><span>
+              <input type="radio" onclick="GoToClickedPage()" id="project" name="suggestion-type" value="project-suggestion">
+              <label for="project">Project</label><br>
+              <input type="radio" onclick="GoToClickedPage()" id="youtube-video" name="suggestion-type" value="youtube-video-suggestion">
+              <label for="youtube-video">Youtube video</label><br>
+              <input type="radio" onclick="GoToClickedPage()" id="youtube-channel" name="suggestion-type" value="youtube-channel-suggestion">
+              <label for="youtube-channel">Youtube kanaal</label> <br>
+              <input type="radio" onclick="GoToClickedPage()" id="github-project" name="suggestion-type" value="github-project-suggestion">
+              <label for="github-project">Github project</label><br>
+              <input type="radio" onclick="GoToClickedPage()" id="github-account" name="suggestion-type" value="github-account-suggestion">
+              <label for="github-account">Github account</label>
+
+              <input type="radio" id="default" name="suggestion-type" value="default" checked="checked">
+            </span></form>
+          </div>
+          <div class="suggestion-page" id="suggestion">
+            <script>
+              function GoToSuggestionTypeSelector() {
+                var suggestionPage = document.getElementById("suggestion-pages");
+                suggestionPage.style.left = "0vw";
+              }
+            </script>
+            <p class="return-button" onclick="GoToSuggestionTypeSelector()">Vorige stap</span>
+            <div id="project-suggestion" style="display: none">
+              <h2>Stel een project voor</h2>
+              <form id="project-suggestion-form" action="/API/RequestProject.php" method="PUT">
+                <div class="form-content">
+                  <div class="form-row">
+                    <label for="projectName">Project naam</label>
+                    <input id="projectName" type="text" name="projectName" minlength="3" maxlength="30" placeholder="ProjectNaam" required></input>
+                  </div>
+
+                  <div class="form-row">
+                    <label for="requester">Project aanvrager</label>
+                    <input id="requester" type="text" name="requester" minlength="3" maxlength="30" placeholder="Je naam/sectie" required></input>
+                  </div>
+
+                  <div class="form-row">
+                    <label for="description">Omschrijving</label>
+                    <textarea id="description" name="description" minlength="50" maxlength="1000" placeholder="Een heel uitgebreide omschrijving van het project zodat iedereen weet waar het over gaat." rows="10" required></textarea>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+            <div id="youtube-video-suggestion" style="display: none">
+              <h2>Stel een youtube video voor</h2>
+              <h3>Alles voor de inspiratie</h3>
+            </div>
+            <div id="youtube-channel-suggestion" style="display: none">
+              <h2>Stel een youtube kanaal voor</h2>
+              <h3>Alles voor de inspiratie</h3>
+            </div>
+            <div id="github-project-suggestion" style="display: none">
+              <h2>Stel een github project voor</h2>
+              <h3>Alles voor de inspiratie</h3>
+            </div>
+            <div id="github-account-suggestion" style="display: none">
+              <h2>Stel een github account voor</h2>
+              <h3>Alles voor de inspiratie</h3>
+            </div>
+          </div>
+          <div class="suggestion-page" id="thanks-for-suggestion">
+            
+          </div>
+        </div>
+
+      </div>
+      <div class="tab" id="projecten">
+
+        <h1>Projecten</h1>
+        <div id="project-content"></div>
+        <script>
+          fetch("/Data/projecten.json")
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+              }
+              return response.text();
+            })
+            .then((text) => {
+              var data = JSON.parse(text);
+              var projectTab = document.getElementById("project-content");
+              for(var i = 0; i < data.length; i++) {
+                var projectData = data[i];
+                var projectDiv = document.createElement("div");
+                projectDiv.className = "project";
+                var availability = "available";
+                if(projectData.executor != undefined) {
+                  availability = "claimed";
+                }
+                var innerHTML = '<div class="name ' + availability + '">' + projectData.name + 
+                '</div>\n<div class="requester ' + availability + '">Vanuit ' + projectData.requester + 
+                '</div>\n<div class="description">' + projectData.description + '</div>';
+
+                if(projectData.link.length != 0) {
+                  innerHTML += '<hr>';
+                  if(typeof projectData.link === 'string' || projectData.link instanceof String) {
+                    // It is a string
+                    var url = new URL(projectData.link);
+                    innerHTML += '<div class="links"><a href="' + projectData.link + '">' + url.hostname + '</a></div>';
+                  }
+                  else {
+                    // It is an array
+                    innerHTML += '<div class="links">';
+                    for(var j = 0; j < projectData.link.length; j++) {
+                      var url = new URL(projectData.link[j]);
+                      innerHTML += '<a href="' + projectData.link[j] + '">' + url.hostname + '</a>';
+                    }
+                    innerHTML += '</div>';
+                  }
+                }
+                if(projectData.executor != undefined) {
+                  innerHTML += '<hr>';
+                  var url = new URL(projectData.link);
+                  innerHTML += '<div class="executor">' + projectData.executor + '<br>hebben dit project op zich genomen</div>';
+                }
+
+                projectDiv.innerHTML = innerHTML;
+                projectTab.appendChild(projectDiv);
+              }
+
+            });
+        </script>
+
+      </div>
+      <div class="tab" id="inspiratie">
+
+        <h1>Inspiratie</h1>
+
+      </div>
+      <div class="tab" id="hoekje-tom">
+
+        <h1>Tom's hoekje</h1>
+
+      </div>
+    </div>
+  </div>
+  <!-- Tabs -->
+  <script>
+    var currentSelectedTab = null;
+    var currentSelectedPage = null;
+    function selectTab(name) {
+      if(currentSelectedTab != null)
+        currentSelectedTab.classList.remove("selected");
+      currentSelectedTab = document.querySelector('#tabs *[target="' + name + '"]');
+      currentSelectedTab.classList.add("selected");
+      
+      if(currentSelectedPage != null)
+        currentSelectedPage.classList.remove("selected");
+      currentSelectedPage = document.querySelector('#' + name);
+      currentSelectedPage.classList.add("selected");
+
+      history.pushState(null, "", "/?tab=" + name);
+      // Scroll the pages
+      var windowContent = document.getElementById("window-mid-content");
+      var pages = windowContent.children;
+      var number = undefined;
+      // Find which number of page the selected page is
+      for(var i = 0; i < pages.length; i++) {
+        if(pages[i] == currentSelectedPage) {
+          number = i;
+          break;
+        }
+      }
+      windowContent.style.left = (number * -90) + "vw";
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabName = urlParams.get('tab');
+      try {
+        selectTab(tabName);
+      } catch(error) {
+        selectTab("voorstellen");
+      }
+    });
+  </script>
+  <div id="tabs">
+    <span target="voorstellen" onmousedown="selectTab('voorstellen');">Stel iets voor</span>
+    <span target="projecten" onmousedown="selectTab('projecten');">Projecten</span>
+    <span target="inspiratie" onmousedown="selectTab('inspiratie');">Inspiratie</span>
+    <span target="hoekje-tom" onmousedown="selectTab('hoekje-tom');">Toms hoekje</span>
+  </div>
+
+</div>
+
+<!-- <image src="logo.png" style="position: fixed; width: min(30vw, 30vh); min(30vw, 30vh); z-index: 10; border-radius: 20px; margin-left: calc(100vw - 0.9 * min(30vw, 30vh)); margin-top: 0px;"></image> -->
