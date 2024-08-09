@@ -208,3 +208,24 @@ body {
 .project .project-links a:visited {
     color: light-dark(#111, #eee);
 }
+
+
+/* Footer */
+.footer {
+    display: flex;
+    column-gap: 5px;
+    align-items: center;
+}
+.footer a {
+    margin-left: 5px;
+    font-size: 1.5rem;
+    color: light-dark(#111, #eee);
+}
+.footer a:visited {
+    color: light-dark(#111, #eee);
+}
+.footer .copyright {
+    margin-left: auto;
+    margin-right: 10px;
+    font-size: 1rem;
+}

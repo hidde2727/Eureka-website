@@ -65,3 +65,19 @@ async function GetProjects() {
     }
 }
 GetProjects();
+
+// Footer -----------------------------------
+addEventListener("load", (event) => {
+  const windows = document.getElementsByClassName("content-wrapper");
+  var innerHTML = '<a class="github" href="https://github.com/hidde2727/Eureka-website"><i class="fab fa-github fa-fw"></i></a>';
+  innerHTML += '<a class="instagram" href="https://instagram.com"><i class="fab fa-instagram fa-fw"></i></a>';
+  innerHTML += '<a class="copyright">©2024 by Hidde Meiburg</a>';
+
+  for (var i = 0; i < windows.length; i++) {
+    var footer = document.createElement("div");
+    footer.classList.add("footer");
+    footer.innerHTML = innerHTML;
+
+    windows[i].appendChild(footer);
+  }
+});
