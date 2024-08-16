@@ -243,6 +243,15 @@ async function OnProjectSuggestionSubmit() {
   }
   document.getElementById("project-suggestion").style.overflowY = "hidden";
   succesPage.style.opacity = "1";
+
+  // Remove the stuff in the input fields
+  document.getElementById("project-name").value = "";
+  document.getElementById("project-description").value = "";
+  for(var i = 1; i <= amountLinks; i++) {
+    document.getElementById("link" + i).value = "";
+  }
+  document.getElementById("project-suggestor").value = "";
+  document.getElementById("project-suggestor-email").value = "";
 }
 
 // Footer -----------------------------------
