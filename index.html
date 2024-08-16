@@ -11,35 +11,98 @@
     </head>
     <!-- BODY START -->
     <body>
+        <!-- SIDEBAR -->
         <div id="sidebar">
             <span class="sidebar-tab" target="home"><i class="fas fa-house fa-fw"></i><p>Home</p></span>
             <span class="sidebar-tab" target="projects"><i class="fas fa-wrench fa-fw"></i><p>Projecten</p></span>
             <span class="sidebar-tab" target="inspiration"><i class="fas fa-lightbulb fa-fw"></i><p>Inspiratie</p></span>
-            <span class="sidebar-tab" target="files"><i class="fas fa-folder fa-fw"></i><p>Tutorials</p></span>
+            <span class="sidebar-tab" target="files"><i class="fas fa-folder fa-fw"></i><p>Tom's&nbsp;hoekje</p></span>
+            <span class="sidebar-tab" target="suggesties"><i class="fas fa-comments fa-fw"></i><p>Suggesties</p></span>
+            <span class="sidebar-tab user-tab" target="user" style="display: none"><i class="fas fa-user-circle fa-fw"></i><p>Loggin</p></span>
         </div>
         <div id="middle-border"></div>
         <div id="main-content">
         <div id="main-content-scroll-animation">
+            <!-- HOME -->
             <div class="content-wrapper">
                 <div class="content-window" id="home">
                     <h1>HOME</h1>
                 </div>
             </div>
+            <!-- PROJECTS -->
             <div class="content-wrapper">
                 <div class="content-window" id="projects">
                     <h1>PROJECTEN</h1>
                     <!-- Here the projects are inserted by index.js -->
                 </div>
             </div>
+            <!-- INSPIRATION -->
             <div class="content-wrapper">
                 <div class="content-window" id="inspiration">
                     <h1>INSPIRATIE</h1>
                     <!-- Here the inspiration is inserted by index.js -->
                 </div>
             </div>
+            <!-- FILES -->
             <div class="content-wrapper">
                 <div class="content-window" id="files">
                     <h1>FILES</h1>
+                    <!-- Here the files are inserted by index.js -->
+                </div>
+            </div>
+            <!-- SUGGESTIONS -->
+            <div class="content-wrapper">
+                <div class="content-window" id="suggestions">
+                    <h1>SUGGESTIES</h1>
+                    
+                    <div class="split-screen">
+                        <form id="project-suggestion" onsubmit="event.preventDefault(); OnProjectSuggestionSubmit();">
+                            
+                            <h2>Suggereer een project</h2>
+
+                            <p>Wat is het project?</p>
+
+                            <label for="project-name">Naam*</label>
+                            <input type="text" id="project-name" placeholder="Project naam"><br>
+                            <label for="project-description">Omschrijving*</label>
+                            <textarea placeholder="Een mooie omschrijving..." id="project-description" rows="5" onkeyup="AutoGrow(this)"></textarea><br>
+                            
+                            <div id="links">
+                                <label class="link-label">Linkjes</label><div class="link"><input type="text" id="link1" placeholder="www.youtube.com"></div>
+                                <i class="plus fas fa-plus-circle fa-fw" onmousedown="AddLinkToSuggestion()"></i>
+                            </div>
+
+                            <p class="where-to-find-you">Hoe houden we je op de hoogte?</p>
+                            <label for="project-suggestor">Naam*</label>
+                            <input type="text" id="project-suggestor" placeholder="Pietje Bakker"><br>
+                            <label for="project-suggestor-email">Email*</label>
+                            <input type="text" id="project-suggestor-email" placeholder="PietjeBakker@usgym.nl">
+
+                            <input type="submit" value="Insturen" id="submit-project-suggestion">
+
+                            <div class="popup" id="project-suggestion-wrong"></div>
+                            <div id="project-succes-page">
+                                <i class="fas fa-smile"></i>
+                                <h2>Bedankt voor je suggestie!</h2>
+                                <p>We proberen in maximaal een week bij je terug te komen</p>
+                            </div>
+
+                        </form>
+                        <form class="inspiration-suggestion">
+                            
+                            <h2>Geef wat inspiratie</h2>
+
+
+
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+            <!-- USER -->
+            <div class="content-wrapper">
+                <div class="content-window" id="user">
+                    <h1>LOGGIN</h1>
                 </div>
             </div>
         </div>

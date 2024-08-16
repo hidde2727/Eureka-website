@@ -2,6 +2,16 @@
     color-scheme: light dark;
     background-color: light-dark(#eee, #111);
     color: light-dark(#111, #eee);
+
+    font-family: "Times New Roman", Times, serif;
+}
+html input {
+    font-family: Consolas, Monaco, "Lucida Console", monospace;
+    font-size: 0.8125rem;
+}
+html textarea {
+    font-family: Consolas, Monaco, "Lucida Console", monospace;
+    font-size: 0.8125rem;
 }
 html {
     overflow: hidden;
@@ -41,7 +51,7 @@ body {
     border-radius: 5px;
 
     width: var(--sidebar-height);
-    overflow-x: hidden;
+    overflow: hidden;
 
     padding: 4px;
     margin-bottom: 8px;
@@ -76,9 +86,9 @@ body {
 
     display: grid;
     grid-template-columns: 100%;
-    grid-template-rows: repeat(4, 100%);
+    grid-template-rows: repeat(6, 100vh);
 
-    top: 0%;
+    top: 0vh;
     transition: top 1s;
 
     position: relative;
@@ -90,8 +100,10 @@ body {
 }
 .content-window {
     overflow: visible;
+    
+    min-height: calc(100vh - 30px);
 }
-.content-window * {
+.content-window > * {
     padding-left: 39px;
 }
 .content-window h1 {
@@ -113,6 +125,8 @@ body {
     margin-bottom: calc(var(--margin-bottom) + var(--margin-top));
 
     margin-right: 60px;
+
+    min-height: calc(100vh - 30px - (var(--margin-bottom) + var(--margin-top)));
 }
 
 .project {
@@ -209,12 +223,247 @@ body {
     color: light-dark(#111, #eee);
 }
 
+/* Suggestions */
+.split-screen {
+    height: calc(100vh - 120px);
+}
+.split-screen > * {
+    display: inline-block;
+
+    width: calc(50% - 30px);
+    height: calc(100% - 20px);
+
+    margin: 10px 10px 10px 10px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-width: thin;
+    scrollbar-color: light-dark(#aaa, #555);
+}
+.split-screen > *:nth-child(1) {
+    border-right: 2px solid light-dark(#aaa, #555);
+}
+
+#project-suggestion {
+    position: relative;
+}
+
+#suggestions h2 {
+    margin: 0px 20px 0px 0px;
+    font-weight: bold;
+    font-size: 2rem;
+    padding-bottom: 9px;
+}
+#suggestions p {
+    color: light-dark(#555, #aaa);
+    font-size: 1rem;
+    margin: 0px 0px 0px 20px;
+}
+
+#suggestions label {
+    display: inline-block;
+    width: calc(30% - 40px);
+
+    margin: 0px 0px 5px 40px;
+    padding: 12px 0px;
+}
+#suggestions input::placeholder {
+    color: light-dark(#777, #888);
+    opacity: 1;
+}
+#suggestions input:not(.link *) {
+    display: inline-block;
+    width: calc(70% - 80px);
+
+    margin: 0px 20px 5px 0px;
+
+    background-color: light-dark(#eee, #111);
+    border: 2px solid light-dark(#aaa, #555);
+    border-radius: 5px;
+    
+    transition: border 1s;
+
+    padding: 12px 20px;
+    vertical-align: top;
+}
+#suggestions input:not(.link *):focus {
+    outline: none;
+    border: 2px solid light-dark(#555, #aaa);
+    
+}
+#suggestions textarea::placeholder {
+    color: light-dark(#777, #888);
+    opacity: 1;
+}
+#suggestions textarea {
+    display: inline-block;
+    width: calc(70% - 80px);
+
+    margin: 0px 20px 5px 0px;
+
+    background-color: light-dark(#eee, #111);
+    border: 2px solid light-dark(#aaa, #555);
+    border-radius: 5px;
+
+    transition: border 1s;
+
+    padding: 12px 20px;
+
+    resize: none;
+    overflow-y: hidden;
+    vertical-align: top;
+}
+#suggestions textarea:focus {
+    outline: none;
+    border: 2px solid light-dark(#555, #aaa);
+}
+#suggestions #links {
+    position: relative;
+}
+#suggestions .link-label {
+    margin: 0px 0px -4px 40px;
+}
+#suggestions .link {
+    position: relative;
+
+    display: inline-flex;
+
+    width: calc(70% - 40px);
+    margin: 0px 20px -4px 4px;
+
+    border: 2px solid light-dark(#aaa, #555);
+    border-radius: 5px;
+    transition: border 1s, z-index 1s;
+
+    overflow-x: hidden;
+}
+#suggestions .link:has(input:focus) {
+    border: 2px solid light-dark(#555, #aaa);
+    z-index: 100;
+}
+#suggestions .link input {
+    outline: none;
+    border: none;
+    background-color: rgba(0,0,0,0);
+    padding: 12px 20px;
+
+    flex: 0 0 auto;
+
+    width: calc(100% - 40px);
+
+    transition: width 1s;
+}
+#suggestions .link:not(:nth-child(2)):hover input {
+    width: calc(100% - 40px - 38px);
+}
+#suggestions .link i {
+    flex: 0 0 auto;
+    font-size: 1.5rem;
+    padding: 8px 0px;
+    background-color: light-dark(#B90E0A, #B90E0A);
+    color: light-dark(#eee, #111);
+    width: 38px;
+
+    border-radius: 5px 0px 0px 5px;
+
+    text-align:center;
+
+    transition: background-color 1s;
+}
+#suggestions .link i:hover {
+    background-color: light-dark(#E3242B, #E3242B);
+}
+#suggestions .plus {
+    position: absolute;
+    bottom: -17px;
+    left: calc(30% - 12px);
+
+    font-size: 1.75rem;
+    text-align:center;
+
+    color: light-dark(#00712D, #00712D);
+    background-color: light-dark(#eee, #111);
+    border-radius: 100%;
+
+    padding-top: 4px;
+
+    z-index: 200;
+
+    transition: color 1s;
+}
+#suggestions .plus:hover {
+    color: light-dark(#3CB043, #3CB043);
+}
+#suggestions .where-to-find-you {
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+#suggestions input[type="submit"] {
+    width: calc(100% - 50px);
+    margin: 40px 20px 5px 20px;
+}
+#suggestions input[type="submit"]:hover {
+    border: 2px solid light-dark(#555, #aaa);
+}  
+#suggestions input[type="submit"]:focus {
+    border: 2px solid light-dark(#aaa, #555);
+}
+#suggestions input[type="submit"]:focus:hover {
+    border: 2px solid light-dark(#555, #aaa);
+}
+
+#project-suggestion-wrong {
+    position: absolute;
+    background-color: light-dark(#ccc, #444);
+    padding: 10px;
+
+    left: calc(30% + 10px);
+    border: 2px solid light-dark(#aaa, #555);
+
+    border-radius: 5px;
+
+    transition: opacity 0.5s;
+
+    opacity: 0;
+}
+
+#project-succes-page {
+    display: none;
+
+    position: absolute;
+    top: 0px;
+    left: 0px;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: light-dark(#eee, #111);
+    opacity: 0;
+
+    transition: opacity 0.5s;
+
+    z-index: 100000;
+}
+#project-succes-page i {
+    display: block;
+    font-size: 4rem;
+    text-align: center;
+}
+#project-succes-page h2 {
+    margin-top: 50px;
+}
+#project-succes-page p {
+    color: light-dark(#111, #eee);
+}
 
 /* Footer */
 .footer {
     display: flex;
     column-gap: 5px;
     align-items: center;
+
+    margin-bottom: 2px;
 }
 .footer a {
     margin-left: 5px;
@@ -228,4 +477,6 @@ body {
     margin-left: auto;
     margin-right: 10px;
     font-size: 1rem;
+    
+    user-select: none;
 }
