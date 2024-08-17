@@ -103,6 +103,26 @@
             <div class="content-wrapper">
                 <div class="content-window" id="user">
                     <h1>LOGGIN</h1>
+                    <div id="login-window">
+                        <form onsubmit="event.preventDefault(); TryLogin();">
+                            <div class="input">
+                                <label for="username"><i class="fas fa-user-alt"></i></label>
+                                <input type="text" id="username">
+                            </div>
+
+                            <div class="input">
+                                <label for="password"><i class="fas fa-lock"></i></label>
+                                <input type="password" id="password">
+                            </div>
+
+                            <p id="wrong-password" style="opacity:0; cursor:default;">Verkeerd wachtwoord of gebruiker</p>
+
+                            <input type="submit" value="Login">
+                        </form>
+                    </div>
+                    <div id="logged-in-window" style="display: none">
+                        blablabla
+                    </div>
                 </div>
             </div>
         </div>

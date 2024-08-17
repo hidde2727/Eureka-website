@@ -1,6 +1,7 @@
 addEventListener("load", (event) => {
   PrepareSidebar();
   PreparePopup();
+  CheckLogin();
 });
 
 // Sidebar --------------------------------------
@@ -38,10 +39,9 @@ function PrepareSidebar() {
 // Projects ----------------------------------
 async function GetProjects() {
     try {
-      const response = await fetch("/Data/Projects.json");
-      if (!response.ok) {
+      const response = await fetch("/Data/Projects.json", { credentials: 'same-origin' });
+      if (!response.ok)
         throw new Error(`Response status: ${response.status}`);
-      }
   
       const json = await response.json();
       const projectsPage = document.getElementById("projects");
@@ -151,6 +151,9 @@ function IsValidEMail(email) {
 function ToValidPostString(string) {
   return new String(string).replaceAll('&', '%26').replaceAll('=', '%3D');
 }
+function IsASCII(str) {
+  return /^[\x00-\x7F]*$/.test(str);
+}
 async function OnProjectSuggestionSubmit() {
   var projectName = document.getElementById("project-name").value;
   if(!projectName)
@@ -231,7 +234,8 @@ async function OnProjectSuggestionSubmit() {
   const response = await fetch("/API/AddProjectSuggestion.php", {
     method: "POST",
     body: postBody,
-    headers: headers
+    headers: headers,
+    credentials: 'same-origin'
   });
 
   var succesPage = document.getElementById("project-succes-page");
@@ -284,4 +288,100 @@ function AfterFooterGeneration() {
       }
     };
   }
+}
+
+// Check if the user is logged in
+function GetCookie(cookie) { // Taken from https://www.w3schools.com/js/js_cookies.asp
+  let name = cookie + "=";
+  let ca = document.cookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return undefined;
+}
+var loggedIn = false;
+if(GetCookie("sessionID") != undefined && GetCookie("sessionCredential") != undefined) {
+  loggedIn = true;
+  GetUserPermissions();
+}
+
+function CheckLogin() {
+  if(loggedIn) {
+    document.getElementsByClassName("user-tab")[0].style.display = "";
+    document.getElementById("login-window").style.display = "none";
+    document.getElementById("logged-in-window").style.display = "";
+  }
+}
+
+async function GetUserPermissions() {
+  const headers = new Headers();
+  headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+
+  const response = await fetch("/API/LoginRequired/GetUserPermissions.php", { credentials: 'same-origin', headers:headers });
+  if (!response.ok)
+    throw new Error(`Response status: ${response.status}`);
+  
+  const json = await response.json();
+  
+}
+
+async function TryLogin() {
+  var username = document.getElementById("username").value;
+  if(!username) {
+    document.getElementById("wrong-password").innerHTML = "Vul een gebruikersnaam in";
+    document.getElementById("wrong-password").style.opacity = "1";
+    return;
+  }
+  else if(username.indexOf('"') != -1) {
+    document.getElementById("wrong-password").innerHTML = "Vul een gebruikersnaam in zonder \"";
+    document.getElementById("wrong-password").style.opacity = "1";
+    return;
+  }
+  var password = document.getElementById("password").value;
+  if(!password) {
+    document.getElementById("wrong-password").innerHTML = "Vul een wachtwoord in";
+    document.getElementById("wrong-password").style.opacity = "1";
+    return;
+  }
+  // process the password
+  var buffer = new ArrayBuffer( password.length );
+  var passwordArray = new Uint8Array(buffer);
+  for(var i = 0; i < password.length; i++) {
+    if(password.charCodeAt(i) > 255 || password.charCodeAt(i) < 0) {
+      document.getElementById("wrong-password").innerHTML = "Illegaal karakter: " + password.charCodeAt(i);
+      document.getElementById("wrong-password").style.opacity = "1";
+      return;
+    }
+    passwordArray[i] = password.charCodeAt(i);
+  }
+  var encrypted = new Uint8Array(await window.crypto.subtle.digest("SHA-256", buffer));
+  var base64 = btoa(String.fromCharCode.apply(null, encrypted));
+
+  var postBody = "";
+  postBody+="username=" + ToValidPostString(username) + "&";
+  postBody+="password=" + ToValidPostString(base64);
+
+  const headers = new Headers();
+  headers.append("Content-Type", "application/x-www-form-urlencoded");
+
+  const response = await fetch("/API/TryLogin.php", {
+    method: "POST",
+    body: postBody,
+    headers: headers
+  });
+  if (!response.ok) {
+    document.getElementById("wrong-password").innerHTML = "Er is iets fout gegaan: " + await response.text();
+    document.getElementById("wrong-password").style.opacity = "1";
+    return;
+  }
+
+  document.getElementById("username").value = "";
+  document.getElementById("password").value = "";
+  window.location.reload();
 }

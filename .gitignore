@@ -1,1 +1,2 @@
-MySQL/ConnectionData.php
+Utils/MySQL/ConnectionData.php
+Data/Private/Pepper.txt

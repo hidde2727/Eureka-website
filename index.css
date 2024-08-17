@@ -102,6 +102,7 @@ body {
     overflow: visible;
     
     min-height: calc(100vh - 30px);
+    height: 1px;
 }
 .content-window > * {
     padding-left: 39px;
@@ -226,6 +227,8 @@ body {
 /* Suggestions */
 .split-screen {
     height: calc(100vh - 120px);
+
+    min-width: 690px;
 }
 .split-screen > * {
     display: inline-block;
@@ -247,6 +250,7 @@ body {
 
 #project-suggestion {
     position: relative;
+    min-width: 320px;
 }
 
 #suggestions h2 {
@@ -457,6 +461,10 @@ body {
     color: light-dark(#111, #eee);
 }
 
+#inspiration-suggestions {
+    min-width: 320px;
+}
+
 /* Footer */
 .footer {
     display: flex;
@@ -479,4 +487,92 @@ body {
     font-size: 1rem;
     
     user-select: none;
+}
+
+/* Loggin */
+#login-window {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: calc(100% - 90px);
+}
+#login-window > form {
+    border: 2px solid light-dark(#aaa, #555);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+#login-window .input {
+    border: 2px solid light-dark(#aaa, #555);
+    border-radius: 5px;
+
+    transition: border 1s;
+}
+#login-window .input:has(input:focus) {
+    border: 2px solid light-dark(#555, #aaa);
+    border-radius: 5px;
+}
+#login-window .input {
+    display: flex;
+
+    margin: 10px 10px 0px 10px;
+}
+#login-window .input label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+}
+#login-window .input i {
+    font-size: 2rem;
+}
+#login-window .input input {
+    flex-grow: 1;
+}
+
+#login-window input::placeholder {
+    color: light-dark(#777, #888);
+    opacity: 1;
+}
+#login-window input {
+    display: inline-block;
+    width: calc(70% - 80px);
+
+    margin: 0px;
+
+    background-color: rgba(0,0,0,0);
+    border: 0px solid rgba(0,0,0,0);
+    
+    transition: border 1s;
+
+    padding: 12px 20px;
+    vertical-align: top;
+}
+#login-window input:focus {
+    outline: none;
+    border: 0px solid rgba(0,0,0,0);
+}
+
+#login-window p {
+    margin: 5px 10px 0px 10px;
+}
+
+#login-window input[type="submit"] {
+    width: calc(100% - 50px);
+    margin: 10px 20px 5px 20px;
+
+    border: 2px solid light-dark(#aaa, #555);
+    border-radius: 5px;
+}
+#login-window input[type="submit"]:hover {
+    border: 2px solid light-dark(#555, #aaa);
+}  
+#login-window input[type="submit"]:focus {
+    border: 2px solid light-dark(#aaa, #555);
+}
+#login-window input[type="submit"]:focus:hover {
+    border: 2px solid light-dark(#555, #aaa);
 }

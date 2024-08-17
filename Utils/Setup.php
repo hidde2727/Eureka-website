@@ -1,10 +1,10 @@
 <?php
-include "ConnectionManager.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/Utils/MySQL/ConnectionManager.php";
 
-$connection = new ConnectionManager();
+global $MySQLConnection;
 
 // Project data
-$connection->ExecuteStatement("
+$MySQLConnection->ExecuteStatement("
 CREATE TABLE IF NOT EXISTS projects (
 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 name TINYTEXT NOT NULL,
@@ -18,13 +18,13 @@ last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ");
 
 // Inspiration data
-$connection->ExecuteStatement("
+$MySQLConnection->ExecuteStatement("
 CREATE TABLE IF NOT EXISTS inspiration (
 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 type TINYTEXT NOT NULL,
 name TINYTEXT NOT NULL,
 description TEXT NOT NULL,
-videoID TINYTEXT NOT NULL,
+video_ID TINYTEXT NOT NULL,
 url TEXT NOT NULL,
 author TINYTEXT NOT NULL,
 last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -32,21 +32,41 @@ last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ");
 
 // User data
-$connection->ExecuteStatement("
+$MySQLConnection->ExecuteStatement("
 CREATE TABLE IF NOT EXISTS users (
 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 username TINYTEXT NOT NULL,
-password TINYTEXT NOT NULL,
-modify_users BOOL NOT NULL,
-add_files BOOL NOT NULL,
-modify_inspiration BOOL NOT NULL,
-modify_projects BOOL NOT NULL,
+password VARBINARY(255) NOT NULL,
+modify_users BOOL DEFAULT FALSE,
+add_files BOOL DEFAULT FALSE,
+modify_inspiration BOOL DEFAULT FALSE,
+modify_projects BOOL DEFAULT FALSE,
 last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)
+");
+if($MySQLConnection->IsTableEmpty("users")) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . "/Utils/Login.php";
+    // Create a new pepper
+    GeneratePepper();
+    // Generate default user
+    GenerateUser("admin", hash("sha256", "password", true));
+}
+$MySQLConnection->ExecuteStatement("
+CREATE TABLE IF NOT EXISTS sessions (
+id BINARY(32) NOT NULL PRIMARY KEY,
+credential BINARY(32) NOT NULL,
+username TINYTEXT NOT NULL,
+
+user_ID INT UNSIGNED NOT NULL,
+
+invalid_at TIMESTAMP DEFAULT DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR),
+
+FOREIGN KEY(user_ID) REFERENCES users(id)
 )
 ");
 
 // Suggestions data
-$connection->ExecuteStatement("
+$MySQLConnection->ExecuteStatement("
 CREATE TABLE IF NOT EXISTS suggestions (
 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 type TINYTEXT NOT NULL,
@@ -56,18 +76,18 @@ down_votes INT NOT NULL DEFAULT 0,
 last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )
 ");
-$connection->ExecuteStatement("
+$MySQLConnection->ExecuteStatement("
 CREATE TABLE IF NOT EXISTS suggestionVotes (
 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 up_or_down_vote BOOL NOT NULL,
 
-userID INT UNSIGNED NOT NULL,
-suggestionID INT UNSIGNED NOT NULL,
+user_ID INT UNSIGNED NOT NULL,
+suggestion_ID INT UNSIGNED NOT NULL,
 
 last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-FOREIGN KEY(userID) REFERENCES users(id),
-FOREIGN KEY (suggestionID) REFERENCES suggestions(id)
+FOREIGN KEY(user_ID) REFERENCES users(id),
+FOREIGN KEY (suggestion_ID) REFERENCES suggestions(id)
 )
 ");
 
