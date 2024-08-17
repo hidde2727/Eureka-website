@@ -30,5 +30,8 @@ if(!ValidatePassword($username, $password)) {
     die("Verkeerde credentials");
 }
 // Correct password - give user the correct cookies
+if(CheckSession())
+    exit("Already logged in");
+
 CreateSession($username);
 echo "Correct!!!";
