@@ -1,4 +1,6 @@
+var pageLoaded = false;
 addEventListener("load", (event) => {
+  pageLoaded = true;
   PrepareSidebar();
   PreparePopup();
   CheckLogin();
@@ -289,48 +291,6 @@ function AfterFooterGeneration() {
     };
   }
 }
-
-// Check if the user is logged in
-function GetCookie(cookie) { // Taken from https://www.w3schools.com/js/js_cookies.asp
-  let name = cookie + "=";
-  let ca = document.cookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return undefined;
-}
-var loggedIn = false;
-if(GetCookie("sessionID") != undefined && GetCookie("sessionCredential") != undefined) {
-  loggedIn = true;
-  GetUserPermissions();
-}
-
-function CheckLogin() {
-  if(loggedIn) {
-    document.getElementsByClassName("user-tab")[0].style.display = "";
-    document.getElementById("login-window").style.display = "none";
-    document.getElementById("logged-in-window").style.display = "";
-  }
-}
-
-async function GetUserPermissions() {
-  const headers = new Headers();
-  headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
-
-  const response = await fetch("/API/LoginRequired/GetUserPermissions.php", { credentials: 'same-origin', headers:headers });
-  if (!response.ok)
-    throw new Error(`Response status: ${response.status}`);
-  
-  const json = await response.json();
-  
-}
-
 async function TryLogin() {
   var username = document.getElementById("username").value;
   if(!username) {
@@ -384,4 +344,49 @@ async function TryLogin() {
   document.getElementById("username").value = "";
   document.getElementById("password").value = "";
   window.location.reload();
+}
+
+// If logged in -------------------------------
+
+// Check if the user is logged in
+function GetCookie(cookie) { // Taken from https://www.w3schools.com/js/js_cookies.asp
+  let name = cookie + "=";
+  let ca = document.cookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return undefined;
+}
+var loggedIn = false;
+var permissions;
+if(GetCookie("sessionID") != undefined && GetCookie("sessionCredential") != undefined)
+  GetUserPermissions();
+
+async function GetUserPermissions() {
+  const headers = new Headers();
+  headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+
+  const response = await fetch("/API/LoginRequired/GetUserPermissions.php", { credentials: 'same-origin', headers:headers });
+  if (!response.ok)
+    throw new Error(`Response status: ${response.status}`);
+
+  permissions = await response.json();
+
+  loggedIn = true;
+  if(pageLoaded) // If page hasn't been loaded then we wait for the event to trigger CheckLogin
+    CheckLogin();  
+}
+
+function CheckLogin() {
+  if(loggedIn) {
+    document.getElementsByClassName("user-tab")[0].style.display = "";
+    document.getElementById("login-window").style.display = "none";
+    document.getElementById("logged-in-window").style.display = "";
+  }
 }

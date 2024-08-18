@@ -81,10 +81,10 @@ function CreateSession($username) {
 }
 
 function RemoveSession() {
-    setcookie("sessionID", "", time() - 3600);
-    setcookie("sessionCredential", "", time() - 3600);
-    setcookie("sessionCredentialRepeat", "", time() - 3600);
-    setcookie("username", "", time() - 3600);
+    setcookie("sessionID", "", time() - 3600, "/");
+    setcookie("sessionCredential", "", time() - 3600, "/");
+    setcookie("sessionCredentialRepeat", "", time() - 3600, "/");
+    setcookie("username", "", time() - 3600, "/");
     return false;
 }
 $sessionUsername = null;
