@@ -1,11 +1,21 @@
 <?php
 
+require_once $_SERVER['DOCUMENT_ROOT'] . "/Utils/Login.php";
+if(!CheckSession()) {
+    http_response_code(401);
+    die("Je moet ingelogd zijn om dit deel van de API te gebruiken");
+}
+else if(!HasSessionUserPermission("modify_users")) {
+    http_response_code(401);
+    die("Geen permissie voor dit deel van de API");
+}
+
 function ReturnFault($message) {
     http_response_code(400);
     die($message);
 }
 function IsBase64($string) {
-    return preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $string);
+      return preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $string);
 }
 
 if(!isset($_POST['username']) || empty($_POST['username']))
@@ -24,14 +34,8 @@ else if(!IsBase64($_POST['password']))
     ReturnFault("Wachtwoord moet base64 encoded zijn");
 $password = $_POST['password'];
 
-require_once $_SERVER['DOCUMENT_ROOT'] . "/Utils/Login.php";
-if(!ValidatePassword($username, base64_decode($password))) {
-    http_response_code(401);
-    die("Verkeerde credentials");
-}
-// Correct password - give user the correct cookies
-if(CheckSession())
-    exit("Already logged in");
+if($MySQLConnection->DoesUserExist($username))
+    ReturnFault("Gebruikersnaam bestaat al!");
 
-CreateSession($username);
-echo "Correct!!!";
+GenerateUser($username, base64_decode($password));
+echo "Gebruiker aangemaakt!";

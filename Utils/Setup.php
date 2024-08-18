@@ -50,6 +50,7 @@ if($MySQLConnection->IsTableEmpty("users")) {
     GeneratePepper();
     // Generate default user
     GenerateUser("admin", hash("sha256", "password", true));
+    GiveUserPermissions("admin", true, true, true, true);
 }
 $MySQLConnection->ExecuteStatement("
 CREATE TABLE IF NOT EXISTS sessions (

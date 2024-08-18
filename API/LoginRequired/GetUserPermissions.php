@@ -8,7 +8,7 @@ if(!CheckSession()) {
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Utils/MySQL/ConnectionManager.php";
 global $MySQLConnection;
-$userInfo = $MySQLConnection->GetUser(GetSessionUsername());
+$userInfo = $MySQLConnection->GetUserByUsername(GetSessionUsername());
 
 header('Content-Type: application/json');
 echo('{"modifyUsers":"' . $userInfo["modify_users"] . '","addFiles":"' . $userInfo["add_files"] . '","modifyInspiration":"' . $userInfo["modify_inspiration"] . '","modifyProjects":"' . $userInfo["modify_projects"] . '"}');

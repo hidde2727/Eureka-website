@@ -14,27 +14,29 @@ function PrepareSidebar() {
     const selectedTabName = urlParams.get('tab');
 
     for (var i = 0; i < sidebarTabs.length; i++) {
-        sidebarTabs[i].onmouseover = function(){
-            var elements = this.getElementsByTagName("p")[0];
-            const textSize = this.getElementsByTagName("p")[0].clientWidth;
-            this.style.width = "calc(var(--sidebar-height) + " + textSize + "px)";
-        };
-        sidebarTabs[i].onmouseleave = function(){
-            this.style.width = "var(--sidebar-height)";
-        };
-        sidebarTabs[i].onmousedown = function(){
-            var mainWindow = document.getElementById("main-content-scroll-animation");
-            mainWindow.style.top = "-" + (this.id * 100) + "vh";
+      if(sidebarTabs[i].onmousedown != undefined) continue;
 
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set("tab", this.attributes.getNamedItem("target").nodeValue);
-            history.pushState(null, "", "?"+ urlParams.toString());
-        };
-        sidebarTabs[i].id = i;
-        if(selectedTabName != null && sidebarTabs[i].attributes.getNamedItem("target").nodeValue == selectedTabName) {
-            var mainWindow = document.getElementById("main-content-scroll-animation");
-            mainWindow.style.top = "-" + (i * 100) + "vh";
-        }
+      sidebarTabs[i].onmouseover = function(){
+          var elements = this.getElementsByTagName("p")[0];
+          const textSize = this.getElementsByTagName("p")[0].clientWidth;
+          this.style.width = "calc(var(--sidebar-height) + " + textSize + "px)";
+      };
+      sidebarTabs[i].onmouseleave = function(){
+          this.style.width = "var(--sidebar-height)";
+      };
+      sidebarTabs[i].onmousedown = function(){
+          var mainWindow = document.getElementById("main-content-scroll-animation");
+          mainWindow.style.top = "-" + (this.id * 100) + "vh";
+
+          const urlParams = new URLSearchParams(window.location.search);
+          urlParams.set("tab", this.attributes.getNamedItem("target").nodeValue);
+          history.pushState(null, "", "?"+ urlParams.toString());
+      };
+      sidebarTabs[i].id = i;
+      if(selectedTabName != null && sidebarTabs[i].attributes.getNamedItem("target").nodeValue == selectedTabName) {
+          var mainWindow = document.getElementById("main-content-scroll-animation");
+          mainWindow.style.top = "-" + (i * 100) + "vh";
+      }
     }
 }
 
@@ -151,7 +153,7 @@ function IsValidEMail(email) {
   return res.test(String(email).toLowerCase());
 }
 function ToValidPostString(string) {
-  return new String(string).replaceAll('&', '%26').replaceAll('=', '%3D');
+  return new String(string).replaceAll('&', '%26').replaceAll('=', '%3D').replaceAll('+', '%2B');
 }
 function IsASCII(str) {
   return /^[\x00-\x7F]*$/.test(str);
@@ -345,6 +347,12 @@ async function TryLogin() {
   document.getElementById("password").value = "";
   window.location.reload();
 }
+async function Logout() {
+  const headers = new Headers();
+  headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+  const response = await fetch("/API/LoginRequired/LogOut.php", { credentials: 'same-origin', headers:headers });
+  if(response.ok) window.location.reload();
+}
 
 // If logged in -------------------------------
 
@@ -384,9 +392,122 @@ async function GetUserPermissions() {
 }
 
 function CheckLogin() {
-  if(loggedIn) {
-    document.getElementsByClassName("user-tab")[0].style.display = "";
-    document.getElementById("login-window").style.display = "none";
-    document.getElementById("logged-in-window").style.display = "";
+  if(!loggedIn) return;
+
+  document.getElementsByClassName("user-tab")[0].style.display = "";
+  document.getElementsByClassName("log-out")[0].style.display = "";
+  document.getElementById("login-window").style.display = "none";
+  document.getElementById("logged-in-window").style.display = "";
+
+  // Check individual permissions
+  // Modifying users
+  if(permission["modifyUsers"]) {
+    document.getElementById("add-user").style.display = "";
+    document.getElementById("modify-users").style.display = "";
   }
+  if(permission["addFiles"]) {
+
+  }
+  if(permission["modifyInspiration"]) {
+
+  }
+  if(permission["modifyProjects"]) {
+
+  }
+}
+
+// User window form submits -----------------------
+
+function ShowAddUserFaultMessagePopUp(element, message) {
+  element.focus();
+
+  var popover = document.getElementById("add-user-wrong");
+  var projectSuggestionPage = document.getElementById("add-user");
+  var offsetParent = element;
+  var offsetTop = 0;
+  while(offsetParent != projectSuggestionPage) {
+    var style = getComputedStyle(offsetParent);
+    offsetTop += offsetParent.offsetTop + parseFloat(style.paddingTop, 10) + parseFloat(style.marginTop, 10) + parseFloat(style.borderTop, 10);
+    offsetParent = offsetParent.offsetParent;
+  }
+  popover.style.display = "inline-block";
+  popover.style.top = (offsetTop + element.clientHeight - 10) + "px";
+  popover.innerHTML = message;
+
+  popover.style.opacity = 1;
+
+}
+async function AddUser() {
+  var username = document.getElementById("new-username").value;
+  if(!username)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Specificeer een naam");
+  else if(username.length > 255)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Maximum lengte is 255");
+  else if(username.indexOf('"') != -1)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Kan geen \" erin hebben");
+
+  var password = document.getElementById("new-password").value;
+  if(!password)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password"), "Specificeer een wachtwoord");
+  else if(password.length > 255)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password"), "Maximum lengte is 255");
+  else if(password.indexOf('"') != -1)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password"), "Kan geen \" erin hebben");
+
+  var passwordRepeat = document.getElementById("new-password-repeat").value;
+  if(!passwordRepeat)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Herhaal het wachtwoord");
+  else if(passwordRepeat.length > 255)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Maximum lengte is 255");
+  else if(passwordRepeat.indexOf('"') != -1)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Kan geen \" erin hebben");
+
+  // process the password
+  var buffer = new ArrayBuffer( password.length );
+  var passwordArray = new Uint8Array(buffer);
+  for(var i = 0; i < password.length; i++) {
+    if(password.charCodeAt(i) > 255 || password.charCodeAt(i) < 0)
+      return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Kan geen " + password.charCodeAt(i) + " erin hebben");
+    passwordArray[i] = password.charCodeAt(i);
+  }
+  var encrypted = new Uint8Array(await window.crypto.subtle.digest("SHA-256", buffer));
+  var base64 = btoa(String.fromCharCode.apply(null, encrypted));
+
+  if(password != passwordRepeat)
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Moet hetzelfde zijn als het wachtwoord");
+
+  var submitButton = document.getElementById("add-user-submit");
+  submitButton.value = "Aan het versturen ...";
+
+  var postBody = "";
+  postBody+="username=" + ToValidPostString(username) + "&";
+  postBody+="password=" + ToValidPostString(base64);
+
+  const headers = new Headers();
+  headers.append("Content-Type", "application/x-www-form-urlencoded");
+  headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+
+  const response = await fetch("/API/LoginRequired/AddUser.php", {
+    method: "POST",
+    body: postBody,
+    headers: headers,
+    credentials: 'same-origin'
+  });
+
+  if(!response.ok) {
+    submitButton.value = "Maak nieuwe gebruiker";
+    var error = await response.text();
+    if(error == "Gebruikersnaam bestaat al!")
+      return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Gebruikersnaam bestaat al");
+    return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Error: " + error);
+  }
+
+  submitButton.value = "Aangemaakt!";
+  document.getElementById("new-username").value = "";
+  document.getElementById("new-password").value = "";
+  document.getElementById("new-password-repeat").value = "";
+  setTimeout(() => {
+    var submitButton = document.getElementById("add-user-submit");
+    submitButton.value = "Maak nieuwe gebruiker";
+  }, 3000);
 }

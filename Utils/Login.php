@@ -20,13 +20,13 @@ function ValidatePassword($username, $password) {
 
         if($hashedPassword === null) { // The user was not found
             // Prevent timing attack so still hash and verify
-            $pepperedPassword = hash_hmac("sha256", base64_decode($password), $pepper, true);
+            $pepperedPassword = hash_hmac("sha256", $password, $pepper, true);
             password_verify($pepperedPassword, "$2y$10$7EIWzQkiNmtX9ESy8W8XRu8RsKRY57q9ePYpqa.zYq5PAcAQ3vHnm");
         
             return false;
         }
         // Check the password
-        $pepperedPassword = hash_hmac("sha256", base64_decode($password), $pepper, true);
+        $pepperedPassword = hash_hmac("sha256", $password, $pepper, true);
         fclose($pepperFile);
         if(!password_verify($pepperedPassword, $hashedPassword)) // Wrong password
             return false;
@@ -58,7 +58,7 @@ function GenerateUser($username, $password) {
     $hashedPassword = password_hash($pepperedPassword, PASSWORD_DEFAULT);
     if(!password_verify($pepperedPassword, $hashedPassword))
         die("Help, the generated hash doesn't match the password");
-    $MySQLConnection->CreateUser("admin", $hashedPassword);
+    $MySQLConnection->CreateUser($username, $hashedPassword);
 
     fclose($pepperFile);
 }
@@ -67,7 +67,7 @@ function CreateSession($username) {
     global $MySQLConnection;
     
     do { $sessionID = GenerateRandomBytes(32); }
-    while(!$MySQLConnection->DoesSessionIDExist($sessionID));
+    while($MySQLConnection->DoesSessionIDExist($sessionID));
     $sessionCredential = GenerateRandomBytes(32);
 
     $MySQLConnection->CreateSession($sessionID, $sessionCredential, $username);
@@ -80,7 +80,7 @@ function CreateSession($username) {
         die("Failed to set cookie");
 }
 
-function RemoveSession() {
+function RemoveSessionCookies() {
     setcookie("sessionID", "", time() - 3600, "/");
     setcookie("sessionCredential", "", time() - 3600, "/");
     setcookie("sessionCredentialRepeat", "", time() - 3600, "/");
@@ -88,27 +88,31 @@ function RemoveSession() {
     return false;
 }
 $sessionUsername = null;
+$sessionUserID = null;
 function CheckSession() {
     global $MySQLConnection;
 
-    if(!isset($_COOKIE["sessionID"])) return RemoveSession();
-    if(!isset($_COOKIE["sessionCredential"])) return RemoveSession();
-    if(!isset($_SERVER["HTTP_SESSIONCREDENTIALREPEAT"])) return RemoveSession();
-    if(!isset($_COOKIE["username"])) return RemoveSession();
+    if(!isset($_COOKIE["sessionID"])) return RemoveSessionCookies();
+    if(!isset($_COOKIE["sessionCredential"])) return RemoveSessionCookies();
+    if(!isset($_SERVER["HTTP_SESSIONCREDENTIALREPEAT"])) return RemoveSessionCookies();
+    if(!isset($_COOKIE["username"])) return RemoveSessionCookies();
 
     global $sessionUsername;
+    global $sessionUserID;
 
     $sessionID = rawurldecode($_COOKIE["sessionID"]);
     $sessionCredential = rawurldecode($_COOKIE["sessionCredential"]);
     if($sessionCredential != rawurldecode($_SERVER["HTTP_SESSIONCREDENTIALREPEAT"]))
-        return RemoveSession();
+        return RemoveSessionCookies();
     $sessionUsername = rawurldecode($_COOKIE["username"]);
 
     $session = $MySQLConnection->GetSession($sessionID);
-    if($session == null) return RemoveSession();
-    if($session["id"] != $sessionID) return RemoveSession();
-    if($session["credential"] != $sessionCredential) return RemoveSession();
-    if($session["username"] != $sessionUsername) return RemoveSession();
+    if($session == null) return RemoveSessionCookies();
+    if($session["id"] != $sessionID) return RemoveSessionCookies();
+    if($session["credential"] != $sessionCredential) return RemoveSessionCookies();
+    if($session["username"] != $sessionUsername) return RemoveSessionCookies();
+
+    $sessionUserID = $session["user_ID"];
 
     return true;
 }
@@ -119,4 +123,35 @@ function GetSessionUsername() {
             die("Can't retrieve username of user that is not logged in");
     }
     return $sessionUsername;
+}
+function GetSessionUserID() {
+    global $sessionUserID;
+    if($sessionUserID == null) {
+        if(!CheckSession())
+            die("Can't retrieve username of user that is not logged in");
+    }
+    return $sessionUserID;
+}
+function HasSessionUserPermission($permissionName) {
+    try {
+        global $MySQLConnection;
+        global $sessionUserID;
+
+        $userData = $MySQLConnection->GetUser($sessionUserID);
+
+        return $userData[$permissionName];
+
+    } catch(Exception $exc) {
+        return false;
+    }
+}
+function GiveUserPermissions($username, $modifyUsers, $addFiles, $modifyInspiration, $modifyProjects) {
+    global $MySQLConnection;
+    $MySQLConnection->SetUserPermissions($username, $modifyUsers, $addFiles, $modifyInspiration, $modifyProjects);
+}
+
+function RemoveSession() {
+    global $MySQLConnection;
+    $MySQLConnection->RemoveSession($_COOKIE["sessionID"]);
+    RemoveSessionCookies();
 }

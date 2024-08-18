@@ -20,6 +20,22 @@ body {
     margin: 0px;
 }
 
+/* General */
+.popup {
+    position: absolute;
+    background-color: light-dark(#ccc, #444);
+    padding: 10px;
+
+    left: 10px;
+    border: 2px solid light-dark(#aaa, #555);
+
+    border-radius: 5px;
+
+    transition: opacity 0.5s;
+
+    opacity: 0;
+}
+
 /* Sidebar */
 :root {
     --sidebar-size: 2rem;
@@ -40,6 +56,12 @@ body {
 
     margin-top: 8px;
     margin-bottom: 8px;
+
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+
+    height: calc(100vh - 16px);
 }
 #sidebar .sidebar-tab {
     background-color: light-dark(#ddd, #222);
@@ -65,6 +87,9 @@ body {
 #sidebar p {
     margin: 0px 0px 0px 4px;
     padding-right: 4px;
+}
+#sidebar .log-out {
+    margin-top: auto;
 }
 
 #middle-border {
@@ -418,18 +443,7 @@ body {
 }
 
 #project-suggestion-wrong {
-    position: absolute;
-    background-color: light-dark(#ccc, #444);
-    padding: 10px;
-
     left: calc(30% + 10px);
-    border: 2px solid light-dark(#aaa, #555);
-
-    border-radius: 5px;
-
-    transition: opacity 0.5s;
-
-    opacity: 0;
 }
 
 #project-succes-page {
@@ -575,4 +589,76 @@ body {
 }
 #login-window input[type="submit"]:focus:hover {
     border: 2px solid light-dark(#555, #aaa);
+}
+
+/* User */
+#logged-in-window > * {
+    position: relative;
+
+    background-color: light-dark(#ddd, #222);
+    border-radius: 5px;
+
+    padding: 10px;
+
+    max-width: 300px;
+
+    margin: 0px 10px 10px 0px;
+}
+#logged-in-window h2 {
+    border-bottom: 2px solid light-dark(#aaa, #555);
+    margin: 0px;
+    font-weight: bold;
+    font-size: 2em;
+    padding: 0px 20px 5px 20px;
+    margin-bottom: 5px;
+}
+#logged-in-window label {
+    display: block;
+
+    margin: 0px 0px 0px 10px;
+
+    font-size: 0.75rem;
+    color: light-dark(#555, #aaa);
+}
+#logged-in-window input {
+    box-sizing: border-box;
+    display: block;
+
+    width: calc(100% - 50px);
+
+    margin: 0px 20px 5px 30px;
+
+    background-color: light-dark(#eee, #111);
+    border: 2px solid light-dark(#aaa, #555);
+    border-radius: 5px;
+
+    transition: border 1s;
+
+    padding: 12px 20px;
+
+    overflow-y: hidden;
+}
+#logged-in-window input:focus {
+    outline: none;
+    border: 2px solid light-dark(#555, #aaa);
+}
+#logged-in-window input::placeholder {
+    color: light-dark(#777, #888);
+    opacity: 1;
+}
+#logged-in-window input[type="submit"] {
+    width: calc(100% - 20px);
+    margin: 20px 10px 5px 10px;
+}
+#logged-in-window input[type="submit"]:focus {
+    border: 2px solid light-dark(#aaa, #555);
+}
+#logged-in-window input[type="submit"]:focus:hover {
+    border: 2px solid light-dark(#555, #aaa);
+}
+#logged-in-window input[type="submit"]:hover {
+    border: 2px solid light-dark(#555, #aaa);
+}
+#logged-in-window p {
+    margin: 5px 0px 5px 0px;
 }

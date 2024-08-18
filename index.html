@@ -19,6 +19,8 @@
             <span class="sidebar-tab" target="files"><i class="fas fa-folder fa-fw"></i><p>Tom's&nbsp;hoekje</p></span>
             <span class="sidebar-tab" target="suggesties"><i class="fas fa-comments fa-fw"></i><p>Suggesties</p></span>
             <span class="sidebar-tab user-tab" target="user" style="display: none"><i class="fas fa-user-circle fa-fw"></i><p>Loggin</p></span>
+
+            <span class="sidebar-tab log-out" style="display: none" onmousedown="Logout()"><i class="fas fa-sign-out-alt fa-fw"></i><p>Log&nbsp;uit</p></span>
         </div>
         <div id="middle-border"></div>
         <div id="main-content">
@@ -121,7 +123,32 @@
                         </form>
                     </div>
                     <div id="logged-in-window" style="display: none">
-                        blablabla
+                        <form id="add-user" onsubmit="event.preventDefault(); AddUser();" style="display: none">
+
+                            <h2>Nieuwe gebruiker</h2>
+
+                            <label for="new-username">Gebruikersnaam</label>
+                            <input type="text" id="new-username" placeholder="Gebruikersnaam">
+
+                            <label for="new-password">Wachtwoord</label>
+                            <input type="text" id="new-password" placeholder="Wachtwoord">
+
+                            <label for="new-password-repeat">Herhaal wachtwoord</label>
+                            <input type="text" id="new-password-repeat" placeholder="Herhaal wachtwoord">
+
+                            <div class="popup" id="add-user-wrong"></div>
+
+                            <input type="submit" id="add-user-submit" value="Maak nieuwe gebruiker">
+
+                        </form>
+                        <div id="modify-users" style="display: none">
+                            <div id="modify-user-users">
+                                <!-- index.js will add the users here -->
+                            </div>
+                            <div id="modify-user-screen">
+
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

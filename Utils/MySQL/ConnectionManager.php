@@ -42,15 +42,32 @@ class ConnectionManager {
         $hexCredential = bin2hex($credential);
         $statement->execute();
     }
+    function SetUserPermissions($username, $modifyUsers, $addFiles, $modifyInspiration, $modifyProjects) {
+        $statement = $this->connection->prepare("UPDATE users SET modify_users=?,add_files=?,modify_inspiration=?,modify_projects=? WHERE username=?");
+        $statement->bind_param("iiiis", $modifyUsers, $addFiles, $modifyInspiration, $modifyProjects, $username);
+        $statement->execute();
+    }
+    function RemoveSession($sessionID) {
+        $statement = $this->connection->prepare("DELETE FROM sessions WHERE id=?");
+        $statement->bind_param("s", $hexID);
+        $hexID = bin2hex($sessionID);
+        $statement->execute();
+    }
 
     function IsTableEmpty($tableName) {
         $result = $this->connection->execute_query("SELECT CASE WHEN EXISTS(SELECT 1 FROM $tableName) THEN 0 ELSE 1 END");
         return $result->fetch_column() == "1";
     }
     function DoesSessionIDExist($id) {
-        $statement = $this->connection->prepare("SELECT CASE WHEN EXISTS(SELECT 1 FROM sessions WHERE id=UNHEX(?)) THEN 0 ELSE 1 END");
+        $statement = $this->connection->prepare("SELECT CASE WHEN EXISTS(SELECT 1 FROM sessions WHERE id=UNHEX(?)) THEN 1 ELSE 0 END");
         $statement->bind_param("s", $hexID);
         $hexID = bin2hex($id);
+        $statement->execute();
+        return $statement->get_result()->fetch_column() == "1";
+    }
+    function DoesUserExist($username) {
+        $statement = $this->connection->prepare("SELECT CASE WHEN EXISTS(SELECT 1 FROM users WHERE username=?) THEN 1 ELSE 0 END");
+        $statement->bind_param("s", $username);
         $statement->execute();
         return $statement->get_result()->fetch_column() == "1";
     }
@@ -80,9 +97,16 @@ class ConnectionManager {
         $result = $statement->get_result();
         return $result->num_rows == 0 ? null : $result->fetch_assoc();
     }
-    function GetUser($username) {
+    function GetUserByUsername($username) {
         $statement = $this->connection->prepare("SELECT * FROM users WHERE username=?");
         $statement->bind_param("s", $username);
+        $statement->execute();
+        $result = $statement->get_result();
+        return $result->num_rows == 0 ? null : $result->fetch_assoc();
+    }
+    function GetUser($userID) {
+        $statement = $this->connection->prepare("SELECT * FROM users WHERE id=?");
+        $statement->bind_param("i", $userID);
         $statement->execute();
         $result = $statement->get_result();
         return $result->num_rows == 0 ? null : $result->fetch_assoc();
