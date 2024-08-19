@@ -401,17 +401,17 @@ function CheckLogin() {
 
   // Check individual permissions
   // Modifying users
-  if(permission["modifyUsers"]) {
+  if(permissions["modifyUsers"]) {
     document.getElementById("add-user").style.display = "";
     document.getElementById("modify-users").style.display = "";
   }
-  if(permission["addFiles"]) {
+  if(permissions["addFiles"]) {
 
   }
-  if(permission["modifyInspiration"]) {
+  if(permissions["modifyInspiration"]) {
 
   }
-  if(permission["modifyProjects"]) {
+  if(permissions["modifyProjects"]) {
 
   }
 }
