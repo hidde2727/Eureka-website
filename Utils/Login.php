@@ -62,6 +62,10 @@ function GenerateUser($username, $password) {
 
     fclose($pepperFile);
 }
+function DeleteUser($username) {
+    global $MySQLConnection;
+    $MySQLConnection->DeleteUser($username);
+}
 
 function CreateSession($username) {
     global $MySQLConnection;

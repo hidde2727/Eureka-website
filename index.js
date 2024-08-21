@@ -380,7 +380,7 @@ async function GetUserPermissions() {
   const headers = new Headers();
   headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
 
-  const response = await fetch("/API/LoginRequired/GetUserPermissions.php", { credentials: 'same-origin', headers:headers });
+  const response = await fetch("/API/LoginRequired/GetOwnPermissions.php", { credentials: 'same-origin', headers:headers });
   if (!response.ok)
     throw new Error(`Response status: ${response.status}`);
 
@@ -404,15 +404,89 @@ function CheckLogin() {
   if(permissions["modifyUsers"]) {
     document.getElementById("add-user").style.display = "";
     document.getElementById("modify-users").style.display = "";
+    PopulateUserModifier();
   }
+  // Adding files
   if(permissions["addFiles"]) {
 
   }
+  // Modify the inspiration
   if(permissions["modifyInspiration"]) {
 
   }
+  // Modify the projects
   if(permissions["modifyProjects"]) {
 
+  }
+}
+var allUserPermissions = new Map();
+async function PopulateUserModifier() {
+  // remove all childs except first one
+  const usersPage = document.getElementById("modify-user-users");
+  while (usersPage.childNodes.length > 5) {
+    usersPage.removeChild(usersPage.lastChild);
+  }
+  try {
+    const headers = new Headers();
+    headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+    const response = await fetch("/API/LoginRequired/GetAllUsersPermissions.php", { credentials: 'same-origin', headers:headers });
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`);
+
+    const json = await response.json();
+    for(let i = 0; i < json.length; i++) {
+      var user = document.createElement("div");
+      user.classList.add("user");
+      user.onmousedown = SelectUser.bind(user, json[i].username, user);
+
+      var innerHTML = '';
+      innerHTML += '<i class="fas fa-user-alt fa-fw"></i>';
+      innerHTML += '<p>' + json[i].username + '</p>';
+      innerHTML += '<i class="fas fa-pen fa-fw"></i>';
+
+      user.innerHTML = innerHTML;
+      usersPage.appendChild(user);
+
+      allUserPermissions.set(json[i].username, new Object());
+
+      allUserPermissions.get(json[i].username).modifyUsers = json[i].modifyUsers;
+      allUserPermissions.get(json[i].username).addFiles = json[i].addFiles;
+      allUserPermissions.get(json[i].username).modifyInspiration = json[i].modifyInspiration;
+      allUserPermissions.get(json[i].username).modifyProjects = json[i].modifyProjects;
+    }
+  } catch (error) {
+    console.error(error.message);
+  }
+}
+
+var currentUserBeingModified = null;
+function SelectUser(username, element, event) {
+  currentUserBeingModified = username;
+
+  document.getElementById("modify-users").getElementsByClassName("next-to-each-other")[0].style.left = "-100%";
+  var user = document.getElementById("modify-user-screen").getElementsByClassName("user")[0];
+  user.innerHTML = '<i class="fas fa-user-alt fa-fw"></i><p>' + username + '</p>';
+  var userPermissions = allUserPermissions.get(username);
+  document.getElementById("modify-users-permission").checked = !!+userPermissions.modifyUsers;
+  document.getElementById("add-files-permission").checked = !!+userPermissions.addFiles;
+  document.getElementById("modify-project-permission").checked = !!+userPermissions.modifyProjects;
+  document.getElementById("modify-inspiration-permission").checked = !!+userPermissions.modifyInspiration;
+
+  document.getElementById("modify-users-permission").disabled = false;
+  document.getElementById("add-files-permission").disabled = false;
+  document.getElementById("modify-project-permission").disabled = false;
+  document.getElementById("modify-inspiration-permission").disabled = false;
+
+  document.getElementById("delete-user").style.opacity = "1";
+  document.getElementById("change").style.opacity = "1";
+  if(username == GetCookie("username")) {
+    document.getElementById("delete-user").style.opacity = "0";
+    document.getElementById("change").style.opacity = "0";
+
+    document.getElementById("modify-users-permission").disabled = true;
+    document.getElementById("add-files-permission").disabled = true;
+    document.getElementById("modify-project-permission").disabled = true;
+    document.getElementById("modify-inspiration-permission").disabled = true;
   }
 }
 
@@ -510,4 +584,55 @@ async function AddUser() {
     var submitButton = document.getElementById("add-user-submit");
     submitButton.value = "Maak nieuwe gebruiker";
   }, 3000);
+
+  PopulateUserModifier();
+}
+
+async function OnModifyUserSubmit(event) {
+  if(event.submitter.id == "delete-user") {
+    if(event.submitter.style.opacity == "0") return;
+
+    if(event.submitter.value == "Verwijder gebruiker") { event.submitter.value = "Zeker weten?"; return; }
+    else if(event.submitter.value == "Zeker weten?") { event.submitter.value = "Absoluut zeker?"; return; }
+    else if(event.submitter.value == "Absoluut zeker?") { event.submitter.value = "Vernietig!!!"; return; }
+    var postBody = "";
+    postBody+="username=" + ToValidPostString(currentUserBeingModified);
+
+    const headers = new Headers();
+    headers.append("Content-Type", "application/x-www-form-urlencoded");
+    headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+
+    const response = await fetch("/API/LoginRequired/DeleteUser.php", {
+      method: "POST",
+      body: postBody,
+      headers: headers,
+      credentials: 'same-origin'
+    });
+    if(response.ok) PopulateUserModifier();
+    else throw new Error("Failed to delete user: " + await response.text());
+
+  } else if(event.submitter.id == "change") {
+    if(document.getElementById("change").style.opacity == "0") return;
+
+    var postBody = "";
+    postBody+="username=" + ToValidPostString(currentUserBeingModified) + "&";
+    postBody+="modifyUsers=" + ToValidPostString(document.getElementById("modify-users-permission").checked ? "1" : "0") + "&";
+    postBody+="addFiles=" + ToValidPostString(document.getElementById("add-files-permission").checked ? "1" : "0") + "&";
+    postBody+="modifyProjects=" + ToValidPostString(document.getElementById("modify-project-permission").checked ? "1" : "0") + "&";
+    postBody+="modifyInspiration=" + ToValidPostString(document.getElementById("modify-inspiration-permission").checked ? "1" : "0");
+
+    const headers = new Headers();
+    headers.append("Content-Type", "application/x-www-form-urlencoded");
+    headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+
+    const response = await fetch("/API/LoginRequired/GiveUserPermissions.php", {
+      method: "POST",
+      body: postBody,
+      headers: headers,
+      credentials: 'same-origin'
+    });
+    if(response.ok) PopulateUserModifier();
+    else throw new Error("Failed to modify user: " + await response.text());
+  }
+  document.getElementById("modify-users").getElementsByClassName("next-to-each-other")[0].style.left = "0%";
 }

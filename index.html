@@ -142,12 +142,46 @@
 
                         </form>
                         <div id="modify-users" style="display: none">
-                            <div id="modify-user-users">
-                                <!-- index.js will add the users here -->
-                            </div>
-                            <div id="modify-user-screen">
+                        <div class="hide-overflow">
+                            <div class="next-to-each-other">
+                                <div id="modify-user-users">
+                                    <h2>Pas gebruikers aan</h2>
+                                    <!-- index.js will add the users here -->
 
+                                </div>
+                                <form id="modify-user-screen" onsubmit="event.preventDefault(); OnModifyUserSubmit(event);">
+                                    <div class="user"></div>
+                                    <label class="slider-toggle">
+                                        <input type="checkbox" id="modify-users-permission">
+                                        <span class="internal-slider"></span>
+                                    </label>
+                                    <label for="modify-users-permission">Gebruikers veranderen</label>
+                                    <br>
+                                    <label class="slider-toggle">
+                                        <input type="checkbox" id="add-files-permission">
+                                        <span class="internal-slider"></span>
+                                    </label>
+                                    <label for="add-files-permission">Files toevoegen</label>
+                                    <br>
+                                    <label class="slider-toggle">
+                                        <input type="checkbox" id="modify-project-permission">
+                                        <span class="internal-slider"></span>
+                                    </label>
+                                    <label for="modify-project-permission">Projecten aanpassen</label>
+                                    <br>
+                                    <label class="slider-toggle">
+                                        <input type="checkbox" id="modify-inspiration-permission">
+                                        <span class="internal-slider"></span>
+                                    </label>
+                                    <label for="modify-inspiration-permission">Inspiratie aanpasesn</label>
+
+                                    <input type="submit" id="delete-user" value="Verwijder gebruiker">
+                                    <input type="submit" id="cancel" value="Annuleer">
+                                    <input type="submit" id="change" value="Pas aan">
+                                    
+                                </form>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>

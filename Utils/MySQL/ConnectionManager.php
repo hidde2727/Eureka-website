@@ -53,6 +53,11 @@ class ConnectionManager {
         $hexID = bin2hex($sessionID);
         $statement->execute();
     }
+    function DeleteUser($username) {
+        $statement = $this->connection->prepare("DELETE FROM users WHERE username=?");
+        $statement->bind_param("s", $username);
+        $statement->execute();
+    }
 
     function IsTableEmpty($tableName) {
         $result = $this->connection->execute_query("SELECT CASE WHEN EXISTS(SELECT 1 FROM $tableName) THEN 0 ELSE 1 END");
@@ -110,6 +115,9 @@ class ConnectionManager {
         $statement->execute();
         $result = $statement->get_result();
         return $result->num_rows == 0 ? null : $result->fetch_assoc();
+    }
+    function GetAllUserData() {
+        return $this->connection->query("SELECT * FROM users")->fetch_all(MYSQLI_ASSOC);
     }
 
 }

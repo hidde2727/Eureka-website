@@ -127,7 +127,7 @@ body {
     overflow: visible;
     
     min-height: calc(100vh - 30px);
-    height: 1px;
+    height: auto;
 }
 .content-window > * {
     padding-left: 39px;
@@ -319,7 +319,6 @@ body {
 #suggestions input:not(.link *):focus {
     outline: none;
     border: 2px solid light-dark(#555, #aaa);
-    
 }
 #suggestions textarea::placeholder {
     color: light-dark(#777, #888);
@@ -600,7 +599,7 @@ body {
 
     padding: 10px;
 
-    max-width: 300px;
+    max-width: 310px;
 
     margin: 0px 10px 10px 0px;
 }
@@ -660,5 +659,149 @@ body {
     border: 2px solid light-dark(#555, #aaa);
 }
 #logged-in-window p {
+    display: inline-block;
     margin: 5px 0px 5px 0px;
+}
+#logged-in-window i {
+    display: inline-block;
+    font-size: 2rem;
+    vertical-align: middle;
+}
+
+#modify-users {
+    max-height: 305px;
+    height: 100vh;
+}
+#modify-users .hide-overflow {
+    overflow-x: hidden;
+
+    height: 100%;
+}
+#logged-in-window .user {
+    padding: 10px;
+    margin: 0px 20px 0px 20px;
+    border-top: 2px solid light-dark(#aaa, #555);
+
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+
+    top: 0px;
+}
+#modify-users h2 {
+    margin-bottom: -1.5px;
+}
+#logged-in-window .user i:nth-child(1) {
+    display: inline-block;
+    margin: 0px 10px 0px 0px;
+}
+#logged-in-window .user i:nth-child(3) {
+    font-size: 1.25rem;
+    line-height: 2rem;
+}
+
+#logged-in-window .user p {
+    display: inline-block;
+    margin: 0px;
+    line-height: 2rem;
+}
+
+#logged-in-window .next-to-each-other {
+    position: relative;
+
+    display: grid;
+    grid-template-columns: 50% 50%;
+
+    left: 0%;
+    transition: left 1s;
+
+    height: 100%;
+    width: 200%;
+
+    overflow-x: hidden;
+}
+#modify-user-users {
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: light-dark(#aaa, #555);
+}
+#modify-user-screen .user {
+    border: 0px solid rgba(0,0,0,0);
+    margin-bottom: -10px;
+}
+
+#modify-user-screen .slider-toggle {
+    --width: 45px;
+    --height: 24px;
+
+    position: relative;
+    display: inline-block;
+    width: calc(var(--width) + 4px);
+    height: calc(var(--height) + 4px);
+
+    background-color: light-dark(#ccc, #333);
+
+    border-radius: calc(var(--height) / 2);
+
+    transition: border 0.4s, margin 0.4s, background-color .4s;
+
+    top: calc((var(--height)) / 2 - 4px);
+}
+#modify-user-screen .slider-toggle:has(input:checked) {
+    background-color: light-dark(#00712D, #00712D);
+}
+#modify-user-screen .slider-toggle input {
+    width: 0px;
+    height: 0px;
+    opacity: 0;
+    vertical-align: middle;
+}
+#modify-user-screen .slider-toggle .internal-slider {
+    display: inline-block;
+    width: var(--height);
+    height: var(--height);
+    background-color: light-dark(#eee, #111);
+    border-radius: 100%;
+
+    position: absolute;
+    top: 2.5px;
+    left: 4px;
+
+    transition: left .4s, width .4s, height .4s, top .4s, left .4s;
+}
+#modify-user-screen .slider-toggle:has(input:active) .internal-slider {
+    width: calc(var(--height) - 2px);
+    height: calc(var(--height) - 2px);
+
+    top: 3.5px;
+    left: 5px;
+}
+#modify-user-screen .slider-toggle input:checked + .internal-slider {
+    left: calc(var(--width) - var(--height));
+}
+#modify-user-screen label {
+    display: inline-block;
+    font-size: 1rem;
+    color: light-dark(#111, #eee);
+}
+#modify-user-screen #delete-user {
+    background-color: light-dark(#B90E0A, #B90E0A);
+    border: 0px;
+    transition: background-color 1s;
+}
+#modify-user-screen #delete-user:hover {
+    background-color: light-dark(#E3242B, #E3242B);
+}
+#modify-user-screen #cancel {
+    display: inline-block;
+    width: calc(50% - 18px);
+
+    margin: 5px 0px 5px 10px;
+}
+#modify-user-screen #change {
+    display: inline-block;
+    width: calc(50% - 18px);
+
+    margin: 5px 10px 5px 10px;
+    padding: 12px 10px;
 }
