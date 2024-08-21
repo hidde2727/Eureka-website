@@ -687,6 +687,9 @@ body {
 
     top: 0px;
 }
+#logged-in-window .user:nth-child(2) {
+    border: 0px;
+}
 #modify-users h2 {
     margin-bottom: -1.5px;
 }
