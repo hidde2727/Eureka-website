@@ -14,8 +14,6 @@ function PrepareSidebar() {
     const selectedTabName = urlParams.get('tab');
 
     for (var i = 0; i < sidebarTabs.length; i++) {
-      if(sidebarTabs[i].onmousedown != undefined) continue;
-
       sidebarTabs[i].onmouseover = function(){
           var elements = this.getElementsByTagName("p")[0];
           const textSize = this.getElementsByTagName("p")[0].clientWidth;
@@ -24,6 +22,7 @@ function PrepareSidebar() {
       sidebarTabs[i].onmouseleave = function(){
           this.style.width = "var(--sidebar-height)";
       };
+      if(sidebarTabs[i].onmousedown != undefined) continue;
       sidebarTabs[i].onmousedown = function(){
           var mainWindow = document.getElementById("main-content-scroll-animation");
           mainWindow.style.top = "-" + (this.id * 100) + "vh";
@@ -351,7 +350,7 @@ async function Logout() {
   const headers = new Headers();
   headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
   const response = await fetch("/API/LoginRequired/LogOut.php", { credentials: 'same-origin', headers:headers });
-  if(response.ok) window.location.reload();
+  window.location.reload();
 }
 
 // If logged in -------------------------------
