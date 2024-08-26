@@ -355,7 +355,6 @@ async function Logout() {
 
 // If logged in -------------------------------
 
-// Check if the user is logged in
 function GetCookie(cookie) { // Taken from https://www.w3schools.com/js/js_cookies.asp
   let name = cookie + "=";
   let ca = document.cookie.split(';');
@@ -372,6 +371,7 @@ function GetCookie(cookie) { // Taken from https://www.w3schools.com/js/js_cooki
 }
 var loggedIn = false;
 var permissions;
+// Check if the user is logged in
 if(GetCookie("sessionID") != undefined && GetCookie("sessionCredential") != undefined)
   GetUserPermissions();
 
@@ -398,6 +398,7 @@ function CheckLogin() {
   document.getElementById("login-window").style.display = "none";
   document.getElementById("logged-in-window").style.display = "";
 
+  PopulateSuggestionApproval();
   // Check individual permissions
   // Modifying users
   if(permissions["modifyUsers"]) {
@@ -418,6 +419,77 @@ function CheckLogin() {
 
   }
 }
+
+var allSuggestions = new Map();
+async function PopulateSuggestionApproval() {
+  // remove all childs except first one
+  const suggestions = document.getElementById("select-suggestion");
+  while (suggestions.childNodes.length > 5) {
+    suggestions.removeChild(suggestions.lastChild);
+  }
+  try {
+    const headers = new Headers();
+    headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+    const response = await fetch("/API/LoginRequired/GetVotableSuggestions.php", { credentials: 'same-origin', headers:headers });
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`);
+
+    const json = await response.json();
+    for(let i = 0; i < json.length; i++) {
+      var suggestion = document.createElement("div");
+      suggestion.classList.add("suggestion");
+      suggestion.onclick = SelectSuggestion.bind(suggestion, json[i].id, suggestion);
+
+      var innerHTML = '';
+      if(json[i].type == "project") {
+        innerHTML += '<i class="fas fa-wrench fa-fw"></i>';
+        innerHTML += '<p>' + json[i].json.projectName + '</p>';
+      } else if(json[i].type == "inspiration") {
+        innerHTML += '<i class="fas fa-lightbulb fa-fw"></i>';
+        innerHTML += '<p>' + json[i].json.name + '</p>';
+      }
+      innerHTML += '<i class="fas fa-eye fa-fw"></i>';
+
+      suggestion.innerHTML = innerHTML;
+      suggestions.appendChild(suggestion);
+
+      allSuggestions.set(json[i].id, new Object());
+      allSuggestions.get(json[i].id).type = json[i].type;
+      allSuggestions.get(json[i].id).json = json[i].json;
+    }
+  } catch (error) {
+    console.error(error.message);
+  }
+}
+var currentSuggestionBeingModified = null;
+function SelectSuggestion(id, element, event) {
+  var suggestion = allSuggestions.get(id);
+  var popover = document.getElementById("approve-suggestion");
+  popover.innerHTML = "";
+  var innerHTML = "";
+  if(suggestion.type == "project") {
+    innerHTML += '<label>Project naam</label><input type="text" placeholder="Project naam" value="' + suggestion.json.projectName + '">';
+    innerHTML += '<label>Omschrijving</label><textarea placeholder="Omschrijving">' + suggestion.json.projectDescription + '</textarea>';
+    innerHTML += '<label>Links</label>';
+    for(var i = 0; i < suggestion.json.links.length; i++) {
+      innerHTML += '<input type="text" placeholder="Link" value="' + suggestion.json.links[i] + '">';
+    }
+    innerHTML += '<label>Naam voorsteller</label><input type="text" placeholder="Naam voorsteller" value="' + suggestion.json.projectSuggestor + '">';
+    innerHTML += '<label>Email voorsteller</label><input type="text" placeholder="Email voorsteller" value="' + suggestion.json.projectSuggestorEmail + '">';
+    innerHTML += '<input type=submit id="deny" value="Weiger">';
+    innerHTML += '<input type=submit value="Pas aan">';
+    innerHTML += '<input type=submit id="accept" value="Helemaal toppie">';
+  } else if(suggestion.type == "inspiration") {
+
+  }
+  popover.innerHTML = innerHTML;
+  popover.togglePopover();
+  var textareas = popover.getElementsByTagName("textarea");
+  for(var i = 0; i < textareas.length; i++) {
+    AutoGrow(textareas[i]);
+  }
+}
+
 var allUserPermissions = new Map();
 async function PopulateUserModifier() {
   // remove all childs except first one

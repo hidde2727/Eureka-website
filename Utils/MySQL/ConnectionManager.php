@@ -119,6 +119,13 @@ class ConnectionManager {
     function GetAllUserData() {
         return $this->connection->query("SELECT * FROM users")->fetch_all(MYSQLI_ASSOC);
     }
+    function GetVotableRequestsForUser() {
+        $statement = $this->connection->prepare("SELECT * FROM suggestions WHERE id NOT IN(SELECT suggestion_ID FROM suggestionVotes WHERE user_ID=?)");
+        $statement->bind_param("i", $userID);
+        $statement->execute();
+        $result = $statement->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
 
 }
 $MySQLConnection = new ConnectionManager();

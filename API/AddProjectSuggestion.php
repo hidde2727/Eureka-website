@@ -29,6 +29,7 @@ else if(!ctype_digit($_POST['amountLinks']))
 $amountLinks = intval($_POST['amountLinks'], 10);
 
 $links = array_fill(0, $amountLinks, "");
+$combinedLength = 0;
 for($i = 1; $i <= $amountLinks; $i++) {
     if(!isset($_POST['link' . $i]) || empty($_POST['link' . $i]))
         ReturnFault("Specificeer link " . $i);
@@ -39,7 +40,11 @@ for($i = 1; $i <= $amountLinks; $i++) {
     else if(str_contains($_POST['link' . $i], '"'))
         ReturnFault("Link kan niet \" erin hebben");
     $links[$i - 1] = $_POST['link' . $i];
+
+    $combinedLength += strlen($_POST['link' . $i]) + 1;
 }
+if($combinedLength > 65535)
+    ReturnFault("Gecombineerde lengte van linkjes kan niet langer dan 65535 karakters zijn");
 
 if(!isset($_POST['projectSuggestor']) || empty($_POST['projectSuggestor']))
     ReturnFault("Specificeer het persoon die dit voorsteld");
@@ -61,17 +66,17 @@ else if(str_contains($_POST['projectSuggestorEmail'], '"'))
 $projectSuggestorEmail = $_POST['projectSuggestorEmail'];
 
 $json = '{';
-$json .= '"projectName":"' . $projectName . '",';
-$json .= '"projectDescription":"' . $projectDescription . '",';
+$json .= '"projectName":' . json_encode($projectName) . ',';
+$json .= '"projectDescription":' . json_encode($projectDescription) . ',';
 $json .= '"links":[';
 for($i = 0; $i < $amountLinks; $i++) {
     if($i != 0)
         $json .= ',';
-    $json .= '"' . $links[$i] . '"';
+    $json .= json_encode($links[$i]);
 }
 $json .= '],';
-$json .= '"projectSuggestor":"' . $projectSuggestor . '",';
-$json .= '"projectSuggestorEmail":"' . $projectSuggestorEmail . '"';
+$json .= '"projectSuggestor":' . json_encode($projectSuggestor) . ',';
+$json .= '"projectSuggestorEmail":' . json_encode($projectSuggestorEmail) . '';
 $json .= '}';
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Utils/MySQL/ConnectionManager.php";

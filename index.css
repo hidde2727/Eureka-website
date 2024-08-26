@@ -591,6 +591,11 @@ body {
 }
 
 /* User */
+#logged-in-window {
+    column-gap: 20px;
+    column-width: 330px;
+    min-height: calc(100% - 87px);
+}
 #logged-in-window > * {
     position: relative;
 
@@ -599,9 +604,8 @@ body {
 
     padding: 10px;
 
-    max-width: 310px;
-
-    margin: 0px 10px 10px 0px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 #logged-in-window h2 {
     border-bottom: 2px solid light-dark(#aaa, #555);
@@ -619,7 +623,9 @@ body {
     font-size: 0.75rem;
     color: light-dark(#555, #aaa);
 }
-#logged-in-window input {
+#logged-in-window input,
+#logged-in-window textarea,
+#logged-in-window button {
     box-sizing: border-box;
     display: block;
 
@@ -636,16 +642,20 @@ body {
     padding: 12px 20px;
 
     overflow-y: hidden;
+    resize: none;
 }
-#logged-in-window input:focus {
+#logged-in-window input:focus,
+#logged-in-window textarea:focus {
     outline: none;
     border: 2px solid light-dark(#555, #aaa);
 }
-#logged-in-window input::placeholder {
+#logged-in-window input::placeholder,
+#logged-in-window textarea::placeholder {
     color: light-dark(#777, #888);
     opacity: 1;
 }
-#logged-in-window input[type="submit"] {
+#logged-in-window input[type="submit"],
+#logged-in-window button {
     width: calc(100% - 20px);
     margin: 20px 10px 5px 10px;
 }
@@ -655,7 +665,8 @@ body {
 #logged-in-window input[type="submit"]:focus:hover {
     border: 2px solid light-dark(#555, #aaa);
 }
-#logged-in-window input[type="submit"]:hover {
+#logged-in-window input[type="submit"]:hover,
+#logged-in-window button:hover {
     border: 2px solid light-dark(#555, #aaa);
 }
 #logged-in-window p {
@@ -668,8 +679,115 @@ body {
     vertical-align: middle;
 }
 
+#approve-suggestions .suggestion {
+    padding: 10px;
+    margin: 0px 20px 0px 20px;
+    border-top: 2px solid light-dark(#aaa, #555);
+
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+
+    top: 0px;
+}
+#approve-suggestions .suggestion:nth-child(1) {
+    border: 0px;
+}
+#modify-users h2 {
+    margin-bottom: -1.5px;
+}
+#approve-suggestions .suggestion i:nth-child(1) {
+    display: inline-block;
+    margin: 0px 10px 0px 0px;
+}
+#approve-suggestions .suggestion i:nth-child(3) {
+    font-size: 1.25rem;
+    line-height: 2rem;
+}
+#approve-suggestions .suggestion p {
+    display: inline-block;
+    margin: 0px;
+    line-height: 2rem;
+}
+#select-suggestion {
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: light-dark(#aaa, #555);
+
+    max-height: 214px;
+}
+#approve-suggestions .horizontal-break {
+    display: block;
+    margin: 10px;
+}
+#approve-suggestions .horizontal-break p {
+    font-size: 1rem;
+    color: light-dark(#555, #aaa);
+
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+
+    text-align: center;
+}
+#approve-suggestions .horizontal-break p:before {
+    left: -20px;
+}
+#approve-suggestions .horizontal-break p:before,
+#approve-suggestions .horizontal-break p:after {
+    display: inline-block;
+    position: absolute;
+
+    content: "";
+    width: 50%;
+
+    height: 2px;
+    background-color: light-dark(#aaa, #555);
+
+    top: 50%;
+    margin-left: 7px;
+}
+#approve-suggestions button {
+    margin-top: 0px;
+}
+#approve-suggestion::backdrop {
+    backdrop-filter: blur(2px);
+}
+#approve-suggestion {
+    border-radius: 10px;
+
+    background-color: light-dark(#eee, #111);
+
+    border: 2px solid light-dark(#aaa, #555);
+
+    min-width: 100px;
+    min-height: 100px;
+    width: 80vw;
+    max-width: 500px;
+}
+#approve-suggestion input[type="submit"] {
+    display: inline-block;
+    width: calc(33.33% - 20px);;
+}
+#approve-suggestion #deny {
+    background-color: light-dark(#B90E0A, #B90E0A);
+    border: 0px;
+    transition: background-color 1s;
+}
+#approve-suggestion #deny:hover {
+    background-color: light-dark(#E3242B, #E3242B);
+}
+#approve-suggestion #accept {
+    background-color: light-dark(#00712D, #00712D);
+    border: 0px;
+    transition: background-color 1s;
+}
+#approve-suggestion #accept:hover {
+    background-color: light-dark(#3CB043, #3CB043);
+}
+
 #modify-users {
-    max-height: 305px;
+    max-height: 322px;
     height: 100vh;
 }
 #modify-users .hide-overflow {
