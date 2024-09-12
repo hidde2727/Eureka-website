@@ -248,6 +248,35 @@ body {
 .project .project-links a:visited {
     color: light-dark(#111, #eee);
 }
+/* Tutorials */
+#tutorials p {
+    color: light-dark(#555, #aaa);
+    margin: 0px;
+}
+#tutorials .tutorial {
+    border-radius: 5px;
+
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+}
+#tutorials .tutorial i {
+    color: light-dark(#555, #aaa);
+    font-size: 2.5rem;
+    text-align: center;
+    display: block;
+}
+#tutorials .tutorial p {
+    color: light-dark(#111, #eee);
+    text-align: center;
+    display: block;
+    font-size: 1rem;
+}
+#tutorials #folders,
+#tutorials #files {
+    column-gap: 20px;
+    column-width: 100px;
+}
 
 /* Suggestions */
 .split-screen {

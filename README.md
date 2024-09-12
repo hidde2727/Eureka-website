@@ -11,7 +11,6 @@ $dbServername = "localhost";
 $dbUsername = "username";
 $dbPassword = "password";
 $dbDatabase = "databaseName";
-?>
 ```
 
 To setup the server visit www.domainName.xxx/Utils/Setup.php
@@ -23,3 +22,16 @@ PLEASE make sure that after setting things up you limit acces to the Utils folde
 ```
 deny from all
 ```
+
+To use 'Tom's Hoekje' and the inspiration tab you will also need to setup some API keys
+First create a file in the Utils folder called APIKeys.php with this content:
+'''PHP
+<?php
+
+$uploadThingKey="";
+
+$youtubeAPI="";
+
+$urlVerifier="";
+'''
+Then create a account at https://uploadthing.com and put your API key in the '''$uploadThingKey''' variable

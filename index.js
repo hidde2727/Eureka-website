@@ -4,6 +4,9 @@ addEventListener("load", (event) => {
   PrepareSidebar();
   PreparePopup();
   CheckLogin();
+
+  GetProjects();
+  GetTutorials("");
 });
 
 // Sidebar --------------------------------------
@@ -40,7 +43,7 @@ function PrepareSidebar() {
 }
 
 // Projects ----------------------------------
-async function GetProjects() {
+async function GetProjects(location) {
     try {
       const response = await fetch("/Data/Projects.json", { credentials: 'same-origin' });
       if (!response.ok)
@@ -73,7 +76,42 @@ async function GetProjects() {
       console.error(error.message);
     }
 }
-GetProjects();
+// Tutorials ----------------------------------
+async function GetTutorials(location) {
+  try {
+    const response = await fetch("/Data/Tutorials/" + location + "contents.json", { credentials: 'same-origin' });
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`);
+
+    const json = await response.json();
+    const tutorialPage = document.getElementById("tutorials");
+    var folders = document.getElementById("folders");
+    var files  = document.getElementById("files");
+    
+    for(let i = 0; i < json.length; i++) {
+      var tutorial = document.createElement("div");
+      tutorial.classList.add("tutorial");
+
+      var innerHTML = '';
+      if(json[i].type == "folder") innerHTML += '<i class="file-type fas fa-folder"></i>';
+      else if(json[i].type == "txt") innerHTML += '<i class="file-type fas fa-file-alt"></i>';
+      else if(json[i].type == "jpeg") innerHTML += '<i class="file-type fas fa-file-image"></i>';
+      else if(json[i].type == "png") innerHTML += '<i class="file-type fas fa-file-image"></i>';
+      else if(json[i].type == "pdf") innerHTML += '<i class="file-type fas fa-file-pdf"></i>';
+      else if(json[i].type == "docx") innerHTML += '<i class="file-type fas fa-file-word"></i>';
+      else if(json[i].type == "mp4") innerHTML += '<i class="file-type fas fa-file-video"></i>';
+      innerHTML += '<p class="file-name">' + json[i].name + '</p>';
+
+      tutorial.innerHTML = innerHTML;
+      if(json[i].type == "folder")
+        folders.appendChild(tutorial);
+      else
+        files.appendChild(tutorial);
+    }
+  } catch (error) {
+    console.error(error.message);
+  }
+}
 
 // Suggestions ------------------------------
 function AutoGrow(element) {
@@ -408,7 +446,7 @@ function CheckLogin() {
   }
   // Adding files
   if(permissions["addFiles"]) {
-
+    PopulateFileEditor();
   }
   // Modify the inspiration
   if(permissions["modifyInspiration"]) {
@@ -488,6 +526,20 @@ function SelectSuggestion(id, element, event) {
   for(var i = 0; i < textareas.length; i++) {
     AutoGrow(textareas[i]);
   }
+}
+
+async function PopulateFileEditor() {
+  var inspiration = document.getElementById("inspiration");
+  inspiration.ondrop = OnFileDrop;
+  inspiration.ondragover = OnFileDrag;
+}
+function OnFileDrop(ev) {
+  ev.preventDefault();
+  
+}
+function OnFileDrag(ev) {
+  ev.preventDefault();
+
 }
 
 var allUserPermissions = new Map();
