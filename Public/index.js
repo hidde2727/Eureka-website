@@ -189,9 +189,6 @@ function IsValidEMail(email) {
   const res = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
   return res.test(String(email).toLowerCase());
 }
-function ToValidPostString(string) {
-  return new String(string).replaceAll('&', '%26').replaceAll('=', '%3D').replaceAll('+', '%2B');
-}
 function IsASCII(str) {
   return /^[\x00-\x7F]*$/.test(str);
 }
@@ -256,23 +253,23 @@ async function OnProjectSuggestionSubmit() {
   var submitButton = document.getElementById("submit-project-suggestion");
   submitButton.value = "Aan het versturen ...";
 
-  var postBody = "";
-  postBody+="projectName=" + ToValidPostString(projectName) + "&";
-  postBody+="projectDescription=" + ToValidPostString(projectDescription) + "&";
-  postBody+="amountLinks=" + ToValidPostString(amountLinks) + "&";
+  var postBody = "{";
+  postBody+='"projectName":' + JSON.stringify(projectName) + ",";
+  postBody+='"projectDescription":' + JSON.stringify(projectDescription) + ",";
+  postBody+='"amountLinks":' + JSON.stringify(amountLinks) + ",";
   for(var i = 1; i <= amountLinks; i++) {
     var url = document.getElementById("link" + i).value;
     if((new URL(url)).protocol == "")
       url = "https://" + url;
-    postBody+="link" + i + "=" + ToValidPostString(url) + "&";
+    postBody+='"link' + i + '":' + JSON.stringify(url) + ",";
   }
-  postBody+="projectSuggestor=" + ToValidPostString(projectSuggestor) + "&";
-  postBody+="projectSuggestorEmail=" + ToValidPostString(projectSuggestorEMail) + "&";
+  postBody+='"projectSuggestor":' + JSON.stringify(projectSuggestor) + ",";
+  postBody+='"projectSuggestorEmail":' + JSON.stringify(projectSuggestorEMail) + "}";
 
   const headers = new Headers();
-  headers.append("Content-Type", "application/x-www-form-urlencoded");
+  headers.append("Content-Type", "application/json");
 
-  const response = await fetch("/API/AddProjectSuggestion.php", {
+  const response = await fetch("/API/SuggestProject", {
     method: "POST",
     body: postBody,
     headers: headers,
@@ -362,14 +359,15 @@ async function TryLogin() {
   var encrypted = new Uint8Array(await window.crypto.subtle.digest("SHA-256", buffer));
   var base64 = btoa(String.fromCharCode.apply(null, encrypted));
 
-  var postBody = "";
-  postBody+="username=" + ToValidPostString(username) + "&";
-  postBody+="password=" + ToValidPostString(base64);
+  var postBody = JSON.stringify({
+    username: username,
+    password: base64
+  });
 
   const headers = new Headers();
-  headers.append("Content-Type", "application/x-www-form-urlencoded");
+  headers.append("Content-Type", "application/json");
 
-  const response = await fetch("/API/TryLogin.php", {
+  const response = await fetch("/API/Login", {
     method: "POST",
     body: postBody,
     headers: headers
@@ -386,8 +384,8 @@ async function TryLogin() {
 }
 async function Logout() {
   const headers = new Headers();
-  headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
-  const response = await fetch("/API/LoginRequired/LogOut.php", { credentials: 'same-origin', headers:headers });
+  headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
+  await fetch("/API/Private/LogOut", { credentials: 'same-origin', headers:headers });
   window.location.reload();
 }
 
@@ -415,9 +413,9 @@ if(GetCookie("sessionID") != undefined && GetCookie("sessionCredential") != unde
 
 async function GetUserPermissions() {
   const headers = new Headers();
-  headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+  headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
 
-  const response = await fetch("/API/LoginRequired/GetOwnPermissions.php", { credentials: 'same-origin', headers:headers });
+  const response = await fetch("/API/Private/Permission/GetOwn", { credentials: 'same-origin', headers:headers });
   if (!response.ok)
     throw new Error(`Response status: ${response.status}`);
 
@@ -467,8 +465,8 @@ async function PopulateSuggestionApproval() {
   }
   try {
     const headers = new Headers();
-    headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
-    const response = await fetch("/API/LoginRequired/GetVotableSuggestions.php", { credentials: 'same-origin', headers:headers });
+    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
+    const response = await fetch("/API/Private/Suggestion/GetAll", { credentials: 'same-origin', headers:headers });
     if (!response.ok)
       throw new Error(`Response status: ${response.status}`);
 
@@ -551,8 +549,8 @@ async function PopulateUserModifier() {
   }
   try {
     const headers = new Headers();
-    headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
-    const response = await fetch("/API/LoginRequired/GetAllUsersPermissions.php", { credentials: 'same-origin', headers:headers });
+    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
+    const response = await fetch("/API/Private/Permission/GetAll", { credentials: 'same-origin', headers:headers });
     if (!response.ok)
       throw new Error(`Response status: ${response.status}`);
 
@@ -676,16 +674,17 @@ async function AddUser() {
   var submitButton = document.getElementById("add-user-submit");
   submitButton.value = "Aan het versturen ...";
 
-  var postBody = "";
-  postBody+="username=" + ToValidPostString(username) + "&";
-  postBody+="password=" + ToValidPostString(base64);
+  var postBody = JSON.stringify({
+    username: username,
+    password: base64
+  });
 
   const headers = new Headers();
-  headers.append("Content-Type", "application/x-www-form-urlencoded");
-  headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+  headers.append("Content-Type", "application/json");
+  headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
 
-  const response = await fetch("/API/LoginRequired/AddUser.php", {
-    method: "POST",
+  const response = await fetch("/API/Private/User/Add", {
+    method: "PUT",
     body: postBody,
     headers: headers,
     credentials: 'same-origin'
@@ -718,15 +717,17 @@ async function OnModifyUserSubmit(event) {
     if(event.submitter.value == "Verwijder gebruiker") { event.submitter.value = "Zeker weten?"; return; }
     else if(event.submitter.value == "Zeker weten?") { event.submitter.value = "Absoluut zeker?"; return; }
     else if(event.submitter.value == "Absoluut zeker?") { event.submitter.value = "Vernietig!!!"; return; }
-    var postBody = "";
-    postBody+="username=" + ToValidPostString(currentUserBeingModified);
 
+    var postBody = JSON.stringify({
+      username: currentUserBeingModified
+    });
+    
     const headers = new Headers();
-    headers.append("Content-Type", "application/x-www-form-urlencoded");
-    headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+    headers.append("Content-Type", "application/json");
+    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
 
-    const response = await fetch("/API/LoginRequired/DeleteUser.php", {
-      method: "POST",
+    const response = await fetch("/API/Private/User/Delete", {
+      method: "PUT",
       body: postBody,
       headers: headers,
       credentials: 'same-origin'
@@ -737,19 +738,20 @@ async function OnModifyUserSubmit(event) {
   } else if(event.submitter.id == "change") {
     if(document.getElementById("change").style.opacity == "0") return;
 
-    var postBody = "";
-    postBody+="username=" + ToValidPostString(currentUserBeingModified) + "&";
-    postBody+="modifyUsers=" + ToValidPostString(document.getElementById("modify-users-permission").checked ? "1" : "0") + "&";
-    postBody+="addFiles=" + ToValidPostString(document.getElementById("add-files-permission").checked ? "1" : "0") + "&";
-    postBody+="modifyProjects=" + ToValidPostString(document.getElementById("modify-project-permission").checked ? "1" : "0") + "&";
-    postBody+="modifyInspiration=" + ToValidPostString(document.getElementById("modify-inspiration-permission").checked ? "1" : "0");
+    var postBody = JSON.stringify({
+      username: currentUserBeingModified,
+      modifyUsers: document.getElementById("modify-users-permission").checked ? "1" : "0",
+      addFiles: document.getElementById("add-files-permission").checked ? "1" : "0",
+      modifyProjects: document.getElementById("modify-project-permission").checked ? "1" : "0",
+      modifyInspiration: document.getElementById("modify-inspiration-permission").checked ? "1" : "0"
+    });
 
     const headers = new Headers();
-    headers.append("Content-Type", "application/x-www-form-urlencoded");
-    headers.append("sessionCredentialRepeat", GetCookie("sessionCredential"));
+    headers.append("Content-Type", "application/json");
+    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
 
-    const response = await fetch("/API/LoginRequired/GiveUserPermissions.php", {
-      method: "POST",
+    const response = await fetch("/API/Private/Permission/Grant", {
+      method: "PUT",
       body: postBody,
       headers: headers,
       credentials: 'same-origin'

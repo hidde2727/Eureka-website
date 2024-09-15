@@ -1,3 +1,6 @@
 Utils/MySQL/ConnectionData.php
 Data/Private/Pepper.txt
 Utils/APIKeys.php
+
+node_modules/
+Utils/Config.js
