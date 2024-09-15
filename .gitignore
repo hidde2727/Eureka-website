@@ -1,6 +1,5 @@
-Utils/MySQL/ConnectionData.php
 Data/Private/Pepper.txt
-Utils/APIKeys.php
+Data/Private/HMacSecret.txt
 
 node_modules/
 Utils/Config.js

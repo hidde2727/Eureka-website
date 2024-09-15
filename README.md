@@ -32,6 +32,6 @@ Just to be on the safe side, if you are not debugging the application delete the
 
 To use this project in a local enviroment first install nodejs: https://nodejs.org/en/download/prebuilt-installer/current
 
-Next up run, from the main directory with the package.json file, '''npm install'''
+Next up run, from the main directory with the package.json file `npm install`
 
-Then start the server with the '''node server.js''' command
+Then start the server with the `node server.js` command
