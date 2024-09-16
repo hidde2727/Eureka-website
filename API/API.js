@@ -24,7 +24,7 @@ router.post('/Login', async (req, res) => {
         return ReturnError(res, "Gebruikersnaam kan niet langer dan 255 karakters zijn");
     else if (data.username.indexOf('"') > -1)
         return ReturnError(res, "Gebruikersnaam kan niet \" erin hebben");
-    username = data.username;
+    var username = data.username;
 
     if (data.password == undefined)
         return ReturnError(res, "Specificeer een wachtwoord");
@@ -32,7 +32,7 @@ router.post('/Login', async (req, res) => {
         return ReturnError(res, "Wachtwoord moet 44 karakters zijn");
     else if (!validator.isBase64(data.password))
         return ReturnError(res, "Wachtwoord moet base64 encoded zijn");
-    password = data.password;
+    var password = data.password;
 
     if (!Login.ValidatePassword(username, atob(password))) {
         res.status(401);
@@ -58,7 +58,7 @@ router.post('/SuggestProject', async (req, res) => {
         return ReturnError(res, "Project naam kan niet langer dan 255 karakters zijn");
     else if (data.projectName.indexOf('"') > -1)
         return ReturnError(res, "Project naam kan niet \" erin hebben");
-    projectName = data.projectName;
+    var projectName = data.projectName;
 
     if (data.projectDescription == undefined)
         return ReturnError(res, "Specificeer een project omschrijving");
@@ -66,16 +66,16 @@ router.post('/SuggestProject', async (req, res) => {
         return ReturnError(res, "Project omschrijving kan niet langer dan 65535 karakters zijn");
     else if (data.projectDescription.indexOf('"') > -1)
         return ReturnError(res, "Project omschrijving kan niet \" erin hebben");
-    projectDescription = data.projectDescription;
+    var projectDescription = data.projectDescription;
 
     if (data.amountLinks == undefined)
         return ReturnError(res, "Specificeer de hoeveelheid linkjes");
     else if (!Number.isInteger(data.amountLinks))
         return ReturnError(res, "Hoeveelheid linkjes moet een nummer zijn");
-    amountLinks = parseInt(data.amountLinks, 10);
+    var amountLinks = parseInt(data.amountLinks, 10);
 
-    links = [];
-    combinedLength = 0;
+    var links = [];
+    var combinedLength = 0;
     for (var i = 1; i <= amountLinks; i++) {
         if (data["link" + i.toString()] == undefined)
             return ReturnError(res, "Specificeer link " + i);
@@ -98,7 +98,7 @@ router.post('/SuggestProject', async (req, res) => {
         return ReturnError(res, "Persoon die het voorsteld kan niet langer dan 255 karakters zijn");
     else if (data.projectSuggestor.indexOf('"') > -1)
         return ReturnError(res, "Persoon die het voorsteld kan niet \" erin hebben");
-    projectSuggestor = data.projectSuggestor;
+    var projectSuggestor = data.projectSuggestor;
 
     if (data.projectSuggestorEmail == undefined)
         return ReturnError(res, "Specificeer de email van het persoon die dit voorsteld");
@@ -108,14 +108,14 @@ router.post('/SuggestProject', async (req, res) => {
         return ReturnError(res, "Specificeer een valide email");
     else if (data.projectSuggestorEmail.indexOf('"') > -1)
         return ReturnError(res, "Email van het persoon die het voorsteld kan niet \" erin hebben");
-    projectSuggestorEmail = data.projectSuggestorEmail;
+    var projectSuggestorEmail = data.projectSuggestorEmail;
 
     var json = JSON.stringify({
         projectName: projectName,
         projectDescription: projectDescription,
         links: links,
         projectSuggestor: projectSuggestor,
-        projectSuggestorEmail: projectSuggestor
+        projectSuggestorEmail: projectSuggestorEmail
     });
 
     DB.CreateProjectSuggestion(json);

@@ -16,9 +16,11 @@ router.use(async (req, res, next) => {
 const Permission = require('./Permission.js');
 const User = require('./User.js');
 const Suggestion = require('./Suggestion.js');
+const Files = require('./Files.js');
 router.use("/Permission", Permission);
 router.use("/User", User);
 router.use("/Suggestion", Suggestion);
+router.use("/Files", Files);
 
 // General Private API
 router.get("/LogOut", async (req, res) => {

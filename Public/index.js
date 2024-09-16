@@ -1,12 +1,13 @@
 var pageLoaded = false;
-addEventListener("load", (event) => {
+addEventListener("load", async (event) => {
   pageLoaded = true;
   PrepareSidebar();
   PreparePopup();
   CheckLogin();
 
   GetProjects();
-  GetTutorials("");
+  await GetTutorials();
+  PopulateFileNavigation();
 });
 
 // Sidebar --------------------------------------
@@ -77,33 +78,46 @@ async function GetProjects(location) {
     }
 }
 // Tutorials ----------------------------------
-async function GetTutorials(location) {
+var currentFolder = "/";
+{
+  const urlParams = new URLSearchParams(window.location.search);
+  currentFolder = urlParams.get("folder");
+  if(currentFolder == null)
+    currentFolder = "/";
+}
+async function GetTutorials() {
   try {
-    const response = await fetch("/Data/Tutorials/" + location + "contents.json", { credentials: 'same-origin' });
+    const response = await fetch("/Data/Tutorials" + currentFolder + "contents.json", { credentials: 'same-origin' });
     if (!response.ok)
       throw new Error(`Response status: ${response.status}`);
 
     const json = await response.json();
-    const tutorialPage = document.getElementById("tutorials");
     var folders = document.getElementById("folders");
+    folders.innerHTML = "";
     var files  = document.getElementById("files");
+    files.innerHTML = "";
     
     for(let i = 0; i < json.length; i++) {
       var tutorial = document.createElement("div");
       tutorial.classList.add("tutorial");
+      var isFolder = json[i].indexOf('.') == -1;
+      var extension = json[i].split('.').pop();
+      if(isFolder)
+        tutorial.ondblclick = SelectFolder.bind(tutorial, json[i]);
 
       var innerHTML = '';
-      if(json[i].type == "folder") innerHTML += '<i class="file-type fas fa-folder"></i>';
-      else if(json[i].type == "txt") innerHTML += '<i class="file-type fas fa-file-alt"></i>';
-      else if(json[i].type == "jpeg") innerHTML += '<i class="file-type fas fa-file-image"></i>';
-      else if(json[i].type == "png") innerHTML += '<i class="file-type fas fa-file-image"></i>';
-      else if(json[i].type == "pdf") innerHTML += '<i class="file-type fas fa-file-pdf"></i>';
-      else if(json[i].type == "docx") innerHTML += '<i class="file-type fas fa-file-word"></i>';
-      else if(json[i].type == "mp4") innerHTML += '<i class="file-type fas fa-file-video"></i>';
-      innerHTML += '<p class="file-name">' + json[i].name + '</p>';
+      if(isFolder) innerHTML += '<i class="file-type fas fa-folder"></i>';
+      else if(extension == "txt") innerHTML += '<i class="file-type fas fa-file-alt"></i>';
+      else if(extension == "jpeg") innerHTML += '<i class="file-type fas fa-file-image"></i>';
+      else if(extension == "png") innerHTML += '<i class="file-type fas fa-file-image"></i>';
+      else if(extension == "pdf") innerHTML += '<i class="file-type fas fa-file-pdf"></i>';
+      else if(extension == "docx") innerHTML += '<i class="file-type fas fa-file-word"></i>';
+      else if(extension == "mp4") innerHTML += '<i class="file-type fas fa-file-video"></i>';
+      else innerHTML += '<i class="file-type fas fa-file-alt"></i>';
+      innerHTML += '<p class="file-name">' + json[i] + '</p>';
 
       tutorial.innerHTML = innerHTML;
-      if(json[i].type == "folder")
+      if(isFolder)
         folders.appendChild(tutorial);
       else
         files.appendChild(tutorial);
@@ -111,6 +125,42 @@ async function GetTutorials(location) {
   } catch (error) {
     console.error(error.message);
   }
+}
+function SelectFolder(name, ev) {
+  GoToFolder(currentFolder + name + "/");
+}
+function GoToFolder(name) {
+  if(currentFolder == name) return;
+  currentFolder = name;
+  GetTutorials();
+  const urlParams = new URLSearchParams(window.location.search);
+  urlParams.set("folder", currentFolder);
+  history.pushState(null, "", "?"+ urlParams.toString());
+
+  PopulateFileNavigation();
+}
+function PopulateFileNavigation() {
+  // Also contains an empty entry at the start and end, '/foo/bar/'
+  const folders = currentFolder.split('/');
+  folders.pop();
+  var navigationBar = document.getElementById('file-navigation');
+  while(navigationBar.childElementCount >= 2)
+    navigationBar.removeChild(navigationBar.lastChild);
+  var navigatedFolder = "/";
+  folders.forEach((folder, index) => {
+    if(index != 0) {
+      var name = document.createElement("p");
+      name.innerHTML = folder;
+      navigatedFolder += folder + '/';
+      name.onclick = ((folder, ev) => {
+        GoToFolder(folder);
+      }).bind(name, navigatedFolder);
+      navigationBar.appendChild(name);
+    }
+    var splitter = document.createElement("i");
+    splitter.className = "fas fa-greater-than";
+    navigationBar.appendChild(splitter);
+  });
 }
 
 // Suggestions ------------------------------
@@ -527,17 +577,109 @@ function SelectSuggestion(id, element, event) {
 }
 
 async function PopulateFileEditor() {
-  var inspiration = document.getElementById("inspiration");
-  inspiration.ondrop = OnFileDrop;
-  inspiration.ondragover = OnFileDrag;
+  var tutorials = document.getElementById("tutorials");
+  tutorials.ondrop = OnFileDrop;
+  tutorials.ondragover = OnFileDrag;
+  tutorials.ondragenter = OnFileEnter;
+  var dropScreen = document.getElementById("on-file-drag");
+  dropScreen.ondragover = OnFileDrag;
+  dropScreen.ondragleave = OnFileLeave;
+}
+var amountFilesQueued = 0;
+function UploadFile(file, startingPath) {
+  if(file.isDirectory) {
+    // Scan the directory
+    var directoryReader = file.createReader();
+    directoryReader.readEntries((entries) => {
+        entries.forEach((file) => {
+        UploadFile(file, startingPath);
+      });
+    });
+  } 
+  else {
+    // Upload the file
+    amountFilesQueued++;
+
+    file.file(async (fileData) => {
+      fileBinary = (await fileData.bytes());
+      fileBase64 = btoa(String.fromCharCode.apply(null, fileBinary));
+      var postBody = JSON.stringify({
+        filePath: currentFolder + file.fullPath,
+        blob: fileBase64
+      });
+  
+      const headers = new Headers();
+      headers.append("Content-Type", "application/json");
+      headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
+    
+      fetch("/API/Private/Files/Add", {
+        method: "PUT",
+        body: postBody,
+        headers: headers,
+        credentials: 'same-origin'
+      }).then(() => {
+        amountFilesQueued--;
+        if(amountFilesQueued == 0) {
+          // Send the regenIndex request
+          fetch("/API/Private/Files/RegenIndex", {
+            method: "PUT",
+            headers: headers,
+            credentials: 'same-origin'
+          });
+          // Remove the loading screen
+          GetTutorials();
+          OnFileLeave(null);
+        }
+      });
+    })
+  }
 }
 function OnFileDrop(ev) {
   ev.preventDefault();
   
+  var fileDropScreen = document.getElementById("on-file-drag");
+  fileDropScreen.getElementsByTagName("h1")[0].innerHTML = "Even geduld.";
+  fileDropScreen.getElementsByTagName("p")[0].innerHTML = "De files worden nu geupload";
+
+  [...ev.dataTransfer.items].forEach(async (file) => {
+    var entry = file.webkitGetAsEntry();
+    UploadFile(entry, entry.fullPath);
+  });
 }
 function OnFileDrag(ev) {
   ev.preventDefault();
+}
+function OnFileEnter(ev) {
+  ev.preventDefault();
 
+  var fileDropScreen = document.getElementById("on-file-drag");
+  fileDropScreen.getElementsByTagName("h1")[0].innerHTML = "Drop die files!";
+  fileDropScreen.getElementsByTagName("p")[0].innerHTML = "Upload bestanden door ze hier te droppen";
+
+  if(fileDropScreenTransitionTimeout != null) {
+    clearTimeout(fileDropScreenTransitionTimeout);
+    fileDropScreenTransitionTimeout = null;
+  }
+  if(!fileDropScreen.classList.contains("files-hover")) {
+    fileDropScreen.style.display = "flex";
+    // Dirty fix for the transition not working the first time
+    setTimeout(function () {
+      fileDropScreen.classList.add("files-hover");
+    }, 1);
+  }
+}
+var fileDropScreenTransitionTimeout = null;
+function OnFileLeave(ev) {
+  if(ev)
+    ev.preventDefault();
+
+  var fileDropScreen = document.getElementById("on-file-drag");
+  if(fileDropScreen.classList.contains("files-hover")) {
+    fileDropScreen.classList.remove("files-hover");
+    fileDropScreenTransitionTimeout = setTimeout(function () {
+      fileDropScreen.style.display = "none";
+    }, 1000);
+  }
 }
 
 var allUserPermissions = new Map();

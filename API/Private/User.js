@@ -20,7 +20,7 @@ function ReturnError(res, error) {
 }
 
 router.put("/Add", async (req, res) => {
-    data = req.body;
+    var data = req.body;
 
     if(data.username == undefined)
         return ReturnError("Specificeer een gebruikersnaam");
@@ -28,7 +28,7 @@ router.put("/Add", async (req, res) => {
         return ReturnError("Gebruikersnaam kan niet langer dan 255 karakters zijn");
     else if(data.username.indexOf('"') > -1)
         return ReturnError("Gebruikersnaam kan niet \" erin hebben");
-    username = data.username;
+    var username = data.username;
     
     if(data.password == undefined)
         return ReturnError("Specificeer een wachtwoord");
@@ -36,7 +36,7 @@ router.put("/Add", async (req, res) => {
         return ReturnError("Wachtwoord moet 44 karakters zijn");
     else if(!validator.isBase64(data.password))
         return ReturnError("Wachtwoord moet base64 encoded zijn");
-    password = data.password;
+    var password = data.password;
     
     if(await DB.DoesUserExist(username))
         return ReturnError("Gebruikersnaam bestaat al!");
@@ -46,7 +46,7 @@ router.put("/Add", async (req, res) => {
 });
 
 router.put("/Delete", async (req, res) => {
-    data = req.body;
+    var data = req.body;
 
     if(data.username == undefined)
         return ReturnError("Specificeer een gebruikersnaam");
@@ -54,7 +54,7 @@ router.put("/Delete", async (req, res) => {
         return ReturnError("Gebruikersnaam kan niet langer dan 255 karakters zijn");
     else if(data.username.indexOf('"') > -1)
         return ReturnError("Gebruikersnaam kan niet \" erin hebben");
-    username = data.username;
+    var username = data.username;
     
     if((await Login.GetSessionUsername()) == username) return ReturnError("Can't delete self");
     

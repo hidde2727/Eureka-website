@@ -54,7 +54,7 @@ router.put("/Grant", async (req, res) => {
         return ReturnError(res, "Gebruikersnaam kan niet langer dan 255 karakters zijn");
     else if(data.username.indexOf('"') > -1)
         return ReturnError(res, "Gebruikersnaam kan niet \" erin hebben");
-    username = data.username;
+    var username = data.username;
     
     if(await Login.GetSessionUsername() == username) return ReturnError(res, "Can't modify self");
     
@@ -62,25 +62,25 @@ router.put("/Grant", async (req, res) => {
         return ReturnError(res, "Specificeer permissie voor veranderen gebruikers");
     else if(data.modifyUsers != "1" && data.modifyUsers != "0")
         return ReturnError(res, "Permissie moet 1 of 0 zijn");
-    modifyUsers = data.modifyUsers == "1";
+    var modifyUsers = data.modifyUsers == "1";
     
     if(data.addFiles == undefined)
         return ReturnError(res, "Specificeer permissie voor toevoegen files");
     else if(data.addFiles != "1" && data.addFiles != "0")
         return ReturnError(res, "Permissie moet 1 of 0 zijn");
-    addFiles = data.addFiles == "1";
+    var addFiles = data.addFiles == "1";
     
     if(data.modifyProjects == undefined)
         return ReturnError(res, "Specificeer permissie voor veranderen projecten");
     else if(data.modifyProjects != "1" && data.modifyProjects != "0")
         return ReturnError(res, "Permissie moet 1 of 0 zijn");
-    modifyProjects = data.modifyProjects == "1";
+    var modifyProjects = data.modifyProjects == "1";
     
     if(data.modifyInspiration == undefined)
         return ReturnError(res, "Specificeer permissie voor veranderen inspiratie");
     else if(data.modifyInspiration != "1" && data.modifyInspiration != "0")
         return ReturnError(res, "Permissie moet 1 of 0 zijn");
-    modifyInspiration = data.modifyInspiration == "1";
+    var modifyInspiration = data.modifyInspiration == "1";
     
     await Login.GiveUserPermissions(username, modifyUsers, addFiles, modifyInspiration, modifyProjects);
     res.send("Permissies aangepast");

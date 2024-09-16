@@ -128,6 +128,8 @@ body {
     
     min-height: calc(100vh - 30px);
     height: auto;
+
+    position: relative;
 }
 .content-window > * {
     padding-left: 39px;
@@ -259,12 +261,20 @@ body {
     width: 100%;
     height: auto;
     overflow: hidden;
+
+    user-select: none;
+    cursor: pointer;
 }
 #tutorials .tutorial i {
     color: light-dark(#555, #aaa);
     font-size: 2.5rem;
     text-align: center;
     display: block;
+
+    transition: color 0.5s;
+}
+#tutorials .tutorial:hover i {
+    color: light-dark(#333, #ccc);
 }
 #tutorials .tutorial p {
     color: light-dark(#111, #eee);
@@ -276,6 +286,63 @@ body {
 #tutorials #files {
     column-gap: 20px;
     column-width: 100px;
+}
+#tutorials #on-file-drag {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    z-index: 100;
+
+    background-color: light-dark(#eee, #111);
+
+    align-items: center;
+    justify-content: center;
+
+    display: none;
+    opacity: 0;
+
+    transition: opacity 1s;
+}
+#tutorials #on-file-drag.files-hover {
+    opacity: 1;
+}
+#tutorials #on-file-drag * {
+    pointer-events: none;
+}
+#tutorials #file-navigation {
+    border-bottom: 2px solid light-dark(#aaa, #555);
+    margin: -10px 20px 10px 20px;
+    padding: 0px 19px 10px 19px;
+
+    user-select: none;
+}
+#tutorials #file-navigation i {
+    font-size: 1rem;
+    display: inline-block;
+    vertical-align: middle;
+    color: light-dark(#555, #aaa);;
+}
+#tutorials #file-navigation i:first-child {
+    margin-top: -3px;
+    margin-right: 10px;
+    color: light-dark(#111,#eee);
+
+    cursor: pointer;
+}
+#tutorials #file-navigation i:not(:first-child) {
+    font-size: 0.75rem;
+    font-weight: normal;
+}
+#tutorials #file-navigation p {
+    font-size: 1rem;
+    display: inline-block;
+    color: light-dark(#111, #eee);
+    margin: 0px 10px 0px 10px;
+
+    cursor: pointer;
 }
 
 /* Suggestions */
