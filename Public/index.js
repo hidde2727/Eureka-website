@@ -3,13 +3,16 @@ addEventListener("load", async (event) => {
   pageLoaded = true;
   PrepareSidebar();
   PreparePopup();
-  CheckLogin();
 
   GetProjects();
-  GetInspiration();
-  await GetTutorials();
-  PopulateFileNavigation();
-  PopulateSuggestionLabels();
+  (async () => {
+    await CheckLogin();
+    FetchInspiration();
+  })();
+  (async () => {
+    await GetTutorials();
+    PopulateFileNavigation();
+  })();
 });
 
 // Sidebar --------------------------------------
@@ -80,30 +83,34 @@ async function GetProjects(location) {
     }
 }
 // Inspiration --------------------------------
-var inspirationRequest = fetch("/Data/Inspiration.json", { credentials: 'same-origin' });
-async function GetInspiration() {
-  try {
-    const response = await inspirationRequest;
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`);
+function FetchInspiration() {
+  fetch("/Data/Inspiration.json", { credentials: 'same-origin' }).then(async (response) => {
+    if(!response.ok) {
+      console.error(response.status);
+      return;
     }
+    const json = await response.json();
+    if(loggedIn && permissions["modifyInspiration"]) {
+      PopulateInspirationLabels(json);
+    }
+    GetInspiration(json);
+    PopulateSuggestionLabels(json);
+  });
+}
 
+async function GetInspiration(json) {
+  try {
+    
 
-
+  }
   catch(err) {
     console.error(error.message);
   }
 }
 
 // Suggestions --------------------------------
-async function PopulateSuggestionLabels() {
+async function PopulateSuggestionLabels(json) {
   try {
-    const response = await inspirationRequest;
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`);
-
-    const json = await response.json();
-
     var suggestionLabels = document.getElementById("label-selector");
     suggestionLabels.innerHTML = "";
     Object.entries(json.labels).forEach(([category, labelsList]) => {
@@ -618,7 +625,7 @@ function CheckLogin() {
   }
   // Modify the inspiration
   if(permissions["modifyInspiration"]) {
-    PopulateInspirationLabels();
+    
   }
   // Modify the projects
   if(permissions["modifyProjects"]) {
@@ -802,13 +809,8 @@ function OnFileLeave(ev) {
   }
 }
 
-async function PopulateInspirationLabels() {
+async function PopulateInspirationLabels(json) {
   try {
-    const response = await inspirationRequest;
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`);
-
-    const json = await response.json();
     const labelCategories = document.getElementById("label-categories");
     labelCategories.innerHTML = "";
     Object.entries(json.labels).forEach(([category, labelsList]) => {
@@ -875,12 +877,6 @@ async function PopulateInspirationLabels() {
     console.error(err.message);
   }
 }
-async function OnInspirationChange() {
-  inspirationRequest = fetch("/Data/Inspiration.json", { credentials: 'same-origin' });
-  PopulateInspirationLabels();
-  GetInspiration();
-  PopulateSuggestionLabels();
-}
 async function AddCategory() {
   try {
     const categoryName = document.getElementById("new-category-name").value;
@@ -895,7 +891,7 @@ async function AddCategory() {
     if (!response.ok)
       throw new Error(`Response status: ${response.status}`);
 
-    OnInspirationChange();
+    FetchInspiration();
 
   } catch(err) {
     console.error(err.message);
@@ -936,7 +932,7 @@ async function AddLabel(element, categoryName) {
     if (!response.ok)
       throw new Error(`Response status: ${response.status}`);
 
-    OnInspirationChange();
+    FetchInspiration();
 
   } catch(err) {
     console.error(err.message);
