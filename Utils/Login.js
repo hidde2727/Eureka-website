@@ -7,6 +7,9 @@ const DB = require("./DB.js");
 let pepper = null;
 let hmacSecret = null;
 function SetupLoginSystem(forceRegenerate = false) {
+    // Make sure all the correct folders are here
+    if (!fs.existsSync("./Data/")) fs.mkdirSync("./Data");
+    if (!fs.existsSync("./Data/Private")) fs.mkdirSync("./Data/Private");
     // Generate the pepper
     if (fs.existsSync("./Data/Private/Pepper.txt") && !forceRegenerate) {
         pepper = fs.readFileSync("./Data/Private/Pepper.txt");
