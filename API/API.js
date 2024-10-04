@@ -9,6 +9,7 @@ router.use("/Private", PrivateAPI);
 // Public API
 const Login = require('../Utils/Login.js');
 const DB = require('../Utils/DB.js');
+const YT = require('../Utils/YT.js');
 
 function ReturnError(res, error) {
     res.status(400);
@@ -121,6 +122,14 @@ router.post('/SuggestProject', async (req, res) => {
     DB.CreateProjectSuggestion(json);
 
     res.send('Project is aangevraagd!');
+});
+router.put('/RetrieveVideoInfo', async (req, res) => {
+    var data = req.body;
+
+    if (data.videoID == undefined)
+        return ReturnError(res, "Specificeer een videoID");
+
+    res.send(JSON.stringify(await YT.GetGeneralInfo(data.videoID)));
 });
 
 module.exports = router;

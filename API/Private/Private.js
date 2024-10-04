@@ -17,10 +17,12 @@ const Permission = require('./Permission.js');
 const User = require('./User.js');
 const Suggestion = require('./Suggestion.js');
 const Files = require('./Files.js');
+const Inspiration = require('./Inspiration.js');
 router.use("/Permission", Permission);
 router.use("/User", User);
 router.use("/Suggestion", Suggestion);
 router.use("/Files", Files);
+router.use("/Inspiration", Inspiration);
 
 // General Private API
 router.get("/LogOut", async (req, res) => {

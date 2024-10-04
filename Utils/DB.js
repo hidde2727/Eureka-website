@@ -49,11 +49,28 @@ async function CreateSession(id, credential, username) {
         userID
     ]);
 }
+async function CreateCategory(category) {
+    await ExecutePreparedStatement(
+        "INSERT INTO labels (category) VALUES(?)", [
+        category
+    ]);
+}
+async function CreateLabel(category, label, color) {
+    await ExecutePreparedStatement(
+        "INSERT INTO labels (category, name, color) VALUES(?,?,?)", [
+        category,
+        label,
+        color
+    ]);
+}
 async function SetUserPermissions(username, modifyUsers, addFiles, modifyInspiration, modifyProjects) {
     await ExecutePreparedStatement(
         "UPDATE users SET modify_users=?,add_files=?,modify_inspiration=?,modify_projects=? WHERE username=?", [
         modifyUsers, addFiles, modifyInspiration, modifyProjects, username
     ]);
+}
+async function SetLabelName(category, name, newName) {
+    await ExecutePreparedStatement("UPDATE labels SET name=? WHERE (category=? AND name=?)",[newName, category, name]);
 }
 async function DeleteSession(sessionID) {
     await ExecutePreparedStatement("DELETE FROM sessions WHERE id=?", [Buffer.from(sessionID, "utf-8").toString("hex")]);
@@ -65,6 +82,9 @@ async function DeleteUser(username) {
     await ExecutePreparedStatement("DELETE FROM sessions WHERE user_ID=?", [userID]);
     await ExecutePreparedStatement("DELETE FROM suggestion_votes WHERE user_ID=?", [userID]);
     await ExecutePreparedStatement("DELETE FROM users WHERE id=?", [userID]);
+}
+async function DeleteLabel(category, label) {
+    await ExecutePreparedStatement("DELETE FROM labels WHERE (category=? AND name=?)", [category, label]);
 }
 
 async function IsTableEmpty(tableName) {
@@ -82,6 +102,20 @@ async function DoesUserExist(username) {
     var results = await ExecutePreparedStatement(
         "SELECT CASE WHEN EXISTS(SELECT 1 FROM users WHERE username=?) THEN 1 ELSE 0 END AS result",
         [username]
+    );
+    return results[0]['result'] == "1";
+}
+async function DoesCategoryExist(category) {
+    var results = await ExecutePreparedStatement(
+        "SELECT CASE WHEN EXISTS(SELECT 1 FROM labels WHERE category=?) THEN 1 ELSE 0 END AS result",
+        [category]
+    );
+    return results[0]['result'] == "1";
+}
+async function DoesLabelExist(category, label) {
+    var results = await ExecutePreparedStatement(
+        "SELECT CASE WHEN EXISTS(SELECT 1 FROM labels WHERE (category=? AND name=?)) THEN 1 ELSE 0 END AS result",
+        [category, label]
     );
     return results[0]['result'] == "1";
 }
@@ -116,13 +150,19 @@ async function GetVotableRequestsForUser(id) {
     var results = await ExecutePreparedStatement("SELECT * FROM suggestions WHERE id NOT IN(SELECT suggestion_ID FROM suggestion_votes WHERE user_ID=?)", [id]);
     return results;
 }
+async function GetAllLabels() {
+    return await ExecuteStatement("SELECT name,category,color FROM labels ORDER BY name ASC");
+}
+async function GetAllInspiration() {
+    return await ExecuteStatement("SELECT * FROM inspiration");
+}
 
 module.exports = {
     ExecuteStatement, ExecutePreparedStatement,
     InitDatabase, 
-    CreateProjectSuggestion,CreateUser,CreateSession,
-    SetUserPermissions,
-    DeleteSession,DeleteUser,
-    IsTableEmpty,DoesSessionIDExist,DoesUserExist,
-    GetUserPassword,GetSession,GetUserByUsername,GetUser,GetAllUserData,GetVotableRequestsForUser
+    CreateProjectSuggestion,CreateUser,CreateSession,CreateCategory,CreateLabel,
+    SetUserPermissions,SetLabelName,
+    DeleteSession,DeleteUser,DeleteLabel,
+    IsTableEmpty,DoesSessionIDExist,DoesUserExist,DoesCategoryExist,DoesLabelExist,
+    GetUserPassword,GetSession,GetUserByUsername,GetUser,GetAllUserData,GetVotableRequestsForUser,GetAllLabels,GetAllInspiration
 };

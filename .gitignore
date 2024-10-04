@@ -1,7 +1,8 @@
-Data/Private/Pepper.txt
-Data/Private/HMacSecret.txt
+Data/Private/
 
 node_modules/
 Utils/Config.js
 
 Data/Tutorials
+Data/Inspiration.json
+Data/Projects.json

@@ -49,18 +49,18 @@
             <div class="content-wrapper">
                 <div class="content-window" id="tutorials">
                     <h1>TUTORIALS</h1>
-                    <!-- Here the tutorials are inserted by index.js -->
                     <div id="file-navigation">
                         <i class="fas fa-home" onclick="GoToFolder('/')"></i>
                         <i class="fas fa-greater-than"></i>
+                        <!-- Here is the navigation inserted by index.js -->
                     </div>
                     <p>Folders:</p>
                     <div id="folders">
-
+                        <!-- Here the folders are inserted by index.js -->
                     </div>
                     <p>Files:</p>
                     <div id="files">
-
+                        <!-- Here the tutorials are inserted by index.js -->
                     </div>
                     <div id="on-file-drag" display="none"><span><h1>Drop die files!</h1><p>Upload bestanden door ze hier te droppen</p></span></div>
                 </div>
@@ -77,21 +77,23 @@
 
                             <p>Wat is het project?</p>
 
-                            <label for="project-name">Naam*</label>
-                            <input type="text" id="project-name" placeholder="Project naam"><br>
-                            <label for="project-description">Omschrijving*</label>
-                            <textarea placeholder="Een mooie omschrijving..." id="project-description" rows="5" onkeyup="AutoGrow(this)"></textarea><br>
+                            <label class="label-aside" for="project-name">Naam*</label>
+                            <input class="label-aside" type="text" id="project-name" placeholder="Project naam"><br>
+
+                            <label class="label-aside" for="project-description">Omschrijving*</label>
+                            <textarea class="label-aside" placeholder="Een mooie omschrijving..." id="project-description" rows="5" onkeyup="AutoGrow(this)"></textarea><br>
                             
                             <div id="links">
-                                <label class="link-label">Linkjes</label><div class="link"><input type="text" id="link1" placeholder="www.youtube.com"></div>
                                 <i class="plus fas fa-plus-circle fa-fw" onmousedown="AddLinkToSuggestion()"></i>
+                                <label class="label-aside">Linkjes</label>
+                                <div class="iconed label-aside"><input type="text" id="link1" placeholder="www.youtube.com"><i class="fas fa-minus-circle fa-wf"></i></div>
                             </div>
 
                             <p class="where-to-find-you">Hoe houden we je op de hoogte?</p>
-                            <label for="project-suggestor">Naam*</label>
-                            <input type="text" id="project-suggestor" placeholder="Pietje Bakker"><br>
-                            <label for="project-suggestor-email">Email*</label>
-                            <input type="text" id="project-suggestor-email" placeholder="PietjeBakker@usgym.nl">
+                            <label class="label-aside" for="project-suggestor">Naam*</label>
+                            <input class="label-aside" type="text" id="project-suggestor" placeholder="Pietje Bakker"><br>
+                            <label class="label-aside" for="project-suggestor-email">Email*</label>
+                            <input class="label-aside" type="text" id="project-suggestor-email" placeholder="PietjeBakker@usgym.nl">
 
                             <input type="submit" value="Insturen" id="submit-project-suggestion">
 
@@ -103,11 +105,26 @@
                             </div>
 
                         </form>
-                        <form class="inspiration-suggestion">
+                        <form id="inspiration-suggestions" onsubmit="event.preventDefault()">
                             
                             <h2>Geef wat inspiratie</h2>
 
+                            <p>Wat is de url?</p>
 
+                            <input class="label-aside" type="text" id="inspiration-url" placeholder="https://www.youtube.com/watch?v=GFq6wH5JR2A" onkeydown="OnURLKeyDown(this, event)" onblur="OnVideoURLInput(this, event)">
+                            <div id="preview">
+                                <div class="thumbnail"></div>
+                                <div class="bottom-video">
+                                    <span class="channel-thumbnail"></span>
+                                    <span class="channel-info-block"><p class="channel-info"></p><p class="channel-info"></p></span>
+                                </div>
+                            </div>
+                            <p>Waar gaat het over?</p>
+                            <div id="label-selector">
+                                <!-- Here the labels are inserted by index.js -->
+                            </div>
+
+                            <input type="submit" value="Insturen" id="submit-inspiration-suggestion">
 
                         </form>
                     </div>
@@ -120,12 +137,12 @@
                     <h1>LOGGIN</h1>
                     <div id="login-window">
                         <form onsubmit="event.preventDefault(); TryLogin();">
-                            <div class="input">
+                            <div class="iconed">
                                 <label for="username"><i class="fas fa-user-alt"></i></label>
                                 <input type="text" id="username">
                             </div>
 
-                            <div class="input">
+                            <div class="iconed">
                                 <label for="password"><i class="fas fa-lock"></i></label>
                                 <input type="password" id="password">
                             </div>
@@ -151,14 +168,14 @@
 
                             <h2>Nieuwe gebruiker</h2>
 
-                            <label for="new-username">Gebruikersnaam</label>
-                            <input type="text" id="new-username" placeholder="Gebruikersnaam">
+                            <label class="label-above" for="new-username">Gebruikersnaam</label>
+                            <input class="label-above" type="text" id="new-username" placeholder="Gebruikersnaam">
 
-                            <label for="new-password">Wachtwoord</label>
-                            <input type="text" id="new-password" placeholder="Wachtwoord">
+                            <label class="label-above" for="new-password">Wachtwoord</label>
+                            <input class="label-above" type="text" id="new-password" placeholder="Wachtwoord">
 
-                            <label for="new-password-repeat">Herhaal wachtwoord</label>
-                            <input type="text" id="new-password-repeat" placeholder="Herhaal wachtwoord">
+                            <label class="label-above" for="new-password-repeat">Herhaal wachtwoord</label>
+                            <input class="label-above" type="text" id="new-password-repeat" placeholder="Herhaal wachtwoord">
 
                             <div class="popup" id="add-user-wrong"></div>
 
@@ -206,6 +223,16 @@
                                 </form>
                             </div>
                         </div>
+                        </div>
+                        <div id="modify-labels">
+                            <h2>Pas labels aan</h2>
+                            <div id="label-categories">
+                                <!-- index.js will add the labels here -->
+                            </div>
+
+                            <i class="fas fa-plus" onmousedown="AddCategory()"></i>
+                            <input type="text" id="new-category-name" placeholder="Nieuwe categorie">
+                            <div id="delete-draggables" ondrop="OnTrashbinDrop(event)" ondragover="event.preventDefault()" style="height:0px;margin:0px;padding:0px"><i class="fas fa-trash-alt"></i><p>Verwijder</p></div>
                         </div>
                     </div>
                 </div>

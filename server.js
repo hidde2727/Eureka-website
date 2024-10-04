@@ -13,7 +13,9 @@ Login.SetupLoginSystem();
 
 // Static content
 app.use(express.static('Public'));
-app.use('/Data', express.static('Data'));
+app.use('/Data/Inspiration.json', express.static('Data/Inspiration.json'));
+app.use('/Data/Projects.json', express.static('Data/Projects.json'));
+app.use('/Data/Tutorials', express.static('Data/Tutorials'));
 
 // Routing
 app.use(express.json());

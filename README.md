@@ -12,10 +12,15 @@ var config = {
         user:       'test',
         password:   'password',
         database:   'test'
+    },
+    google: {
+        apiKey:     'key'
     }
 };
 module.exports = config;
 ```
+
+Next fill in the database credentials and your youtube API key
 
 To setup the server visit www.domainName.xxx/setup
 

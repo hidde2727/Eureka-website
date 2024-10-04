@@ -6,8 +6,10 @@ addEventListener("load", async (event) => {
   CheckLogin();
 
   GetProjects();
+  GetInspiration();
   await GetTutorials();
   PopulateFileNavigation();
+  PopulateSuggestionLabels();
 });
 
 // Sidebar --------------------------------------
@@ -77,6 +79,121 @@ async function GetProjects(location) {
       console.error(error.message);
     }
 }
+// Inspiration --------------------------------
+var inspirationRequest = fetch("/Data/Inspiration.json", { credentials: 'same-origin' });
+async function GetInspiration() {
+  try {
+    const response = await inspirationRequest;
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`);
+    }
+
+
+
+  catch(err) {
+    console.error(error.message);
+  }
+}
+
+// Suggestions --------------------------------
+async function PopulateSuggestionLabels() {
+  try {
+    const response = await inspirationRequest;
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`);
+
+    const json = await response.json();
+
+    var suggestionLabels = document.getElementById("label-selector");
+    suggestionLabels.innerHTML = "";
+    Object.entries(json.labels).forEach(([category, labelsList]) => {
+      var categoryP = document.createElement("p");
+      categoryP.classList.add("label-aside");
+      categoryP.innerText = category;
+      suggestionLabels.appendChild(categoryP);
+
+      var labels = document.createElement("div");
+      labels.classList.add("labels");
+      labelsList.forEach((labelObject, index) => {
+        if(labelObject.name == null) return;
+        
+        var label = document.createElement("p");
+        label.color = labelObject.color;
+        label.name = labelObject.name;
+        label.selected = false;
+        label.onclick = ToggleLabelSelect.bind(label, label);
+        label.innerText = labelObject.name;
+        label.classList.add("inspiration-label");
+
+        labels.appendChild(label);        
+      });
+      
+      suggestionLabels.appendChild(labels);
+      suggestionLabels.appendChild(document.createElement("br"));
+    });
+
+  } catch(err) {
+    console.error(error.message);
+  }
+}
+function ToggleLabelSelect(label, ev) {
+  if(!label.selected) {
+    label.selected = true;
+    label.style.backgroundColor = "hsl(" + label.color + ",60%, 70%)";
+  } else {
+    label.selected = false;
+    label.style.backgroundColor = "";
+  }
+}
+function OnURLKeyDown(input, ev) {
+  if(ev.keyCode == 13) {
+    ev.preventDefault();
+    input.blur();
+  }
+}
+function OnVideoURLInput(input, ev) {
+  ev.preventDefault();
+  try {
+    var url = new URL(input.value);
+    // Youtube base on: https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
+    if(url.hostname === "youtube.be" || url.hostname === "www.youtube.be") 
+      DisplayYoutubePreview(url.pathname);
+    else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && (url.pathname.indexOf("/embed") == 0 || url.pathname.indexOf("/shorts") == 0))
+      DisplayYoutubePreview(url.pathname.substring(url.pathname.indexOf('/')));
+    else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("v"))
+      DisplayYoutubePreview(url.searchParams.get("v"));
+    else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("vi"))
+      DisplayYoutubePreview(url.searchParams.get("vi"));
+
+  } catch(err) { return; }
+  return;
+}
+async function DisplayYoutubePreview(videoID) {
+  try {
+    if(videoID == "") return;
+
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    const response = await fetch("/API/RetrieveVideoInfo", { 
+      credentials: 'same-origin', 
+      headers:headers, 
+      method: 'PUT', 
+      body:JSON.stringify({"videoID":videoID})
+    });
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`);
+    
+    const json = await response.json();
+
+    const preview = document.getElementById("preview");
+    preview.getElementsByClassName("thumbnail")[0].style.backgroundImage = "url(" + json.thumnnails.medium.url +")";
+    preview.getElementsByClassName("channel-thumbnail")[0].style.backgroundImage = "url(" + json.channelThumbnails.medium.url + ")";
+    preview.getElementsByClassName("channel-info-block")[0].firstChild.innerText = json.title;
+  } catch(err) {
+    console.error(err);
+  }
+}
+
 // Tutorials ----------------------------------
 var currentFolder = "/";
 {
@@ -174,12 +291,15 @@ function AddLinkToSuggestion() {
   var links = document.getElementById("links");
   var addButton = links.lastChild;
 
-  links.insertBefore(document.createElement("label"), addButton);
+  var spacerLabel = document.createElement("label");
+  spacerLabel.classList.add("label-aside");
+  links.insertBefore(spacerLabel, addButton);
 
   var id = (links.childElementCount) / 2;
 
   var div = document.createElement("div");
-  div.classList.add("link");
+  div.classList.add("iconed");
+  div.classList.add("label-aside");
   div.innerHTML = '<input type="text" placeholder="www.youtube.com" id="link' + id + '"><i class="fas fa-minus-circle fa-wf" onmousedown="RemoveSelf(this)"></i>';
 
   links.insertBefore(div, addButton);
@@ -498,7 +618,7 @@ function CheckLogin() {
   }
   // Modify the inspiration
   if(permissions["modifyInspiration"]) {
-
+    PopulateInspirationLabels();
   }
   // Modify the projects
   if(permissions["modifyProjects"]) {
@@ -554,14 +674,14 @@ function SelectSuggestion(id, element, event) {
   popover.innerHTML = "";
   var innerHTML = "";
   if(suggestion.type == "project") {
-    innerHTML += '<label>Project naam</label><input type="text" placeholder="Project naam" value="' + suggestion.json.projectName + '">';
-    innerHTML += '<label>Omschrijving</label><textarea placeholder="Omschrijving">' + suggestion.json.projectDescription + '</textarea>';
-    innerHTML += '<label>Links</label>';
+    innerHTML += '<label class="label-above">Project naam</label><input class="label-above" type="text" placeholder="Project naam" value="' + suggestion.json.projectName + '">';
+    innerHTML += '<label class="label-above">Omschrijving</label><textarea class="label-above" placeholder="Omschrijving">' + suggestion.json.projectDescription + '</textarea>';
+    innerHTML += '<label class="label-above">Links</label>';
     for(var i = 0; i < suggestion.json.links.length; i++) {
-      innerHTML += '<input type="text" placeholder="Link" value="' + suggestion.json.links[i] + '">';
+      innerHTML += '<input class="label-above" type="text" placeholder="Link" value="' + suggestion.json.links[i] + '">';
     }
-    innerHTML += '<label>Naam voorsteller</label><input type="text" placeholder="Naam voorsteller" value="' + suggestion.json.projectSuggestor + '">';
-    innerHTML += '<label>Email voorsteller</label><input type="text" placeholder="Email voorsteller" value="' + suggestion.json.projectSuggestorEmail + '">';
+    innerHTML += '<label class="label-above">Naam voorsteller</label><input class="label-above" type="text" placeholder="Naam voorsteller" value="' + suggestion.json.projectSuggestor + '">';
+    innerHTML += '<label class="label-above">Email voorsteller</label><input class="label-above" type="text" placeholder="Email voorsteller" value="' + suggestion.json.projectSuggestorEmail + '">';
     innerHTML += '<input type=submit id="deny" value="Weiger">';
     innerHTML += '<input type=submit value="Pas aan">';
     innerHTML += '<input type=submit id="accept" value="Helemaal toppie">';
@@ -679,6 +799,233 @@ function OnFileLeave(ev) {
     fileDropScreenTransitionTimeout = setTimeout(function () {
       fileDropScreen.style.display = "none";
     }, 1000);
+  }
+}
+
+async function PopulateInspirationLabels() {
+  try {
+    const response = await inspirationRequest;
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`);
+
+    const json = await response.json();
+    const labelCategories = document.getElementById("label-categories");
+    labelCategories.innerHTML = "";
+    Object.entries(json.labels).forEach(([category, labelsList]) => {
+      var categoryDiv = document.createElement("div");
+      categoryDiv.classList.add("category")
+
+      var topDiv = document.createElement("div");
+      topDiv.className = "top";
+      topDiv.innerHTML = '<i class="fas fa-chevron-right collapse" onmousedown="ToggleCategory(this)"></i><p>' + category + '</p><i class="fas fa-edit edit"></i><i class="fas fa-trash-alt delete"></i>';
+      categoryDiv.appendChild(topDiv);
+
+      var labels = document.createElement("div");
+      labels.classList.add("labels");
+      labelsList.forEach((labelObject, index) => {
+        if(labelObject.name == null) return;
+        
+        var content = document.createElement("p");
+        content.innerText = labelObject.name;
+        content.contentEditable = false;
+        content.ondblclick = OnLabelDoubleClick.bind(content, content);
+        content.onblur = OnLabelEditEnd.bind(content, content);
+        content.onkeydown = OnLabelInput.bind(content, content);
+        content.classList.add("content");
+
+        var label = document.createElement("p");
+        label.classList.add("inspiration-label");
+        label.style.backgroundColor = "hsl(" + labelObject.color + ", 60%, 70%)";
+        label.draggable = "true";
+        label.ondragstart = OnLabelDragStart.bind(label, label);
+        label.ondragend = OnLabelDragEnd.bind(label, label);
+        label.ondblclick = OnLabelDoubleClick.bind(label, label);
+        label.onblur = OnLabelEditEnd.bind(label, label);
+        label.labelName = labelObject.name;
+        label.category = category;
+        label.appendChild(content);
+
+        labels.appendChild(label);
+      });
+      var bottomWidget = document.createElement("div");
+      {
+        addButton = document.createElement("i");
+        addButton.className = "fas fa-plus";
+        addButton.onmousedown = AddLabel.bind(addButton, addButton, category);
+        bottomWidget.appendChild(addButton);
+
+        addInput = document.createElement("input");
+        addInput.type = "text";
+        addInput.placeholder = "Nieuwe label";
+        bottomWidget.appendChild(addInput);
+
+        colorButton = document.createElement("button");
+        colorButton.innerHTML = '<i class="fas fa-sync-alt">';
+        colorButton.onmousedown = RegenerateColor.bind(colorButton, colorButton);
+        RegenerateColor(colorButton);
+        bottomWidget.appendChild(colorButton);
+      }
+      labels.appendChild(bottomWidget);
+      categoryDiv.appendChild(labels);
+
+      labelCategories.appendChild(categoryDiv);
+    });
+
+  } catch(err) {
+    console.error(err.message);
+  }
+}
+async function OnInspirationChange() {
+  inspirationRequest = fetch("/Data/Inspiration.json", { credentials: 'same-origin' });
+  PopulateInspirationLabels();
+  GetInspiration();
+  PopulateSuggestionLabels();
+}
+async function AddCategory() {
+  try {
+    const categoryName = document.getElementById("new-category-name").value;
+    const body = JSON.stringify({"name":categoryName});
+
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
+    const response = await fetch("/API/Private/Inspiration/AddCategory", { method: "PUT", credentials: 'same-origin', headers:headers, body: body });
+
+    document.getElementById("new-category-name").value = "";
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`);
+
+    OnInspirationChange();
+
+  } catch(err) {
+    console.error(err.message);
+  }
+}
+function ToggleCategory(element) {
+  var labels = element.parentElement.parentElement.getElementsByClassName("labels")[0];
+  if(labels.style.maxHeight == "300px") {
+    labels.style.maxHeight = "0px";
+    element.classList.remove("fa-rotate-90");
+  } else {
+    labels.style.maxHeight = "300px";
+    element.classList.add("fa-rotate-90");
+  }
+}
+function RegenerateColor(element) {
+  var oldHue = element.hue == undefined ? -100000 : element.hue;
+  do {
+    element.hue = Math.floor(Math.random() * 360);
+  } while(Math.abs(element.hue - oldHue) < 30);
+  element.style.backgroundColor = "hsl(" + element.hue + ", 60%, 70%)";
+}
+async function AddLabel(element, categoryName) {
+  try {
+    var labelName = element.parentElement.getElementsByTagName("input")[0].value;
+    var hue = element.parentElement.getElementsByTagName("button")[0].hue;
+    if(labelName.length == 0)
+      return;
+  
+    const body = JSON.stringify({"name":labelName, "category":categoryName, "color":hue});
+
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
+    const response = await fetch("/API/Private/Inspiration/AddLabel", { method: "PUT", credentials: 'same-origin', headers:headers, body: body });
+
+    element.parentElement.getElementsByTagName("input")[0].value = "";
+    if (!response.ok)
+      throw new Error(`Response status: ${response.status}`);
+
+    OnInspirationChange();
+
+  } catch(err) {
+    console.error(err.message);
+  }
+}
+function ExpandTrashbin() {
+  var bin = document.getElementById("delete-draggables");
+  bin.style.height = "";
+  bin.style.margin = "";
+  bin.style.padding = "";
+}
+function RetractTrashbin() {
+  var bin = document.getElementById("delete-draggables");
+  bin.style.height = "0px";
+  bin.style.margin = "0";
+  bin.style.padding = "0";
+}
+function OnLabelDoubleClick(element, ev) {
+  ev.stopPropagation();
+
+  element.parentElement.draggable = "";
+  element.contentEditable = true;
+  element.focus();
+  element.oldContent = element.innerText;
+}
+function OnLabelInput(element, ev) {
+  if(ev.keyCode == 13) {
+    ev.preventDefault();
+    element.blur();
+  }
+}
+async function OnLabelEditEnd(element, ev) {
+  element.parentElement.draggable = "true";
+  element.contentEditable = false;
+
+  if(element.oldContent != element.innerText) {
+    try {    
+      var labelName = element.parentElement.labelName;
+      var category = element.parentElement.category;
+      const body = JSON.stringify({"name":labelName, "category":category, "newName":element.innerText});
+  
+      const headers = new Headers();
+      headers.append("Content-Type", "application/json");
+      headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
+      const response = await fetch("/API/Private/Inspiration/EditLabel", { method: "PUT", credentials: 'same-origin', headers:headers, body: body });
+  
+      if (!response.ok)
+        throw new Error(`Response status: ${response.status}`);
+      
+      OnInspirationChange();
+  
+    } catch(err) {
+      console.error(err.message);
+    }
+  }
+}
+var currentDraggedLabel = null;
+function OnLabelDragStart(element, ev) {
+  //ev.preventDefault();
+  ExpandTrashbin();
+  currentDraggedLabel = element;
+}
+function OnLabelDragEnd(element, ev) {
+  //ev.preventDefault();
+  RetractTrashbin();
+  currentDraggedLabel = null;
+}
+
+async function OnTrashbinDrop(ev) {
+  ev.preventDefault();
+  if(currentDraggedLabel != null) {
+    try {    
+      var labelName = currentDraggedLabel.labelName;
+      var category = currentDraggedLabel.category;
+      const body = JSON.stringify({"name":labelName, "category":category});
+  
+      const headers = new Headers();
+      headers.append("Content-Type", "application/json");
+      headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
+      const response = await fetch("/API/Private/Inspiration/DeleteLabel", { method: "PUT", credentials: 'same-origin', headers:headers, body: body });
+  
+      if (!response.ok)
+        throw new Error(`Response status: ${response.status}`);
+      
+      OnInspirationChange();
+  
+    } catch(err) {
+      console.error(err.message);
+    }
   }
 }
 
