@@ -33,6 +33,9 @@ async function ExecutePreparedStatement(statement, values) {
 async function CreateProjectSuggestion(json) {
     await ExecutePreparedStatement("INSERT INTO suggestions (type, json) VALUES(?,?)", ["project", json]);
 }
+async function CreateInspirationSuggestion(json) {
+    await ExecutePreparedStatement("INSERT INTO suggestions (type, json) VALUES(?,?)", ["inspiration", json]);
+}
 async function CreateUser(username, password) {
     await ExecutePreparedStatement("INSERT INTO users (username, password) VALUES(?,UNHEX(?))", [username, Buffer.from(password, "utf-8").toString("hex")]);
 }
@@ -119,8 +122,13 @@ async function DoesLabelExist(category, label) {
     );
     return results[0]['result'] == "1";
 }
-
-
+async function DoesYTVideoExists(url) {
+    var results = await ExecutePreparedStatement(
+        "SELECT CASE WHEN (EXISTS(SELECT 1 FROM suggestions WHERE JSON_UNQUOTE(JSON_EXTRACT(json,'$.videoID'))=?) OR EXISTS(SELECT 1 FROM inspiration WHERE video_ID=?)) THEN 1 ELSE 0 END AS result",
+        [url, url]
+    );
+    return results[0]['result'] == "1";
+}
 async function GetUserPassword(username) {
     var results = await ExecutePreparedStatement("SELECT password FROM users WHERE username=?", [username]);
     return results.length == 0 ? undefined : results[0].password;
@@ -160,9 +168,9 @@ async function GetAllInspiration() {
 module.exports = {
     ExecuteStatement, ExecutePreparedStatement,
     InitDatabase, 
-    CreateProjectSuggestion,CreateUser,CreateSession,CreateCategory,CreateLabel,
+    CreateProjectSuggestion,CreateInspirationSuggestion,CreateUser,CreateSession,CreateCategory,CreateLabel,
     SetUserPermissions,SetLabelName,
     DeleteSession,DeleteUser,DeleteLabel,
-    IsTableEmpty,DoesSessionIDExist,DoesUserExist,DoesCategoryExist,DoesLabelExist,
+    IsTableEmpty,DoesSessionIDExist,DoesUserExist,DoesCategoryExist,DoesLabelExist,DoesYTVideoExists,
     GetUserPassword,GetSession,GetUserByUsername,GetUser,GetAllUserData,GetVotableRequestsForUser,GetAllLabels,GetAllInspiration
 };

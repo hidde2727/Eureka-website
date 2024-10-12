@@ -179,6 +179,11 @@ button.label-above {
 
     margin: 0px 20px 5px 30px;
 }
+.iconed.label-above {
+    box-sizing: border-box;
+    width: calc(100% - 50px);    
+    margin: 0px 20px 5px 30px;
+}
 
 label.label-aside,
 p.label-aside {
@@ -250,6 +255,74 @@ button.label-aside {
 }
 .slider-toggle input:checked + .internal-slider {
     left: calc(var(--width) - var(--height));
+}
+
+/* Additive input list */
+.additive-input-list {
+    position: relative;
+    margin-bottom: 20px;
+}
+.additive-input-list label:nth-child(2) {
+    margin-bottom: -3px;
+}
+.additive-input-list .list-item.label-aside {
+    margin: 0px 20px -4px 4px;
+}
+.additive-input-list .list-item.label-above {
+    margin: 0px 20px -4px 30px;
+}
+.additive-input-list .list-item.label-aside:nth-child(3) {
+    position: relative;
+    left: -4px;
+    margin-bottom: -5px;
+}
+.additive-input-list .list-item input {
+    width: calc(100% - 40px);
+    padding: 12px 20px 12px 20px;
+}
+.additive-input-list .list-item:not(:nth-child(3)):hover input {
+    width: calc(100% - 40px - 38px);
+}
+.additive-input-list .list-item i {
+    flex: 0 0 auto;
+    font-size: 1.5rem;
+    padding: 8px 0px;
+    background-color: light-dark(#B90E0A, #B90E0A);
+    color: light-dark(#eee, #111);
+    width: 38px;
+
+    border-radius: 5px 0px 0px 5px;
+
+    text-align:center;
+
+    transition: background-color 1s;
+}
+.additive-input-list .list-item i:hover {
+    background-color: light-dark(#E3242B, #E3242B);
+}
+.additive-input-list .plus {
+    position: absolute;
+    bottom: -17px;
+    left: calc(30% - 12px);
+
+    font-size: 1.75rem;
+    text-align:center;
+
+    color: light-dark(#00712D, #00712D);
+    background-color: light-dark(#eee, #111);
+    border-radius: 100%;
+
+    padding-top: 4px;
+
+    z-index: 200;
+
+    transition: color 1s;
+}
+.additive-input-list:has(.label-above) .plus {
+    left: 12px;
+}
+.additive-input-list .plus:hover {
+    color: light-dark(#3CB043, #3CB043);
 }
 
 /* Sidebar */
@@ -628,61 +701,6 @@ body {
 #suggestions #links {
     position: relative;
 }
-#suggestions div.iconed {
-    margin: 0px 20px -4px 4px;
-}
-#suggestions div.iconed:nth-child(3) {
-    position: relative;
-    left: -4px;
-    margin-bottom: -5px;
-}
-#suggestions label:nth-child(2) {
-    margin-bottom: -3px;
-}
-#suggestions div.iconed input {
-    width: calc(100% - 40px);
-}
-#suggestions div.iconed:not(:nth-child(3)):hover input {
-    width: calc(100% - 40px - 38px);
-}
-#suggestions div.iconed i {
-    flex: 0 0 auto;
-    font-size: 1.5rem;
-    padding: 8px 0px;
-    background-color: light-dark(#B90E0A, #B90E0A);
-    color: light-dark(#eee, #111);
-    width: 38px;
-
-    border-radius: 5px 0px 0px 5px;
-
-    text-align:center;
-
-    transition: background-color 1s;
-}
-#suggestions div.iconed i:hover {
-    background-color: light-dark(#E3242B, #E3242B);
-}
-#suggestions .plus {
-    position: absolute;
-    bottom: -17px;
-    left: calc(30% - 12px);
-
-    font-size: 1.75rem;
-    text-align:center;
-
-    color: light-dark(#00712D, #00712D);
-    background-color: light-dark(#eee, #111);
-    border-radius: 100%;
-
-    padding-top: 4px;
-
-    z-index: 200;
-
-    transition: color 1s;
-}
-#suggestions .plus:hover {
-    color: light-dark(#3CB043, #3CB043);
-}
 #suggestions .where-to-find-you {
     margin-top: 20px;
     margin-bottom: 5px;
@@ -723,6 +741,7 @@ body {
 
 #inspiration-suggestions {
     min-width: 320px;
+    position: relative;
 }
 #inspiration-suggestions #inspiration-url {
     margin: 0 auto;
@@ -763,9 +782,6 @@ body {
     grid-template-rows: auto;
     align-items: center;
 }
-#inspiration-suggestions .bottom-video > *  {
-
-}
 #inspiration-suggestions .channel-thumbnail {
     aspect-ratio: 1/1;
     height: 36px;
@@ -799,6 +815,35 @@ body {
 #inspiration-suggestions #label-selector p {
     color: light-dark(#111, #eee);
     margin-left: 40px;
+}
+
+#inspiration-succes-page {
+    display: none;
+
+    position: absolute;
+    top: 0px;
+    left: 0px;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: light-dark(#eee, #111);
+    opacity: 0;
+
+    transition: opacity 0.5s;
+
+    z-index: 100000;
+}
+#inspiration-succes-page i {
+    display: block;
+    font-size: 4rem;
+    text-align: center;
+}
+#inspiration-succes-page h2 {
+    margin-top: 50px;
+}
+#inspiration-succes-page p {
+    color: light-dark(#111, #eee);
 }
 
 /* Footer */
@@ -963,7 +1008,7 @@ body {
 }
 #approve-suggestion input[type="submit"] {
     display: inline-block;
-    width: calc(33.33% - 20px);;
+    width: calc(50% - 20px);;
 }
 #approve-suggestion #deny {
     background-color: light-dark(#B90E0A, #B90E0A);

@@ -18,6 +18,7 @@ function ReturnError(res, error) {
 
 router.post('/Login', async (req, res) => {
     var data = req.body;
+    if(data.length > 255+29+14) return ReturnError(res, "Aanvraag te groot");
 
     if (data.username == undefined)
         return ReturnError(res, "Specificeer een gebruikersnaam");
@@ -52,6 +53,7 @@ router.post('/Login', async (req, res) => {
 });
 router.post('/SuggestProject', async (req, res) => {
     var data = req.body;
+    if(data.length > 1000000) return ReturnError(res, "Aanvraag te groot");
 
     if (data.projectName == undefined)
         return ReturnError(res, "Specificeer een project naam");
@@ -122,6 +124,73 @@ router.post('/SuggestProject', async (req, res) => {
     DB.CreateProjectSuggestion(json);
 
     res.send('Project is aangevraagd!');
+});
+
+async function AddYoutubeJSON(json, videoID) {
+    const value = await DB.DoesYTVideoExists(videoID);
+    console.log(value);
+    if(value) throw new Error("YT video already exists");
+
+    const yt = await YT.GetGeneralInfo(videoID);
+    json.videoID = videoID;
+    json.title = yt.title;
+    json.thumbnails = yt.thumbnails;
+    json.channelTitle = yt.channelTitle;
+    json.channelThumbnails = yt.channelThumbnails;
+}
+
+router.post('/SuggestInspiration', async (req, res) => {
+    var data = req.body;
+    if(data.length > 1000000) return ReturnError(res, "Aanvraag te groot");
+
+    if (data.url == undefined)
+        return ReturnError(res, "Specificeer een url");
+    else if (data.url.length > 255)
+        return ReturnError(res, "Url kan niet langer dan 255 karakters zijn");
+    else if(!validator.isURL(data.url))
+        return ReturnError(res, "Url moet valide zijn");
+    var urlString = data.url;
+
+    var labels = [];
+    if(data.labels == undefined)
+        return ReturnError(res, "Specificeer labels");
+    data.labels.forEach((label, index) => {
+        if (label == undefined)
+            return ReturnError(res, "Specificeer label " + index);
+        else if(label.name == undefined)
+            return ReturnError(res, "Specificeer een label naam");
+        else if (label.name.length > 255)
+            return ReturnError(res, "Label naam mag niet langer zijn dan 255 karakters");
+        else if(label.category == undefined)
+            return ReturnError(res, "Specificeer een label categorie");
+        else if(label.category.length > 255)
+            return ReturnError(res, "Label categorie mag niet langer zijn dan 255 karakters");
+        labels.push({"name":label.name, "category":label.category});
+    });
+
+    var json = {
+        url: urlString,
+        labels: labels
+    };
+    // Modify the request if it is from a certain site
+    try {
+        var url = new URL(urlString);
+        // Youtube based on: https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
+        if(url.hostname === "youtube.be" || url.hostname === "www.youtube.be") 
+            await AddYoutubeJSON(json, url.pathname);
+        else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && (url.pathname.indexOf("/embed") == 0 || url.pathname.indexOf("/shorts") == 0))
+            await AddYoutubeJSON(json, url.pathname.substring(url.pathname.indexOf('/')));
+        else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("v"))
+            await AddYoutubeJSON(json, url.searchParams.get("v"));
+        else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("vi"))
+            await AddYoutubeJSON(json, url.searchParams.get("vi"));
+        else
+            return ReturnError(res, "Illegale website string");
+    } catch(err) { console.error(err); return ReturnError(res, "Bestaad al"); }
+
+    DB.CreateInspirationSuggestion(JSON.stringify(json));
+
+    res.send('Inspiratie is aangevraagd!');
 });
 router.put('/RetrieveVideoInfo', async (req, res) => {
     var data = req.body;

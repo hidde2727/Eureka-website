@@ -83,10 +83,10 @@
                             <label class="label-aside" for="project-description">Omschrijving*</label>
                             <textarea class="label-aside" placeholder="Een mooie omschrijving..." id="project-description" rows="5" onkeyup="AutoGrow(this)"></textarea><br>
                             
-                            <div id="links">
-                                <i class="plus fas fa-plus-circle fa-fw" onmousedown="AddLinkToSuggestion()"></i>
+                            <div class="additive-input-list" id="links">
+                                <i class="plus fas fa-plus-circle fa-fw" onmousedown="AddLinkToAdditiveInputList('links', 'ww.youtube.com', true)"></i>
                                 <label class="label-aside">Linkjes</label>
-                                <div class="iconed label-aside"><input type="text" id="link1" placeholder="www.youtube.com"><i class="fas fa-minus-circle fa-wf"></i></div>
+                                <div class="list-item iconed label-aside"><input type="text" class="link1" placeholder="www.youtube.com"><i class="fas fa-minus-circle fa-wf"></i></div>
                             </div>
 
                             <p class="where-to-find-you">Hoe houden we je op de hoogte?</p>
@@ -105,7 +105,7 @@
                             </div>
 
                         </form>
-                        <form id="inspiration-suggestions" onsubmit="event.preventDefault()">
+                        <form id="inspiration-suggestions" onsubmit="event.preventDefault(); SendInspirationSuggestion(this);">
                             
                             <h2>Geef wat inspiratie</h2>
 
@@ -125,6 +125,12 @@
                             </div>
 
                             <input type="submit" value="Insturen" id="submit-inspiration-suggestion">
+
+                            <div id="inspiration-succes-page">
+                                <i class="fas fa-smile"></i>
+                                <h2>Bedankt voor je suggestie!</h2>
+                                <p>We proberen in maximaal een week je suggestie op de site te hebben</p>
+                            </div>
 
                         </form>
                     </div>

@@ -1,8 +1,75 @@
+// General UI functions -------------------------
+function AutoGrow(element) {
+  if (element.scrollHeight > element.clientHeight) {
+    element.style.transition = "height 1s";
+    element.style.height = element.scrollHeight + "px";
+  }
+}
+function RemoveSelfFromAdditiveInputList(self, labelAside=true) {
+  var link = self.parentNode;
+  var label = link.previousSibling;
+
+  link.remove();
+  if(labelAside)
+    label.remove();
+}
+function AddLinkToAdditiveInputList(listID, placeholder, labelAside) {
+  var links = document.getElementById(listID);
+
+  if(labelAside) {
+    var spacerLabel = document.createElement("label");
+    spacerLabel.classList.add("label-aside");
+    links.appendChild(spacerLabel);
+  }
+  var id = (links.childElementCount) / 2;
+
+  var div = document.createElement("div");
+  div.classList.add("iconed");
+  div.classList.add(labelAside?"label-aside":"label-above");
+  div.classList.add("list-item");
+  div.innerHTML = '<input type="text" placeholder="' + placeholder + '" class="link' + id + '"><i class="fas fa-minus-circle fa-wf" onmousedown="RemoveSelfFromAdditiveInputList(this, ' + labelAside + ')"></i>';
+
+  links.appendChild(div);
+}
+function PreparePopups() {
+  document.onmousedown = (event) => {
+    if(event.target.parentNode.classList.contains("popup") || event.target.classList.contains("popup")) 
+      return;
+  
+    var popups = document.getElementsByClassName("popup");
+    for(var i = 0; i < popups.length; i++) {
+      popups[i].style.opacity = "0";
+    }
+    setTimeout(() => {
+      var popups = document.getElementsByClassName("popup");
+      for(var i = 0; i < popups.length; i++) {
+        if(popups[i].style.opacity === "0")
+          popups[i].style.display = "none";
+      }
+    }, 1000);
+  };
+}
+function ShowPopup(popup, atElement, message) {
+  var offsetParent = atElement;
+  var offsetTop = 0;
+  while(offsetParent != popup.parentElement) {
+    var style = getComputedStyle(offsetParent);
+    offsetTop += offsetParent.offsetTop + parseFloat(style.paddingTop, 10) + parseFloat(style.marginTop, 10) + parseFloat(style.borderTop, 10);
+    offsetParent = offsetParent.offsetParent;
+    if(offsetParent.parentElement == undefined) throw new Error("Invalid popup -> atElement isn't a child of the parent of the popup");
+  }
+  popup.style.display = "inline-block";
+  popup.style.top = (offsetTop + atElement.clientHeight - 10) + "px";
+  popup.innerHTML = message;
+  popup.style.opacity = 1;
+}
+
+
 var pageLoaded = false;
 addEventListener("load", async (event) => {
   pageLoaded = true;
   PrepareSidebar();
-  PreparePopup();
+  PreparePopups();
 
   GetProjects();
   (async () => {
@@ -127,6 +194,7 @@ async function PopulateSuggestionLabels(json) {
         var label = document.createElement("p");
         label.color = labelObject.color;
         label.name = labelObject.name;
+        label.category = category;
         label.selected = false;
         label.onclick = ToggleLabelSelect.bind(label, label);
         label.innerText = labelObject.name;
@@ -162,7 +230,7 @@ function OnVideoURLInput(input, ev) {
   ev.preventDefault();
   try {
     var url = new URL(input.value);
-    // Youtube base on: https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
+    // Youtube based on: https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
     if(url.hostname === "youtube.be" || url.hostname === "www.youtube.be") 
       DisplayYoutubePreview(url.pathname);
     else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && (url.pathname.indexOf("/embed") == 0 || url.pathname.indexOf("/shorts") == 0))
@@ -194,8 +262,42 @@ async function DisplayYoutubePreview(videoID) {
 
     const preview = document.getElementById("preview");
     preview.getElementsByClassName("thumbnail")[0].style.backgroundImage = "url(" + json.thumnnails.medium.url +")";
-    preview.getElementsByClassName("channel-thumbnail")[0].style.backgroundImage = "url(" + json.channelThumbnails.medium.url + ")";
+    preview.getElementsByClassName("channel-thumbnail")[0].style.backgroundImage = "url(" + json.channelThumbnails.default.url + ")";
     preview.getElementsByClassName("channel-info-block")[0].firstChild.innerText = json.title;
+  } catch(err) {
+    console.error(err);
+  }
+}
+async function SendInspirationSuggestion(element) {
+  try {
+    const url = document.getElementById("inspiration-url").value;
+    var labels = [];
+    var labelElements = element.getElementsByClassName("inspiration-label");
+    for(var i = 0; i < labelElements.length; i++) {
+      var label = labelElements[i];
+      if(!label.selected) continue;
+      labels.push({"name":label.name,"category":label.category});
+    }
+
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    const response = await fetch("/API/SuggestInspiration", { 
+      credentials: 'same-origin', 
+      headers:headers,
+      method: 'POST',
+      body:JSON.stringify({"url":url, "labels":labels})
+    });
+    
+    var succesPage = document.getElementById("inspiration-succes-page");
+    succesPage.style.display = "inline-block";
+    if (!response.ok) {
+      succesPage.getElementsByTagName("i")[0].className = "fas fa-frown";
+      succesPage.getElementsByTagName("h2")[0].innerHTML = "Oeps";
+      succesPage.getElementsByTagName("p")[0].innerHTML = "Er is iets fout gegaan: " + await response.text();
+    }
+    document.getElementById("project-suggestion").style.overflowY = "hidden";
+    succesPage.style.opacity = "1";
+
   } catch(err) {
     console.error(err);
   }
@@ -288,73 +390,11 @@ function PopulateFileNavigation() {
 }
 
 // Suggestions ------------------------------
-function AutoGrow(element) {
-  if (element.scrollHeight > element.clientHeight) {
-    element.style.transition = "height 1s";
-    element.style.height = element.scrollHeight + "px";
-  }
-}
-function AddLinkToSuggestion() {
-  var links = document.getElementById("links");
-  var addButton = links.lastChild;
-
-  var spacerLabel = document.createElement("label");
-  spacerLabel.classList.add("label-aside");
-  links.insertBefore(spacerLabel, addButton);
-
-  var id = (links.childElementCount) / 2;
-
-  var div = document.createElement("div");
-  div.classList.add("iconed");
-  div.classList.add("label-aside");
-  div.innerHTML = '<input type="text" placeholder="www.youtube.com" id="link' + id + '"><i class="fas fa-minus-circle fa-wf" onmousedown="RemoveSelf(this)"></i>';
-
-  links.insertBefore(div, addButton);
-}
-function RemoveSelf(self) {
-  var link = self.parentNode;
-  var label = link.previousSibling;
-
-  link.remove();
-  label.remove();
-}
-function PreparePopup() {
-  document.onmousedown = (event) => {
-    if(event.target.parentNode.classList.contains("popup") || event.target.classList.contains("popup")) 
-      return;
-  
-    var popups = document.getElementsByClassName("popup");
-    for(var i = 0; i < popups.length; i++) {
-      popups[i].style.opacity = "0";
-    }
-    setTimeout(() => {
-      var popups = document.getElementsByClassName("popup");
-      for(var i = 0; i < popups.length; i++) {
-        if(popups[i].style.opacity === "0")
-          popups[i].style.display = "none";
-      }
-    }, 1000);
-  };
-}
-
 function ShowProjectFaultMessagePopUp(element, message) {
   element.focus();
 
-  var popover = document.getElementById("project-suggestion-wrong");
-  var projectSuggestionPage = document.getElementById("project-suggestion");
-  var offsetParent = element;
-  var offsetTop = 0;
-  while(offsetParent != projectSuggestionPage) {
-    var style = getComputedStyle(offsetParent);
-    offsetTop += offsetParent.offsetTop + parseFloat(style.paddingTop, 10) + parseFloat(style.marginTop, 10) + parseFloat(style.borderTop, 10);
-    offsetParent = offsetParent.offsetParent;
-  }
-  popover.style.display = "inline-block";
-  popover.style.top = (offsetTop + element.clientHeight - 10) + "px";
-  popover.innerHTML = message;
-
-  popover.style.opacity = 1;
-
+  var popup = document.getElementById("project-suggestion-wrong");
+  ShowPopup(popup, element, message);
 }
 function IsValidURL(url) {
   try { 
@@ -391,7 +431,7 @@ async function OnProjectSuggestionSubmit() {
   var usedLink = false;
   var lastFaultyLink = null;
   for(var i = amountLinks; i > 0; i--) {
-    var input = document.getElementById("link" + i);
+    var input = links.getElementsByClassName("link" + i)[0];
     if(input.value)
       usedLink = true;
     if((usedLink && !IsValidURL(input.value) && !IsValidURL("https://" + input.value)) || input.value.length > 255 || input.value.indexOf('"') != -1)
@@ -435,7 +475,7 @@ async function OnProjectSuggestionSubmit() {
   postBody+='"projectDescription":' + JSON.stringify(projectDescription) + ",";
   postBody+='"amountLinks":' + JSON.stringify(amountLinks) + ",";
   for(var i = 1; i <= amountLinks; i++) {
-    var url = document.getElementById("link" + i).value;
+    var url = links.getElementsByClassName("link" + i)[0].value;
     if((new URL(url)).protocol == "")
       url = "https://" + url;
     postBody+='"link' + i + '":' + JSON.stringify(url) + ",";
@@ -659,39 +699,71 @@ async function PopulateSuggestionApproval() {
         innerHTML += '<p>' + json[i].json.projectName + '</p>';
       } else if(json[i].type == "inspiration") {
         innerHTML += '<i class="fas fa-lightbulb fa-fw"></i>';
-        innerHTML += '<p>' + json[i].json.name + '</p>';
+        if(json[i].json.videoID != undefined)
+          innerHTML += '<p>' + json[i].json.title + '</p>';
+        else
+          innerHTML += '<p>' + json[i].json.url + '</p>';
       }
       innerHTML += '<i class="fas fa-eye fa-fw"></i>';
 
       suggestion.innerHTML = innerHTML;
       suggestions.appendChild(suggestion);
 
-      allSuggestions.set(json[i].id, new Object());
-      allSuggestions.get(json[i].id).type = json[i].type;
-      allSuggestions.get(json[i].id).json = json[i].json;
+      allSuggestions.set(json[i].id, json[i]);
     }
   } catch (error) {
     console.error(error.message);
   }
 }
 var currentSuggestionBeingModified = null;
+function AddProject(innerHTML, json, editable) {
+  const editableString = editable?"":" disabled";
+  innerHTML += '<label class="label-above">Project naam</label><input class="label-above" type="text" placeholder="Project naam" value="' + json.projectName + '"' + editableString + '>';
+  innerHTML += '<label class="label-above">Omschrijving</label><textarea class="label-above" placeholder="Omschrijving"' + editableString + '>' + json.projectDescription + '</textarea>';
+
+  if(editable) {
+    innerHTML += '<div class="additive-input-list" id="suggestion-links">';
+    innerHTML += '<i class="plus fas fa-plus-circle fa-fw" onmousedown="AddLinkToAdditiveInputList(\'suggestion-links\', \'www.youtube.com\', false)"></i>';
+  }
+  innerHTML += '<label class="label-above">Linkjes</label>';
+  for(var i = 0; i < json.links.length; i++) {
+    if(editable)
+      innerHTML += '<div class="list-item iconed label-above">';
+    innerHTML += '<input class="link' + i + '" type="text" placeholder="Link" value="' + json.links[i] + '"' + editableString + '>';
+    if(editable)
+      innerHTML += '<i class="fas fa-minus-circle fa-wf" onmousedown="RemoveSelfFromAdditiveInputList(this, false)"></i></div>';
+  }
+  if(editable)
+    innerHTML += "</div>";
+
+  innerHTML += '<label class="label-above">Naam voorsteller</label><input class="label-above" type="text" placeholder="Naam voorsteller" value="' + json.projectSuggestor + '"' + editableString + '>';
+  innerHTML += '<label class="label-above">Email voorsteller</label><input class="label-above" type="text" placeholder="Email voorsteller" value="' + json.projectSuggestorEmail + '"' + editableString + '>';
+  return innerHTML;
+}
+
 function SelectSuggestion(id, element, event) {
   var suggestion = allSuggestions.get(id);
   var popover = document.getElementById("approve-suggestion");
   popover.innerHTML = "";
   var innerHTML = "";
   if(suggestion.type == "project") {
-    innerHTML += '<label class="label-above">Project naam</label><input class="label-above" type="text" placeholder="Project naam" value="' + suggestion.json.projectName + '">';
-    innerHTML += '<label class="label-above">Omschrijving</label><textarea class="label-above" placeholder="Omschrijving">' + suggestion.json.projectDescription + '</textarea>';
-    innerHTML += '<label class="label-above">Links</label>';
-    for(var i = 0; i < suggestion.json.links.length; i++) {
-      innerHTML += '<input class="label-above" type="text" placeholder="Link" value="' + suggestion.json.links[i] + '">';
-    }
-    innerHTML += '<label class="label-above">Naam voorsteller</label><input class="label-above" type="text" placeholder="Naam voorsteller" value="' + suggestion.json.projectSuggestor + '">';
-    innerHTML += '<label class="label-above">Email voorsteller</label><input class="label-above" type="text" placeholder="Email voorsteller" value="' + suggestion.json.projectSuggestorEmail + '">';
-    innerHTML += '<input type=submit id="deny" value="Weiger">';
-    innerHTML += '<input type=submit value="Pas aan">';
-    innerHTML += '<input type=submit id="accept" value="Helemaal toppie">';
+    if(suggestion.suggestionType == "Newproject+change")
+      innerHTML += '<h1>Nieuw project inclusief aanpassingen</h1>';
+    else if(suggestion.suggestionType == "ChangeProject")
+      innerHTML += '<h1>Verandering in project</h1>';
+    else if(suggestion.suggestionType == "Newproject")
+      innerHTML += '<h1>Nieuw project</h1>';
+
+    innerHTML += '<div class="new">';
+    innerHTML = AddProject(innerHTML, suggestion.json, true);
+    innerHTML += '</div>';
+
+    innerHTML += '<div class="original" style="display: none;">'
+    innerHTML = AddProject(innerHTML, suggestion.originalJSON, false);
+    innerHTML += '</div>';
+
+    innerHTML += '<input type=submit id="deny" value="Plaats niet op site">';
+    innerHTML += '<input type=submit id="accept" value="Helemaal toppie, plaats wel">';
   } else if(suggestion.type == "inspiration") {
 
   }

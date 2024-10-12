@@ -6,8 +6,9 @@ const Login = require('./Login.js')
 
 async function Setup() {
     await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/projects.schema", { encoding:"ascii" }));
-    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/inspiration_labels.schema", { encoding:"ascii" }));
+    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/labels.schema", { encoding:"ascii" }));
     await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/inspiration.schema", { encoding:"ascii" }));
+    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/labels_to_inspiration.schema", { encoding:"ascii" }));
     await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/users.schema", { encoding:"ascii" }));
     if(await DB.IsTableEmpty("users")) {
         // Generate default user
