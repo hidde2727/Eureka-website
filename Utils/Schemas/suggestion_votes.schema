@@ -8,10 +8,10 @@ CREATE TABLE IF NOT EXISTS suggestion_votes (
     
     vote_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(inspiration_id) REFERENCES inspiration(id),
-    FOREIGN KEY(project_id) REFERENCES projects(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (inspiration_id) REFERENCES inspiration(uuid),
+    FOREIGN KEY (project_id) REFERENCES projects(uuid),
 
-    INDEX(inspiration_id),
-    INDEX(project_id)
+    INDEX (inspiration_id),
+    INDEX (project_id)
 )

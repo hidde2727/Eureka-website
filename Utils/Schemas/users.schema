@@ -13,7 +13,5 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    INDEX(username, password)
+    INDEX (username, password)
 )
-
-COMMENT ON COLUMN inspiration.password IS 'If NULL this user is an archived user';

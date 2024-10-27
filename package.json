@@ -3,12 +3,9 @@
   "version": "1.0.0",
   "description": "To run this site you only need a server capabel of running nodejs and a mysql database",
   "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",

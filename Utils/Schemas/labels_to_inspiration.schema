@@ -1,9 +1,11 @@
 CREATE TABLE IF NOT EXISTS labels_to_inspiration (
-    label_id INT UNSIGNED NOT NULL PRIMARY KEY,
-    inspiration_id INT UNSIGNED NOT NULL PRIMARY KEY,
+    label_id INT UNSIGNED NOT NULL,
+    inspiration_id INT UNSIGNED NOT NULL,
 
-    FOREIGN KEY(label_id) REFERENCES labels(id),
-    FOREIGN KEY(inspiration_id) REFERENCES inspiration(id),
+    PRIMARY KEY (label_id, inspiration_id),
 
-    INDEX(label_id)
+    FOREIGN KEY (label_id) REFERENCES labels(id),
+    FOREIGN KEY (inspiration_id) REFERENCES inspiration(uuid),
+
+    INDEX (label_id)
 )

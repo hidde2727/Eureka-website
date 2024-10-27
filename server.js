@@ -8,6 +8,8 @@ const Login = require('./Utils/Login.js');
 const app = express();
 const port = 3000; // Change to be port 443 in production ======================================
 
+(async () => {
+
 await DB.CreateConnection();
 Login.SetupLoginSystem();
 await DB.SetupTables();
@@ -15,7 +17,7 @@ if(await DB.IsTableEmpty("users")) {
   // Generate default user (username: admin & password: password)
   const crypto = require('node:crypto');
   await Login.GenerateUser("admin", await crypto.subtle.digest("SHA-256", Buffer.from("password")));
-  await Login.GiveUserPermissions("admin", true, true, true, true);
+  await Login.GiveUserPermissions("admin", true, true, true, true, true);
 }
 
 // Static content
@@ -53,3 +55,5 @@ app.get('/restart', async (req, res) => {
 });
 // Delete along with the Setup.js file
 // !!!! DELETE IN PRODUCTION !!!!!
+
+})()

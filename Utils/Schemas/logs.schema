@@ -1,4 +1,4 @@
-CREATE TABLE logs (
+CREATE TABLE IF NOT EXISTS logs (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
   urgency TINYINT NOT NULL,
@@ -7,8 +7,4 @@ CREATE TABLE logs (
   time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   FULLTEXT(message)
-);
-
-COMMENT ON COLUMN logs.type IS 'project/inspiration 
-addition/removal/edit
-vote or something';
+)

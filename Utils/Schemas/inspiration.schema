@@ -21,12 +21,9 @@ CREATE TABLE IF NOT EXISTS inspiration (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY(next_version) REFERENCES inspiration(uuid),
-    FOREIGN KEY(previous_version) REFERENCES inspiration(uuid),
+    FOREIGN KEY (next_version) REFERENCES inspiration(uuid),
+    FOREIGN KEY (previous_version) REFERENCES inspiration(uuid),
 
-    INDEX(active_version),
-    INDEX(inspiration_ID)
+    INDEX (active_version),
+    INDEX (original_id)
 )
-
-COMMENT ON COLUMN inspiration.type IS 'ytVideo/ytChannel/githubAccount/website';
-COMMENT ON COLUMN inspiration.ID IS 'ytID/githubID/website picture ID';

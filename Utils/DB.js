@@ -14,14 +14,14 @@ async function CreateConnection() {
     await connection.connect();
 }
 async function SetupTables() {
-    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/projects.schema", { encoding:"ascii" }));
-    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/labels.schema", { encoding:"ascii" }));
-    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/inspiration.schema", { encoding:"ascii" }));
-    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/labels_to_inspiration.schema", { encoding:"ascii" }));
-    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/users.schema", { encoding:"ascii" }));
-    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/sessions.schema", { encoding:"ascii" }));
-    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/suggestion_votes.schema", { encoding:"ascii" }));
-    await DB.ExecuteStatement(fs.readFileSync("./Utils/Schemas/logs.schema", { encoding:"ascii" }));
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/projects.schema", { encoding:"ascii" }));
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/labels.schema", { encoding:"ascii" }));
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/inspiration.schema", { encoding:"ascii" }));
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/labels_to_inspiration.schema", { encoding:"ascii" }));
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/users.schema", { encoding:"ascii" }));
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/sessions.schema", { encoding:"ascii" }));
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/suggestion_votes.schema", { encoding:"ascii" }));
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/logs.schema", { encoding:"ascii" }));
 }
 async function ExecuteStatement(statement) {
     return new Promise((resolve, reject)=>{
@@ -39,6 +39,14 @@ async function ExecutePreparedStatement(statement, values) {
         });
     });
 }
+// + ======================================================================== +
+// | Users                                                                    |
+// + ======================================================================== +
+async function IsTableEmpty(tableName) {
+    var results = await ExecuteStatement("SELECT CASE WHEN EXISTS(SELECT 1 FROM " + tableName + ") THEN 0 ELSE 1 END AS result");
+    return results[0]['result'] == "1";
+}
+
 
 // + ======================================================================== +
 // | Users                                                                    |
@@ -300,6 +308,7 @@ async function GetFilteredLogs(includedString, limit, offset) {
 module.exports = {
     ExecuteStatement, ExecutePreparedStatement,
     CreateConnection, SetupTables,
+    IsTableEmpty,
 
     CreateUser, DoesActiveUsernameExist, DeleteUser, DeleteUserWithName, SetUserPermissions, GetUser, GetUserByName, GetAllUsers,
     CreateSession, DoesSessionIDExist, DeleteSession, DeleteInvalidSessions, GetSession,
