@@ -1,10 +1,32 @@
 CREATE TABLE IF NOT EXISTS inspiration (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    type TINYTEXT NOT NULL,
+    uuid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    original_id INT UNSIGNED NOT NULL,
+    active_version BOOL NOT NULL DEFAULT FALSE,
+    votingResult BOOL DEFAULT NULL,
+    next_version INT UNSIGNED DEFAULT NULL,
+    previous_version INT UNSIGNED DEFAULT NULL,
+    
+    version_name TINYTEXT NOT NULL,
+    version_description TINYTEXT NOT NULL,
+
+    type TINYINT NOT NULL,
     name TINYTEXT NOT NULL,
     description TEXT NOT NULL,
-    video_ID TINYTEXT NOT NULL,
-    url TEXT NOT NULL,
-    author TINYTEXT NOT NULL,
-    last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ID TINYTEXT DEFAULT NULL,
+    url TINYTEXT NOT NULL,
+    recommendation1 JSON DEFAULT NULL,
+    recommendation2 JSON DEFAULT NULL,
+    additionInfo JSON NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY(next_version) REFERENCES inspiration(uuid),
+    FOREIGN KEY(previous_version) REFERENCES inspiration(uuid),
+
+    INDEX(active_version),
+    INDEX(inspiration_ID)
 )
+
+COMMENT ON COLUMN inspiration.type IS 'ytVideo/ytChannel/githubAccount/website';
+COMMENT ON COLUMN inspiration.ID IS 'ytID/githubID/website picture ID';

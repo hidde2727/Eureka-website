@@ -1,11 +1,9 @@
 CREATE TABLE IF NOT EXISTS labels_to_inspiration (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    label_id INT UNSIGNED NOT NULL,
-    inspiration_id INT UNSIGNED NOT NULL,
-
-    last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    label_id INT UNSIGNED NOT NULL PRIMARY KEY,
+    inspiration_id INT UNSIGNED NOT NULL PRIMARY KEY,
 
     FOREIGN KEY(label_id) REFERENCES labels(id),
-    FOREIGN KEY(inspiration_id) REFERENCES inspiration(id)
+    FOREIGN KEY(inspiration_id) REFERENCES inspiration(id),
+
+    INDEX(label_id)
 )

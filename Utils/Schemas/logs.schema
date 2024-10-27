@@ -1,0 +1,14 @@
+CREATE TABLE logs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+  urgency TINYINT NOT NULL,
+  type TINYINT NOT NULL,
+  message TINYTEXT NOT NULL,
+  time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  FULLTEXT(message)
+);
+
+COMMENT ON COLUMN logs.type IS 'project/inspiration 
+addition/removal/edit
+vote or something';

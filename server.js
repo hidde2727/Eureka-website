@@ -6,10 +6,17 @@ const DB = require('./Utils/DB.js');
 const Login = require('./Utils/Login.js');
 
 const app = express();
-const port = 3000;
+const port = 3000; // Change to be port 443 in production ======================================
 
-DB.InitDatabase();
+await DB.CreateConnection();
 Login.SetupLoginSystem();
+await DB.SetupTables();
+if(await DB.IsTableEmpty("users")) {
+  // Generate default user (username: admin & password: password)
+  const crypto = require('node:crypto');
+  await Login.GenerateUser("admin", await crypto.subtle.digest("SHA-256", Buffer.from("password")));
+  await Login.GiveUserPermissions("admin", true, true, true, true);
+}
 
 // Static content
 app.use(express.static('Public'));
@@ -43,11 +50,6 @@ app.get('/restart', async (req, res) => {
     console.log(`Server restarted on port ${port}`);
   });
   res.send("Restarted")
-});
-app.get('/setup', async (req, res) => {
-  const Setup = require('./Utils/Setup');
-  await Setup();
-  res.send("Setup done!");
 });
 // Delete along with the Setup.js file
 // !!!! DELETE IN PRODUCTION !!!!!

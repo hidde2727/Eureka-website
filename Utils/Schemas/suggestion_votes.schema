@@ -1,12 +1,17 @@
 CREATE TABLE IF NOT EXISTS suggestion_votes (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    up_or_down_vote BOOL NOT NULL,
+    value TINYINT NOT NULL,
     
-    user_ID INT UNSIGNED NOT NULL,
-    suggestion_ID INT UNSIGNED NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
+    inspiration_id INT UNSIGNED,
+    project_id INT UNSIGNED,
     
-    last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    vote_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY(user_ID) REFERENCES users(id),
-    FOREIGN KEY (suggestion_ID) REFERENCES suggestions(id)
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(inspiration_id) REFERENCES inspiration(id),
+    FOREIGN KEY(project_id) REFERENCES projects(id),
+
+    INDEX(inspiration_id),
+    INDEX(project_id)
 )

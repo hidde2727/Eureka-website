@@ -29,7 +29,7 @@ async function ValidatePassword(username, password) {
     if(!pepper) throw new Error("No pepper generated");
     if(!hmacSecret) throw new Error("No hmac secret generated");
     try {        
-        hashedPassword = await DB.GetUserPassword(username);
+        hashedPassword = (await DB.GetUserByName(username))['password'];
         const hmac = crypto.createHmac("sha256", hmacSecret);
         hmac.update(Buffer.from(password));
         hmac.update(Buffer.from(pepper));
@@ -53,6 +53,7 @@ async function ValidatePassword(username, password) {
 async function GenerateUser(username, password) {
     if(!pepper) throw new Error("No pepper generated");
     if(!hmacSecret) throw new Error("No hmac secret generated");
+    if(await DB.DoesActiveUsernameExist(username)) throw new Error("Username already exists");
 
     const hmac = crypto.createHmac("sha256", hmacSecret);
     hmac.update(Buffer.from(password));
@@ -65,7 +66,7 @@ async function GenerateUser(username, password) {
     await DB.CreateUser(username, hashedPassword);
 }
 async function DeleteUser(username) {
-    await DB.DeleteUser(username);
+    await DB.DeleteUserWithName(username);
 }
 
 async function CreateSession(res, username) {
@@ -97,7 +98,6 @@ async function CheckSession(req, res, repeatRequired = true) {
 
     sessionID = decodeURI(req.cookies.sessionID);
     sessionCredential = decodeURI(req.cookies.sessionCredential);
-    // For some reason when sending the sessioncredentialrepeat via the headers does the client side put an extra URI encodiing over the sessioncredential
     if(repeatRequired && sessionCredential != decodeURIComponent(req.headers["sessioncredentialrepeat"]))
         return RemoveSessionCookies(res);
     sessionUsername = decodeURI(req.cookies.username);
@@ -142,8 +142,8 @@ async function HasUserPermission(permissionName) {
         return false;
     }
 }
-async function GiveUserPermissions(username, modifyUsers, addFiles, modifyInspiration, modifyProjects) {
-    await DB.SetUserPermissions(username, modifyUsers, addFiles, modifyInspiration, modifyProjects);
+async function GiveUserPermissions(username, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles) {
+    await DB.SetUserPermissions(username, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles);
 }
 
 module.exports = {
