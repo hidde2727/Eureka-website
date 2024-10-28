@@ -1,5 +1,4 @@
 const express = require('express');
-const router = express.Router();
 const fs = require('node:fs/promises');
 const path = require("path");
 const validator = require('validator');
@@ -7,8 +6,10 @@ const validator = require('validator');
 const DB = require("../../Utils/DB.js");
 const Login = require("../../Utils/Login.js");
 
+const router = express.Router();
+
 router.use(async (req, res, next) => {
-    if(!(await Login.HasUserPermission("add_files"))) {
+    if(!(await Login.HasUserPermission("modify_files"))) {
         res.status(401);
         res.send("Geen permissie voor dit deel van de API");
         return;

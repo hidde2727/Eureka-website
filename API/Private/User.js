@@ -1,9 +1,10 @@
 const express = require('express');
-const router = express.Router();
 const validator = require('validator');
 
 const DB = require("../../Utils/DB.js");
 const Login = require("../../Utils/Login.js");
+
+const router = express.Router();
 
 router.use(async (req, res, next) => {
     if(!(await Login.HasUserPermission("modify_users"))) {
@@ -26,8 +27,6 @@ router.put("/Add", async (req, res) => {
         return ReturnError("Specificeer een gebruikersnaam");
     else if(data.username.length > 255)
         return ReturnError("Gebruikersnaam kan niet langer dan 255 karakters zijn");
-    else if(data.username.indexOf('"') > -1)
-        return ReturnError("Gebruikersnaam kan niet \" erin hebben");
     var username = data.username;
     
     if(data.password == undefined)
@@ -52,8 +51,6 @@ router.put("/Delete", async (req, res) => {
         return ReturnError("Specificeer een gebruikersnaam");
     else if(data.username.length > 255)
         return ReturnError("Gebruikersnaam kan niet langer dan 255 karakters zijn");
-    else if(data.username.indexOf('"') > -1)
-        return ReturnError("Gebruikersnaam kan niet \" erin hebben");
     var username = data.username;
     
     if((await Login.GetSessionUsername()) == username) return ReturnError("Can't delete self");

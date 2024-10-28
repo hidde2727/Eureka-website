@@ -55,18 +55,18 @@ async function IsTableEmpty(tableName) {
 async function CreateUser(username, password) {
     await ExecutePreparedStatement("INSERT INTO users (username, password) VALUES(?,?)", [username, Buffer.from(password, "ascii").toString("hex")]);
 }
-async function DoesActiveUsernameExist(username) {
+async function DoesUsernameExist(username) {
     var results = await ExecutePreparedStatement(
-        "SELECT CASE WHEN EXISTS(SELECT 1 FROM users WHERE username=? AND NOT password=NULL) THEN 1 ELSE 0 END AS result",
+        "SELECT CASE WHEN EXISTS(SELECT 1 FROM users WHERE username=?) THEN 1 ELSE 0 END AS result",
         [username]
     );
     return results[0]['result'] == "1";
 }
 async function DeleteUser(id) {
-    await ExecutePreparedStatement("UPDATE users SET password=NULL WHERE id=?",[id]);
+    await ExecutePreparedStatement("DELETE users WHERE id=?",[id]);
 }
 async function DeleteUserWithName(username) {
-    await ExecutePreparedStatement("UPDATE users SET password=NULL WHERE username=?",[username]);
+    await ExecutePreparedStatement("DELETE users WHERE username=?",[username]);
 }
 async function SetUserPermissions(id, admin, modify_inspiration_labels, modify_users, modify_settings, modify_files) {
     await ExecutePreparedStatement(
@@ -82,7 +82,7 @@ async function GetUser(id) {
 }
 async function GetUserByName(username) {
     var results = await ExecutePreparedStatement(
-        "SELECT * FROM users WHERE name=? AND NOT password=NULL", [username]
+        "SELECT * FROM users WHERE name=?", [username]
     );
     return results.length == 0 ? undefined : results[0];
 }
@@ -122,7 +122,11 @@ async function GetSession(id) {
 // + ======================================================================== +
 // | Inspiration                                                              |
 // + ======================================================================== +
-async function CreateInspiration(versionName, versionDescription, type, name, description, ID, url, recommendation1, recommendation2, additionInfo, originalID=undefined) {
+async function CreateInspiration(
+    versionName, versionDescription, versionSuggestor, versionSuggestorID, 
+    type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
+    originalID=undefined
+) {
     if(originalID != undefined) {
 
         var previousID = await ExecutePreparedStatement("SELECT id FROM inspiration WHERE original_id=? AND next_version=NULL", [originalID]);
@@ -130,8 +134,10 @@ async function CreateInspiration(versionName, versionDescription, type, name, de
         previousID = previousID[0]['id'];
 
         await ExecutePreparedStatement(
-            "INSERT INTO inspiration (version_name, version_description, type, name, description, ID, url, recommendation1, recommendation2, additionInfo, previous_version, original_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", [
-            versionName, versionDescription, type, name, description, ID, url, recommendation1, recommendation2, additionInfo, previousID, original_id
+            "INSERT INTO inspiration (version_name, version_description, version_suggestor, version_suggestor_id, type, name, description, ID, url, recommendation1, recommendation2, additionInfo, previous_version, original_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", [
+            versionName, versionDescription, versionSuggestor, versionSuggestorID, 
+            type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
+            previousID, original_id
         ]);
         var insertedID = await ExecuteStatement("SELECT LAST_INSERT_ID() AS 'id';");
         if(insertedID.length == 0) throw new Error("Error retrieving the last inserted id");
@@ -141,8 +147,9 @@ async function CreateInspiration(versionName, versionDescription, type, name, de
 
     } else {
 
-        await ExecutePreparedStatement("INSERT INTO inspiration (version_name, version_description, type, name, description, ID, url, recommendation1, recommendation2, additionInfo) VALUES(?,?,?,?,?,?,?,?,?,?)", [
-            versionName, versionDescription, type, name, description, ID, url, recommendation1, recommendation2, additionInfo
+        await ExecutePreparedStatement("INSERT INTO inspiration (version_name, version_description, version_suggestor, version_suggestor_id, type, name, description, ID, url, recommendation1, recommendation2, additionInfo) VALUES(?,?,?,?,?,?,?,?,?,?)", [
+            versionName, versionDescription, versionSuggestor, versionSuggestorID, 
+            type, name, description, ID, url, recommendation1, recommendation2, additionInfo
         ]);
         await ExecuteStatement("UPDATE inspiration SET original_id=uuid WHERE uuid=LAST_INSERT_ID()");
 
@@ -208,7 +215,11 @@ async function GetAllLabels() {
 // + ======================================================================== +
 // | Projects                                                                 |
 // + ======================================================================== +
-async function CreateProject(versionName, versionDescription, name, description, url1, url2, url3, requester, executor, requestEmail, originalID=undefined) {
+async function CreateProject(
+    versionName, versionDescription, versionSuggestor, versionSuggestorID, 
+    name, description, url1, url2, url3, requester, executor, requestEmail, 
+    originalID=undefined
+) {
     if(originalID != undefined) {
 
         var previousID = await ExecutePreparedStatement("SELECT id FROM projects WHERE original_id=? AND next_version=NULL", [originalID]);
@@ -216,8 +227,10 @@ async function CreateProject(versionName, versionDescription, name, description,
         previousID = previousID[0]['id'];
 
         await ExecutePreparedStatement(
-            "INSERT INTO projects (version_name, version_description, name, description, url1, url2, url3, requester, executor, request_email, previous_version, original_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", [
-            versionName, versionDescription, name, description, url1, url2, url3, requester, executor, requestEmail, previousID, original_id
+            "INSERT INTO projects (version_name, version_description, version_suggestor, version_suggestor_id, name, description, url1, url2, url3, requester, executor, request_email, previous_version, original_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [
+            versionName, versionDescription, versionSuggestor, versionSuggestorID, 
+            name, description, url1, url2, url3, requester, executor, requestEmail, 
+            previousID, original_id
         ]);
         var insertedID = await ExecuteStatement("SELECT LAST_INSERT_ID() AS 'id';");
         if(insertedID.length == 0) throw new Error("Error retrieving the last inserted id");
@@ -227,8 +240,9 @@ async function CreateProject(versionName, versionDescription, name, description,
 
     } else {
 
-        await ExecutePreparedStatement("INSERT INTO projects (version_name, version_description, name, description, url1, url2, url3, requester, executor, request_email) VALUES(?,?,?,?,?,?,?,?,?,?)", [
-            versionName, versionDescription, name, description, url1, url2, url3, requester, executor, requestEmail
+        await ExecutePreparedStatement("INSERT INTO projects (version_name, version_description, version_suggestor, version_suggestor_id, name, description, url1, url2, url3, requester, executor, request_email) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", [
+            versionName, versionDescription, versionSuggestor, versionSuggestorID,
+            name, description, url1, url2, url3, requester, executor, requestEmail
         ]);
         await ExecuteStatement("UPDATE projects SET original_id=uuid WHERE uuid=LAST_INSERT_ID()");
 
@@ -304,18 +318,27 @@ async function GetFilteredLogs(includedString, limit, offset) {
     return results.length == 0 ? undefined : results;
 }
 
+const InspirationTypes = Object.freeze({
+    YT_Video: 0,
+    YT_Channel: 1,
+    Github_account: 2,
+    Github_repository: 3,
+    Website: 4,
+});
 
 module.exports = {
     ExecuteStatement, ExecutePreparedStatement,
     CreateConnection, SetupTables,
     IsTableEmpty,
 
-    CreateUser, DoesActiveUsernameExist, DeleteUser, DeleteUserWithName, SetUserPermissions, GetUser, GetUserByName, GetAllUsers,
+    CreateUser, DoesUsernameExist, DeleteUser, DeleteUserWithName, SetUserPermissions, GetUser, GetUserByName, GetAllUsers,
     CreateSession, DoesSessionIDExist, DeleteSession, DeleteInvalidSessions, GetSession,
     CreateInspiration, SetInspirationAsActive, GetInspiration, GetAllActiveInspirationWithLabels, GetAllActiveInspiration,
     CreateCategory, CreateLabel, AddLabelToInspiration, DeleteLabelFromInspiration, DeleteCategory, DeleteLabel, GetAllLabels,
     CreateProject, SetProjectAsActive, GetProject, GetAllActiveProjects,
     CreateInspirationVote, GetInspirationVotes, AcceptInspiration, DenyInspiration,
     CreateProjectVote, GetProjectVotes, AcceptProject, DenyProject,
-    CreateLog, GetAllLogs, GetFilteredLogs
+    CreateLog, GetAllLogs, GetFilteredLogs,
+
+    InspirationTypes, 
 };

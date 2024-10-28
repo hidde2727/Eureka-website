@@ -53,7 +53,7 @@ async function ValidatePassword(username, password) {
 async function GenerateUser(username, password) {
     if(!pepper) throw new Error("No pepper generated");
     if(!hmacSecret) throw new Error("No hmac secret generated");
-    if(await DB.DoesActiveUsernameExist(username)) throw new Error("Username already exists");
+    if(await DB.DoesUsernameExist(username)) throw new Error("Username already exists");
 
     const hmac = crypto.createHmac("sha256", hmacSecret);
     hmac.update(Buffer.from(password));

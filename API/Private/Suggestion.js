@@ -1,8 +1,9 @@
 const express = require('express');
-const router = express.Router();
 
 const DB = require("../../Utils/DB.js");
 const Login = require("../../Utils/Login.js");
+
+const router = express.Router();
 
 function GetById(suggestions, id) {
     for(var [key, value] of suggestions) {
