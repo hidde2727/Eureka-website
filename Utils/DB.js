@@ -14,19 +14,22 @@ async function CreateConnection() {
     await connection.connect();
 }
 async function SetupTables() {
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/users.schema", { encoding:"ascii" }));
+    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/sessions.schema", { encoding:"ascii" }));
     await ExecuteStatement(fs.readFileSync("./Utils/Schemas/projects.schema", { encoding:"ascii" }));
     await ExecuteStatement(fs.readFileSync("./Utils/Schemas/labels.schema", { encoding:"ascii" }));
     await ExecuteStatement(fs.readFileSync("./Utils/Schemas/inspiration.schema", { encoding:"ascii" }));
     await ExecuteStatement(fs.readFileSync("./Utils/Schemas/labels_to_inspiration.schema", { encoding:"ascii" }));
-    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/users.schema", { encoding:"ascii" }));
-    await ExecuteStatement(fs.readFileSync("./Utils/Schemas/sessions.schema", { encoding:"ascii" }));
     await ExecuteStatement(fs.readFileSync("./Utils/Schemas/suggestion_votes.schema", { encoding:"ascii" }));
     await ExecuteStatement(fs.readFileSync("./Utils/Schemas/logs.schema", { encoding:"ascii" }));
 }
 async function ExecuteStatement(statement) {
     return new Promise((resolve, reject)=>{
         connection.query(statement, (err, results) => {
-            if (err) throw new Error(statement + "\n" + err);
+            if (err) { 
+                console.error(statement + "\n" + err);
+                reject("MySQL error");
+            }
             return resolve(results);
         });
     });
@@ -34,13 +37,16 @@ async function ExecuteStatement(statement) {
 async function ExecutePreparedStatement(statement, values) {
     return new Promise((resolve, reject)=>{
         connection.query(statement, values, (err, results) => {
-            if (err) throw new Error(statement + "\n" + err);
+            if (err) {
+                console.error(statement + "\n\n" + err + + "\n\nValues:\n\n" + JSON.stringify(values));
+                reject("MySQL error");
+            }
             return resolve(results);
         });
     });
 }
 // + ======================================================================== +
-// | Users                                                                    |
+// | General                                                                  |
 // + ======================================================================== +
 async function IsTableEmpty(tableName) {
     var results = await ExecuteStatement("SELECT CASE WHEN EXISTS(SELECT 1 FROM " + tableName + ") THEN 0 ELSE 1 END AS result");
@@ -53,7 +59,7 @@ async function IsTableEmpty(tableName) {
 // + ======================================================================== +
 // password == NULL if the user is archived
 async function CreateUser(username, password) {
-    await ExecutePreparedStatement("INSERT INTO users (username, password) VALUES(?,?)", [username, Buffer.from(password, "ascii").toString("hex")]);
+    await ExecutePreparedStatement("INSERT INTO users (username, password) VALUES(?,UNHEX(?))", [username, Buffer.from(password, "ascii").toString("hex")]);
 }
 async function DoesUsernameExist(username) {
     var results = await ExecutePreparedStatement(
@@ -68,10 +74,10 @@ async function DeleteUser(id) {
 async function DeleteUserWithName(username) {
     await ExecutePreparedStatement("DELETE users WHERE username=?",[username]);
 }
-async function SetUserPermissions(id, admin, modify_inspiration_labels, modify_users, modify_settings, modify_files) {
+async function SetUserPermissions(id, admin, modify_inspiration_labels, modify_users, modify_settings, modify_files, watch_logs) {
     await ExecutePreparedStatement(
-        "UPDATE users SET admin=?,modify_inspiration_labels=?,modify_users=?,modify_settings=?,modify_files=? WHERE id=?",
-        [admin, modify_inspiration_labels, modify_users, modify_settings, modify_files, id]
+        "UPDATE users SET admin=?,modify_inspiration_labels=?,modify_users=?,modify_settings=?,modify_files=?,watch_logs=? WHERE id=?",
+        [admin, modify_inspiration_labels, modify_users, modify_settings, modify_files, watch_logs, id]
     )
 }
 async function GetUser(id) {
@@ -82,7 +88,7 @@ async function GetUser(id) {
 }
 async function GetUserByName(username) {
     var results = await ExecutePreparedStatement(
-        "SELECT * FROM users WHERE name=?", [username]
+        "SELECT * FROM users WHERE username=?", [username]
     );
     return results.length == 0 ? undefined : results[0];
 }
@@ -96,9 +102,9 @@ async function GetAllUsers() {
 // + ======================================================================== +
 async function CreateSession(id, credential, userID, invalidAt = undefined) {
     if(invalidAt)
-        await ExecutePreparedStatement("INSERT INTO sessions (id, credential, userID, invalidAt) VALUES(?,?,?,?)", [id, credential, userID, invalidAt]);
+        await ExecutePreparedStatement("INSERT INTO sessions (id, credential, user_ID, invalidAt) VALUES(?,?,?,?)", [id, credential, userID, invalidAt]);
     else
-        await ExecutePreparedStatement("INSERT INTO sessions (id, credential, userID) VALUES(?,?,?)", [id, credential, userID]);
+        await ExecutePreparedStatement("INSERT INTO sessions (id, credential, user_ID) VALUES(?,?,?)", [id, credential, userID]);
 }
 async function DoesSessionIDExist(id) {
     var results = await ExecutePreparedStatement(
@@ -134,7 +140,7 @@ async function CreateInspiration(
         previousID = previousID[0]['id'];
 
         await ExecutePreparedStatement(
-            "INSERT INTO inspiration (version_name, version_description, version_suggestor, version_suggestor_id, type, name, description, ID, url, recommendation1, recommendation2, additionInfo, previous_version, original_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", [
+            "INSERT INTO inspiration (version_name, version_description, version_suggestor, version_suggestor_id, type, name, description, ID, url, recommendation1, recommendation2, additionInfo, previous_version, original_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
             previousID, original_id
@@ -147,13 +153,20 @@ async function CreateInspiration(
 
     } else {
 
-        await ExecutePreparedStatement("INSERT INTO inspiration (version_name, version_description, version_suggestor, version_suggestor_id, type, name, description, ID, url, recommendation1, recommendation2, additionInfo) VALUES(?,?,?,?,?,?,?,?,?,?)", [
+        await ExecutePreparedStatement("INSERT INTO inspiration (version_name, version_description, version_suggestor, version_suggestor_id, type, name, description, ID, url, recommendation1, recommendation2, additionInfo, original_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", [
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
-            type, name, description, ID, url, recommendation1, recommendation2, additionInfo
+            type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 0
         ]);
         await ExecuteStatement("UPDATE inspiration SET original_id=uuid WHERE uuid=LAST_INSERT_ID()");
 
     }
+}
+async function DoesInspirationExist(type, ID) {
+    var result = await ExecutePreparedStatement(
+        "SELECT CASE WHEN EXISTS(SELECT 1 FROM inspiration WHERE type=? AND ID=?) THEN 1 ELSE 0 END AS result",
+        [type, ID]
+    );
+    return result[0]['result'] == "1";
 }
 async function SetInspirationAsActive(uuid) {
     // Set all versions to non active
@@ -194,6 +207,14 @@ async function CreateLabel(category, name) {
 }
 async function AddLabelToInspiration(labelID, inspirationUUID) {
     await ExecutePreparedStatement("INSERT INTO labels_to_inspiration (label_id, inspiration_id) VALUES(?,?)", [labelID, inspirationUUID]);
+}
+async function AddLabelsToLastInsertedInspiration(labelIDs) {
+    var query = "INSERT INTO labels_to_inspiration (label_id, inspiration_id) VALUES";
+    for(var i = 0; i < labelIDs.length; i++) {
+        if(i != 0) query += ",";
+        query += "(?,LAST_INSERT_ID())";
+    }
+    await ExecutePreparedStatement(query, labelIDs);
 }
 async function DeleteLabelFromInspiration(labelID, inspirationUUID) {
     await ExecutePreparedStatement("DELETE FROM labels WHERE label_id=? AND inspiration_id=?", [labelID, inspirationUUID]);
@@ -239,10 +260,10 @@ async function CreateProject(
         ExecutePreparedStatement("UPDATE projects WHERE id=? SET next_version=", [previousID, newID]);
 
     } else {
-
-        await ExecutePreparedStatement("INSERT INTO projects (version_name, version_description, version_suggestor, version_suggestor_id, name, description, url1, url2, url3, requester, executor, request_email) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", [
+        await ExecutePreparedStatement(
+            "INSERT INTO projects (version_name, version_description, version_suggestor, version_suggestor_id, name, description, url1, url2, url3, requester, executor, request_email, original_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", [
             versionName, versionDescription, versionSuggestor, versionSuggestorID,
-            name, description, url1, url2, url3, requester, executor, requestEmail
+            name, description, url1, url2, url3, requester, executor, requestEmail, 0
         ]);
         await ExecuteStatement("UPDATE projects SET original_id=uuid WHERE uuid=LAST_INSERT_ID()");
 
@@ -319,6 +340,7 @@ async function GetFilteredLogs(includedString, limit, offset) {
 }
 
 const InspirationTypes = Object.freeze({
+    None: -1,
     YT_Video: 0,
     YT_Channel: 1,
     Github_account: 2,
@@ -327,14 +349,16 @@ const InspirationTypes = Object.freeze({
 });
 
 module.exports = {
+    InspirationTypes,
+    
     ExecuteStatement, ExecutePreparedStatement,
     CreateConnection, SetupTables,
     IsTableEmpty,
 
     CreateUser, DoesUsernameExist, DeleteUser, DeleteUserWithName, SetUserPermissions, GetUser, GetUserByName, GetAllUsers,
     CreateSession, DoesSessionIDExist, DeleteSession, DeleteInvalidSessions, GetSession,
-    CreateInspiration, SetInspirationAsActive, GetInspiration, GetAllActiveInspirationWithLabels, GetAllActiveInspiration,
-    CreateCategory, CreateLabel, AddLabelToInspiration, DeleteLabelFromInspiration, DeleteCategory, DeleteLabel, GetAllLabels,
+    CreateInspiration, DoesInspirationExist, SetInspirationAsActive, GetInspiration, GetAllActiveInspirationWithLabels, GetAllActiveInspiration,
+    CreateCategory, CreateLabel, AddLabelToInspiration, AddLabelsToLastInsertedInspiration, DeleteLabelFromInspiration, DeleteCategory, DeleteLabel, GetAllLabels,
     CreateProject, SetProjectAsActive, GetProject, GetAllActiveProjects,
     CreateInspirationVote, GetInspirationVotes, AcceptInspiration, DenyInspiration,
     CreateProjectVote, GetProjectVotes, AcceptProject, DenyProject,

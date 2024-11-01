@@ -4,11 +4,12 @@ CREATE TABLE IF NOT EXISTS users (
     username TINYTEXT NOT NULL,
     password VARBINARY(255),
 
-    admin BOOL DEFAULT FALSE,
-    modify_inspiration_labels BOOL DEFAULT FALSE,
-    modify_users BOOL DEFAULT FALSE,
-    modify_settings BOOL DEFAULT FALSE,
-    modify_files BOOL DEFAULT FALSE,
+    admin BOOL NOT NULL DEFAULT FALSE,
+    modify_inspiration_labels BOOL NOT NULL DEFAULT FALSE,
+    modify_users BOOL NOT NULL DEFAULT FALSE,
+    modify_settings BOOL NOT NULL DEFAULT FALSE,
+    modify_files BOOL NOT NULL DEFAULT FALSE,
+    watch_logs BOOL NOT NULL DEFAULT FALSE,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

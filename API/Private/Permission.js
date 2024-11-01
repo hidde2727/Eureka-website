@@ -14,7 +14,8 @@ router.get("/GetOwn", async (req, res) => {
         modifyInspirationLabels: userInfo.modify_inspiration_labels, 
         modifyUsers: userInfo.modify_users, 
         modifySettings: userInfo.modify_settings,
-        modifyFiles: userInfo.modify_files
+        modifyFiles: userInfo.modify_files,
+        watchLogs: userInfo.watch_logs
     });
 });
 
@@ -43,7 +44,8 @@ router.get("/GetAll", async (req, res) => {
             modifyInspirationLabels: userInfo[i].modify_inspiration_labels, 
             modifyUsers: userInfo[i].modify_users, 
             modifySettings: userInfo[i].modify_settings,
-            modifyFiles: userInfo[i].modify_files
+            modifyFiles: userInfo[i].modify_files,
+            watchLogs: userInfo[i].watch_logs
         });
     }
     res.json(output);
@@ -91,8 +93,14 @@ router.put("/Grant", async (req, res) => {
     else if(data.modifyFiles != "1" && data.modifyFiles != "0")
         return ReturnError(res, "Permissie moet 1 of 0 zijn");
     var modifyFiles = data.modifyFiles == "1";
+
+    if(data.watchLogs == undefined)
+        return ReturnError(res, "Specificeer permissie voor bekijken logs");
+    else if(data.watchLogs != "1" && data.watchLogs != "0")
+        return ReturnError(res, "Permissie moet 1 of 0 zijn");
+    var watchLogs = data.watchLogs == "1";
     
-    await Login.GiveUserPermissions(username, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles);
+    await Login.GiveUserPermissions(username, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles, watchLogs);
     res.send("Permissies aangepast");
 });
 

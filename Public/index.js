@@ -1,612 +1,11 @@
-// General UI functions -------------------------
-function AutoGrow(element) {
-  if (element.scrollHeight > element.clientHeight) {
-    element.style.transition = "height 1s";
-    element.style.height = element.scrollHeight + "px";
-  }
-}
-function RemoveSelfFromAdditiveInputList(self, labelAside=true) {
-  var link = self.parentNode;
-  var label = link.previousSibling;
-
-  link.remove();
-  if(labelAside)
-    label.remove();
-}
-function AddLinkToAdditiveInputList(listID, placeholder, labelAside) {
-  var links = document.getElementById(listID);
-
-  if(labelAside) {
-    var spacerLabel = document.createElement("label");
-    spacerLabel.classList.add("label-aside");
-    links.appendChild(spacerLabel);
-  }
-  var id = (links.childElementCount) / 2;
-
-  var div = document.createElement("div");
-  div.classList.add("iconed");
-  div.classList.add(labelAside?"label-aside":"label-above");
-  div.classList.add("list-item");
-  div.innerHTML = '<input type="text" placeholder="' + placeholder + '" class="link' + id + '"><i class="fas fa-minus-circle fa-wf" onmousedown="RemoveSelfFromAdditiveInputList(this, ' + labelAside + ')"></i>';
-
-  links.appendChild(div);
-}
-function PreparePopups() {
-  document.onmousedown = (event) => {
-    if(event.target.parentNode.classList.contains("popup") || event.target.classList.contains("popup")) 
-      return;
-  
-    var popups = document.getElementsByClassName("popup");
-    for(var i = 0; i < popups.length; i++) {
-      popups[i].style.opacity = "0";
-    }
-    setTimeout(() => {
-      var popups = document.getElementsByClassName("popup");
-      for(var i = 0; i < popups.length; i++) {
-        if(popups[i].style.opacity === "0")
-          popups[i].style.display = "none";
-      }
-    }, 1000);
-  };
-}
-function ShowPopup(popup, atElement, message) {
-  var offsetParent = atElement;
-  var offsetTop = 0;
-  while(offsetParent != popup.parentElement) {
-    var style = getComputedStyle(offsetParent);
-    offsetTop += offsetParent.offsetTop + parseFloat(style.paddingTop, 10) + parseFloat(style.marginTop, 10) + parseFloat(style.borderTop, 10);
-    offsetParent = offsetParent.offsetParent;
-    if(offsetParent.parentElement == undefined) throw new Error("Invalid popup -> atElement isn't a child of the parent of the popup");
-  }
-  popup.style.display = "inline-block";
-  popup.style.top = (offsetTop + atElement.clientHeight - 10) + "px";
-  popup.innerHTML = message;
-  popup.style.opacity = 1;
-}
-
-
-var pageLoaded = false;
-addEventListener("load", async (event) => {
-  pageLoaded = true;
-  PrepareSidebar();
-  PreparePopups();
-
-  GetProjects();
-  (async () => {
-    await CheckLogin();
-    FetchInspiration();
-  })();
-  (async () => {
-    await GetTutorials();
-    PopulateFileNavigation();
-  })();
-});
-
-// Sidebar --------------------------------------
-function PrepareSidebar() {
-    const sidebarTabs = document.getElementsByClassName("sidebar-tab");
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedTabName = urlParams.get('tab');
-
-    for (var i = 0; i < sidebarTabs.length; i++) {
-      sidebarTabs[i].onmouseover = function(){
-          var elements = this.getElementsByTagName("p")[0];
-          const textSize = this.getElementsByTagName("p")[0].clientWidth;
-          this.style.width = "calc(var(--sidebar-height) + " + textSize + "px)";
-      };
-      sidebarTabs[i].onmouseleave = function(){
-          this.style.width = "var(--sidebar-height)";
-      };
-      if(sidebarTabs[i].onmousedown != undefined) continue;
-      sidebarTabs[i].onmousedown = function(){
-          var mainWindow = document.getElementById("main-content-scroll-animation");
-          mainWindow.style.top = "-" + (this.id * 100) + "vh";
-
-          const urlParams = new URLSearchParams(window.location.search);
-          urlParams.set("tab", this.attributes.getNamedItem("target").nodeValue);
-          history.pushState(null, "", "?"+ urlParams.toString());
-      };
-      sidebarTabs[i].id = i;
-      if(selectedTabName != null && sidebarTabs[i].attributes.getNamedItem("target").nodeValue == selectedTabName) {
-          var mainWindow = document.getElementById("main-content-scroll-animation");
-          mainWindow.style.top = "-" + (i * 100) + "vh";
-      }
-    }
-}
-
-// Projects ----------------------------------
-async function GetProjects(location) {
-    try {
-      const response = await fetch("/Data/Projects.json", { credentials: 'same-origin' });
-      if (!response.ok)
-        throw new Error(`Response status: ${response.status}`);
-  
-      const json = await response.json();
-      const projectsPage = document.getElementById("projects");
-      for(let i = 0; i < json.length; i++) {
-        var project = document.createElement("div");
-        project.classList.add("project");
-
-        var innerHTML = '';
-        innerHTML += '<div class="project-name">' + json[i].name + '</div>';
-        innerHTML += '<div class="project-requester"><p>Aangevraagd door:</p><p>' + json[i].requester + '</p></div>';
-        innerHTML += '<div class="project-executor"><p>Uitgevoerd door:</p><p>' + json[i].executor + '</p></div>';
-        innerHTML += '<div class="project-description">' + json[i].description + '</div>';
-
-        innerHTML += '<div class="project-links">';
-        const links = json[i].urls.split("\n");
-        for(var j = 0; j < links.length; j++) {
-          var url = new URL(links[j]);
-          innerHTML += '<a href="' + links[j] + '">' + url.hostname + '</a>';
-        }
-        innerHTML += '</div>';
-
-        project.innerHTML = innerHTML;
-        projectsPage.appendChild(project);
-      }
-    } catch (error) {
-      console.error(error.message);
-    }
-}
-// Inspiration --------------------------------
-function FetchInspiration() {
-  fetch("/Data/Inspiration.json", { credentials: 'same-origin' }).then(async (response) => {
-    if(!response.ok) {
-      console.error(response.status);
-      return;
-    }
-    const json = await response.json();
-    if(loggedIn && permissions["modifyInspiration"]) {
-      PopulateInspirationLabels(json);
-    }
-    GetInspiration(json);
-    PopulateSuggestionLabels(json);
-  });
-}
-
-async function GetInspiration(json) {
-  try {
-    
-
-  }
-  catch(err) {
-    console.error(error.message);
-  }
-}
-
-// Suggestions --------------------------------
-async function PopulateSuggestionLabels(json) {
-  try {
-    var suggestionLabels = document.getElementById("label-selector");
-    suggestionLabels.innerHTML = "";
-    Object.entries(json.labels).forEach(([category, labelsList]) => {
-      var categoryP = document.createElement("p");
-      categoryP.classList.add("label-aside");
-      categoryP.innerText = category;
-      suggestionLabels.appendChild(categoryP);
-
-      var labels = document.createElement("div");
-      labels.classList.add("labels");
-      labelsList.forEach((labelObject, index) => {
-        if(labelObject.name == null) return;
-        
-        var label = document.createElement("p");
-        label.color = labelObject.color;
-        label.name = labelObject.name;
-        label.category = category;
-        label.selected = false;
-        label.onclick = ToggleLabelSelect.bind(label, label);
-        label.innerText = labelObject.name;
-        label.classList.add("inspiration-label");
-
-        labels.appendChild(label);        
-      });
-      
-      suggestionLabels.appendChild(labels);
-      suggestionLabels.appendChild(document.createElement("br"));
-    });
-
-  } catch(err) {
-    console.error(error.message);
-  }
-}
-function ToggleLabelSelect(label, ev) {
-  if(!label.selected) {
-    label.selected = true;
-    label.style.backgroundColor = "hsl(" + label.color + ",60%, 70%)";
-  } else {
-    label.selected = false;
-    label.style.backgroundColor = "";
-  }
-}
-function OnURLKeyDown(input, ev) {
-  if(ev.keyCode == 13) {
-    ev.preventDefault();
-    input.blur();
-  }
-}
-function OnVideoURLInput(input, ev) {
-  ev.preventDefault();
-  try {
-    var url = new URL(input.value);
-    // Youtube based on: https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
-    if(url.hostname === "youtube.be" || url.hostname === "www.youtube.be") 
-      DisplayYoutubePreview(url.pathname);
-    else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && (url.pathname.indexOf("/embed") == 0 || url.pathname.indexOf("/shorts") == 0))
-      DisplayYoutubePreview(url.pathname.substring(url.pathname.indexOf('/')));
-    else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("v"))
-      DisplayYoutubePreview(url.searchParams.get("v"));
-    else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("vi"))
-      DisplayYoutubePreview(url.searchParams.get("vi"));
-
-  } catch(err) { return; }
-  return;
-}
-async function DisplayYoutubePreview(videoID) {
-  try {
-    if(videoID == "") return;
-
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    const response = await fetch("/API/RetrieveVideoInfo", { 
-      credentials: 'same-origin', 
-      headers:headers, 
-      method: 'PUT', 
-      body:JSON.stringify({"videoID":videoID})
-    });
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`);
-    
-    const json = await response.json();
-
-    const preview = document.getElementById("preview");
-    preview.getElementsByClassName("thumbnail")[0].style.backgroundImage = "url(" + json.thumnnails.medium.url +")";
-    preview.getElementsByClassName("channel-thumbnail")[0].style.backgroundImage = "url(" + json.channelThumbnails.default.url + ")";
-    preview.getElementsByClassName("channel-info-block")[0].firstChild.innerText = json.title;
-  } catch(err) {
-    console.error(err);
-  }
-}
-async function SendInspirationSuggestion(element) {
-  try {
-    const url = document.getElementById("inspiration-url").value;
-    var labels = [];
-    var labelElements = element.getElementsByClassName("inspiration-label");
-    for(var i = 0; i < labelElements.length; i++) {
-      var label = labelElements[i];
-      if(!label.selected) continue;
-      labels.push({"name":label.name,"category":label.category});
-    }
-
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    const response = await fetch("/API/SuggestInspiration", { 
-      credentials: 'same-origin', 
-      headers:headers,
-      method: 'POST',
-      body:JSON.stringify({"url":url, "labels":labels})
-    });
-    
-    var succesPage = document.getElementById("inspiration-succes-page");
-    succesPage.style.display = "inline-block";
-    if (!response.ok) {
-      succesPage.getElementsByTagName("i")[0].className = "fas fa-frown";
-      succesPage.getElementsByTagName("h2")[0].innerHTML = "Oeps";
-      succesPage.getElementsByTagName("p")[0].innerHTML = "Er is iets fout gegaan: " + await response.text();
-    }
-    document.getElementById("project-suggestion").style.overflowY = "hidden";
-    succesPage.style.opacity = "1";
-
-  } catch(err) {
-    console.error(err);
-  }
-}
-
-// Tutorials ----------------------------------
-var currentFolder = "/";
-{
+/* + ======================================================================== +
+/* | General                                                                  |
+/* + ========================================================================*/
+function PushWindowParam(name, value) {
   const urlParams = new URLSearchParams(window.location.search);
-  currentFolder = urlParams.get("folder");
-  if(currentFolder == null)
-    currentFolder = "/";
+  urlParams.set(name, value);
+  history.pushState(null, "", "?" + urlParams.toString());
 }
-async function GetTutorials() {
-  try {
-    const response = await fetch("/Data/Tutorials" + currentFolder + "contents.json", { credentials: 'same-origin' });
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`);
-
-    const json = await response.json();
-    var folders = document.getElementById("folders");
-    folders.innerHTML = "";
-    var files  = document.getElementById("files");
-    files.innerHTML = "";
-    
-    for(let i = 0; i < json.length; i++) {
-      var tutorial = document.createElement("div");
-      tutorial.classList.add("tutorial");
-      var isFolder = json[i].indexOf('.') == -1;
-      var extension = json[i].split('.').pop();
-      if(isFolder)
-        tutorial.ondblclick = SelectFolder.bind(tutorial, json[i]);
-
-      var innerHTML = '';
-      if(isFolder) innerHTML += '<i class="file-type fas fa-folder"></i>';
-      else if(extension == "txt") innerHTML += '<i class="file-type fas fa-file-alt"></i>';
-      else if(extension == "jpeg") innerHTML += '<i class="file-type fas fa-file-image"></i>';
-      else if(extension == "png") innerHTML += '<i class="file-type fas fa-file-image"></i>';
-      else if(extension == "pdf") innerHTML += '<i class="file-type fas fa-file-pdf"></i>';
-      else if(extension == "docx") innerHTML += '<i class="file-type fas fa-file-word"></i>';
-      else if(extension == "mp4") innerHTML += '<i class="file-type fas fa-file-video"></i>';
-      else innerHTML += '<i class="file-type fas fa-file-alt"></i>';
-      innerHTML += '<p class="file-name">' + json[i] + '</p>';
-
-      tutorial.innerHTML = innerHTML;
-      if(isFolder)
-        folders.appendChild(tutorial);
-      else
-        files.appendChild(tutorial);
-    }
-  } catch (error) {
-    console.error(error.message);
-  }
-}
-function SelectFolder(name, ev) {
-  GoToFolder(currentFolder + name + "/");
-}
-function GoToFolder(name) {
-  if(currentFolder == name) return;
-  currentFolder = name;
-  GetTutorials();
-  const urlParams = new URLSearchParams(window.location.search);
-  urlParams.set("folder", currentFolder);
-  history.pushState(null, "", "?"+ urlParams.toString());
-
-  PopulateFileNavigation();
-}
-function PopulateFileNavigation() {
-  // Also contains an empty entry at the start and end, '/foo/bar/'
-  const folders = currentFolder.split('/');
-  folders.pop();
-  var navigationBar = document.getElementById('file-navigation');
-  while(navigationBar.childElementCount >= 2)
-    navigationBar.removeChild(navigationBar.lastChild);
-  var navigatedFolder = "/";
-  folders.forEach((folder, index) => {
-    if(index != 0) {
-      var name = document.createElement("p");
-      name.innerHTML = folder;
-      navigatedFolder += folder + '/';
-      name.onclick = ((folder, ev) => {
-        GoToFolder(folder);
-      }).bind(name, navigatedFolder);
-      navigationBar.appendChild(name);
-    }
-    var splitter = document.createElement("i");
-    splitter.className = "fas fa-greater-than";
-    navigationBar.appendChild(splitter);
-  });
-}
-
-// Suggestions ------------------------------
-function ShowProjectFaultMessagePopUp(element, message) {
-  element.focus();
-
-  var popup = document.getElementById("project-suggestion-wrong");
-  ShowPopup(popup, element, message);
-}
-function IsValidURL(url) {
-  try { 
-    new URL(url);
-    return true;
-  } catch(e) { return false; }
-}
-function IsValidEMail(email) {
-  const res = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-  return res.test(String(email).toLowerCase());
-}
-function IsASCII(str) {
-  return /^[\x00-\x7F]*$/.test(str);
-}
-async function OnProjectSuggestionSubmit() {
-  var projectName = document.getElementById("project-name").value;
-  if(!projectName)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-name"), "Specificeer een naam");
-  else if(projectName.length > 255)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-name"), "Maximum lengte is 255");
-  else if(projectName.indexOf('"') != -1)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-name"), "Kan geen \" erin hebben");
-
-  var projectDescription = document.getElementById("project-description").value;
-  if(!projectDescription)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-description"), "Schrijf een omschrijving");
-  else if(projectDescription.length > 65535)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-description"), "Maximum lengte is 65535");
-  else if(projectDescription.indexOf('"') != -1)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-description"), "Kan geen \" erin hebben");
-
-  var links = document.getElementById("links");
-  var amountLinks = (links.childElementCount - 1) / 2;
-  var usedLink = false;
-  var lastFaultyLink = null;
-  for(var i = amountLinks; i > 0; i--) {
-    var input = links.getElementsByClassName("link" + i)[0];
-    if(input.value)
-      usedLink = true;
-    if((usedLink && !IsValidURL(input.value) && !IsValidURL("https://" + input.value)) || input.value.length > 255 || input.value.indexOf('"') != -1)
-      lastFaultyLink = input;
-  }
-  if(lastFaultyLink) {
-    if(!lastFaultyLink.value)
-      return ShowProjectFaultMessagePopUp(lastFaultyLink, "Geef een link indien volgende velden een link hebben");
-    else if(lastFaultyLink.value.length > 255)
-      return ShowProjectFaultMessagePopUp(lastFaultyLink, "Maximum lengte is 255");
-    else if(lastFaultyLink.value.indexOf('"') != -1)
-      return ShowProjectFaultMessagePopUp(lastFaultyLink, "Kan geen \" erin hebben");
-    else
-      return ShowProjectFaultMessagePopUp(lastFaultyLink, "Ongeldige URL");
-  }
-
-  var projectSuggestor = document.getElementById("project-suggestor").value;
-  if(!projectSuggestor)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-suggestor"), "Geef je naam");
-  else if(projectSuggestor.length > 255)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-suggestor"), "Maximum lengte is 255");
-  else if(projectSuggestor.indexOf('"') != -1)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-suggestor"), "Kan geen \" erin hebben");
-
-  var projectSuggestorEMail = document.getElementById("project-suggestor-email").value;
-  if(!projectSuggestorEMail)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-suggestor-email"), "Geef je email");
-  else if(!IsValidEMail(projectSuggestorEMail))
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-suggestor-email"), "Geef een valide email");
-  else if(projectSuggestorEMail.length > 255)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-suggestor-email"), "Maximum lengte is 255");
-  else if(projectSuggestorEMail.indexOf('"') != -1)
-    return ShowProjectFaultMessagePopUp(document.getElementById("project-suggestor-email"), "Kan geen \" erin hebben");
-
-  // Shove it into a post request
-  var submitButton = document.getElementById("submit-project-suggestion");
-  submitButton.value = "Aan het versturen ...";
-
-  var postBody = "{";
-  postBody+='"projectName":' + JSON.stringify(projectName) + ",";
-  postBody+='"projectDescription":' + JSON.stringify(projectDescription) + ",";
-  postBody+='"amountLinks":' + JSON.stringify(amountLinks) + ",";
-  for(var i = 1; i <= amountLinks; i++) {
-    var url = links.getElementsByClassName("link" + i)[0].value;
-    if((new URL(url)).protocol == "")
-      url = "https://" + url;
-    postBody+='"link' + i + '":' + JSON.stringify(url) + ",";
-  }
-  postBody+='"projectSuggestor":' + JSON.stringify(projectSuggestor) + ",";
-  postBody+='"projectSuggestorEmail":' + JSON.stringify(projectSuggestorEMail) + "}";
-
-  const headers = new Headers();
-  headers.append("Content-Type", "application/json");
-
-  const response = await fetch("/API/SuggestProject", {
-    method: "POST",
-    body: postBody,
-    headers: headers,
-    credentials: 'same-origin'
-  });
-
-  var succesPage = document.getElementById("project-succes-page");
-  succesPage.style.display = "inline-block";
-  if (!response.ok) {
-    succesPage.getElementsByTagName("i")[0].className = "fas fa-frown";
-    succesPage.getElementsByTagName("h2")[0].innerHTML = "Oeps";
-    succesPage.getElementsByTagName("p")[0].innerHTML = "Er is iets fout gegaan: " + await response.text();
-  }
-  document.getElementById("project-suggestion").style.overflowY = "hidden";
-  succesPage.style.opacity = "1";
-
-  // Remove the stuff in the input fields
-  document.getElementById("project-name").value = "";
-  document.getElementById("project-description").value = "";
-  for(var i = 1; i <= amountLinks; i++) {
-    document.getElementById("link" + i).value = "";
-  }
-  document.getElementById("project-suggestor").value = "";
-  document.getElementById("project-suggestor-email").value = "";
-}
-
-// Footer -----------------------------------
-addEventListener("load", (event) => {
-  const windows = document.getElementsByClassName("content-wrapper");
-  var innerHTML = '<a class="github" href="https://github.com/hidde2727/Eureka-website"><i class="fab fa-github fa-fw"></i></a>';
-  innerHTML += '<a class="instagram" href="https://instagram.com"><i class="fab fa-instagram fa-fw"></i></a>';
-  innerHTML += '<a class="copyright">©2024 by Hidde Meiburg</a>';
-
-  for (var i = 0; i < windows.length; i++) {
-    var footer = document.createElement("div");
-    footer.classList.add("footer");
-    footer.innerHTML = innerHTML;
-
-    windows[i].appendChild(footer);
-  }
-  AfterFooterGeneration();
-});
-
-// Loggin page -------------------------------
-var clickCounter = 0;
-function AfterFooterGeneration() {
-  const copyrightButtons = document.getElementsByClassName("copyright");
-  for(var i = 0; i < copyrightButtons.length; i++) {
-    copyrightButtons[i].onmousedown = () => {
-      clickCounter++;
-      if(clickCounter >= 5) {
-        var button = document.getElementsByClassName("user-tab")[0];
-        button.style.display = "";
-      }
-    };
-  }
-}
-async function TryLogin() {
-  var username = document.getElementById("username").value;
-  if(!username) {
-    document.getElementById("wrong-password").innerHTML = "Vul een gebruikersnaam in";
-    document.getElementById("wrong-password").style.opacity = "1";
-    return;
-  }
-  else if(username.indexOf('"') != -1) {
-    document.getElementById("wrong-password").innerHTML = "Vul een gebruikersnaam in zonder \"";
-    document.getElementById("wrong-password").style.opacity = "1";
-    return;
-  }
-  var password = document.getElementById("password").value;
-  if(!password) {
-    document.getElementById("wrong-password").innerHTML = "Vul een wachtwoord in";
-    document.getElementById("wrong-password").style.opacity = "1";
-    return;
-  }
-  // process the password
-  var buffer = new ArrayBuffer( password.length );
-  var passwordArray = new Uint8Array(buffer);
-  for(var i = 0; i < password.length; i++) {
-    if(password.charCodeAt(i) > 255 || password.charCodeAt(i) < 0) {
-      document.getElementById("wrong-password").innerHTML = "Illegaal karakter: " + password.charCodeAt(i);
-      document.getElementById("wrong-password").style.opacity = "1";
-      return;
-    }
-    passwordArray[i] = password.charCodeAt(i);
-  }
-  var encrypted = new Uint8Array(await window.crypto.subtle.digest("SHA-256", buffer));
-  var base64 = btoa(String.fromCharCode.apply(null, encrypted));
-
-  var postBody = JSON.stringify({
-    username: username,
-    password: base64
-  });
-
-  const headers = new Headers();
-  headers.append("Content-Type", "application/json");
-
-  const response = await fetch("/API/Login", {
-    method: "POST",
-    body: postBody,
-    headers: headers
-  });
-  if (!response.ok) {
-    document.getElementById("wrong-password").innerHTML = "Er is iets fout gegaan: " + await response.text();
-    document.getElementById("wrong-password").style.opacity = "1";
-    return;
-  }
-
-  document.getElementById("username").value = "";
-  document.getElementById("password").value = "";
-  window.location.reload();
-}
-async function Logout() {
-  const headers = new Headers();
-  headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-  await fetch("/API/Private/LogOut", { credentials: 'same-origin', headers:headers });
-  window.location.reload();
-}
-
-// If logged in -------------------------------
 
 function GetCookie(cookie) { // Taken from https://www.w3schools.com/js/js_cookies.asp
   let name = cookie + "=";
@@ -622,699 +21,426 @@ function GetCookie(cookie) { // Taken from https://www.w3schools.com/js/js_cooki
   }
   return undefined;
 }
-var loggedIn = false;
-var permissions;
-// Check if the user is logged in
-if(GetCookie("sessionID") != undefined && GetCookie("sessionCredential") != undefined)
-  GetUserPermissions();
 
-async function GetUserPermissions() {
-  const headers = new Headers();
-  headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-
-  const response = await fetch("/API/Private/Permission/GetOwn", { credentials: 'same-origin', headers:headers });
-  if (!response.ok)
-    throw new Error(`Response status: ${response.status}`);
-
-  permissions = await response.json();
-
-  loggedIn = true;
-  if(pageLoaded) // If page hasn't been loaded then we wait for the event to trigger CheckLogin
-    CheckLogin();  
-}
-
-function CheckLogin() {
-  if(!loggedIn) return;
-
-  document.getElementsByClassName("user-tab")[0].style.display = "";
-  document.getElementsByClassName("log-out")[0].style.display = "";
-  document.getElementById("login-window").style.display = "none";
-  document.getElementById("logged-in-window").style.display = "";
-
-  PopulateSuggestionApproval();
-  // Check individual permissions
-  // Modifying users
-  if(permissions["modifyUsers"]) {
-    document.getElementById("add-user").style.display = "";
-    document.getElementById("modify-users").style.display = "";
-    PopulateUserModifier();
-  }
-  // Adding files
-  if(permissions["addFiles"]) {
-    PopulateFileEditor();
-  }
-  // Modify the inspiration
-  if(permissions["modifyInspiration"]) {
-    
-  }
-  // Modify the projects
-  if(permissions["modifyProjects"]) {
-
-  }
-}
-
-var allSuggestions = new Map();
-async function PopulateSuggestionApproval() {
-  // remove all childs except first one
-  const suggestions = document.getElementById("select-suggestion");
-  while (suggestions.childNodes.length > 5) {
-    suggestions.removeChild(suggestions.lastChild);
-  }
+async function FetchInfo(url, method, body, {jsonResponse=true, includeCredentials=false}={}) {
   try {
-    const headers = new Headers();
-    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-    const response = await fetch("/API/Private/Suggestion/GetAll", { credentials: 'same-origin', headers:headers });
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`);
-
-    const json = await response.json();
-    for(let i = 0; i < json.length; i++) {
-      var suggestion = document.createElement("div");
-      suggestion.classList.add("suggestion");
-      suggestion.onclick = SelectSuggestion.bind(suggestion, json[i].id, suggestion);
-
-      var innerHTML = '';
-      if(json[i].type == "project") {
-        innerHTML += '<i class="fas fa-wrench fa-fw"></i>';
-        innerHTML += '<p>' + json[i].json.projectName + '</p>';
-      } else if(json[i].type == "inspiration") {
-        innerHTML += '<i class="fas fa-lightbulb fa-fw"></i>';
-        if(json[i].json.videoID != undefined)
-          innerHTML += '<p>' + json[i].json.title + '</p>';
-        else
-          innerHTML += '<p>' + json[i].json.url + '</p>';
-      }
-      innerHTML += '<i class="fas fa-eye fa-fw"></i>';
-
-      suggestion.innerHTML = innerHTML;
-      suggestions.appendChild(suggestion);
-
-      allSuggestions.set(json[i].id, json[i]);
-    }
-  } catch (error) {
-    console.error(error.message);
-  }
-}
-var currentSuggestionBeingModified = null;
-function AddProject(innerHTML, json, editable) {
-  const editableString = editable?"":" disabled";
-  innerHTML += '<label class="label-above">Project naam</label><input class="label-above" type="text" placeholder="Project naam" value="' + json.projectName + '"' + editableString + '>';
-  innerHTML += '<label class="label-above">Omschrijving</label><textarea class="label-above" placeholder="Omschrijving"' + editableString + '>' + json.projectDescription + '</textarea>';
-
-  if(editable) {
-    innerHTML += '<div class="additive-input-list" id="suggestion-links">';
-    innerHTML += '<i class="plus fas fa-plus-circle fa-fw" onmousedown="AddLinkToAdditiveInputList(\'suggestion-links\', \'www.youtube.com\', false)"></i>';
-  }
-  innerHTML += '<label class="label-above">Linkjes</label>';
-  for(var i = 0; i < json.links.length; i++) {
-    if(editable)
-      innerHTML += '<div class="list-item iconed label-above">';
-    innerHTML += '<input class="link' + i + '" type="text" placeholder="Link" value="' + json.links[i] + '"' + editableString + '>';
-    if(editable)
-      innerHTML += '<i class="fas fa-minus-circle fa-wf" onmousedown="RemoveSelfFromAdditiveInputList(this, false)"></i></div>';
-  }
-  if(editable)
-    innerHTML += "</div>";
-
-  innerHTML += '<label class="label-above">Naam voorsteller</label><input class="label-above" type="text" placeholder="Naam voorsteller" value="' + json.projectSuggestor + '"' + editableString + '>';
-  innerHTML += '<label class="label-above">Email voorsteller</label><input class="label-above" type="text" placeholder="Email voorsteller" value="' + json.projectSuggestorEmail + '"' + editableString + '>';
-  return innerHTML;
-}
-
-function SelectSuggestion(id, element, event) {
-  var suggestion = allSuggestions.get(id);
-  var popover = document.getElementById("approve-suggestion");
-  popover.innerHTML = "";
-  var innerHTML = "";
-  if(suggestion.type == "project") {
-    if(suggestion.suggestionType == "Newproject+change")
-      innerHTML += '<h1>Nieuw project inclusief aanpassingen</h1>';
-    else if(suggestion.suggestionType == "ChangeProject")
-      innerHTML += '<h1>Verandering in project</h1>';
-    else if(suggestion.suggestionType == "Newproject")
-      innerHTML += '<h1>Nieuw project</h1>';
-
-    innerHTML += '<div class="new">';
-    innerHTML = AddProject(innerHTML, suggestion.json, true);
-    innerHTML += '</div>';
-
-    innerHTML += '<div class="original" style="display: none;">'
-    innerHTML = AddProject(innerHTML, suggestion.originalJSON, false);
-    innerHTML += '</div>';
-
-    innerHTML += '<input type=submit id="deny" value="Plaats niet op site">';
-    innerHTML += '<input type=submit id="accept" value="Helemaal toppie, plaats wel">';
-  } else if(suggestion.type == "inspiration") {
-
-  }
-  popover.innerHTML = innerHTML;
-  popover.togglePopover();
-  var textareas = popover.getElementsByTagName("textarea");
-  for(var i = 0; i < textareas.length; i++) {
-    AutoGrow(textareas[i]);
-  }
-}
-
-async function PopulateFileEditor() {
-  var tutorials = document.getElementById("tutorials");
-  tutorials.ondrop = OnFileDrop;
-  tutorials.ondragover = OnFileDrag;
-  tutorials.ondragenter = OnFileEnter;
-  var dropScreen = document.getElementById("on-file-drag");
-  dropScreen.ondragover = OnFileDrag;
-  dropScreen.ondragleave = OnFileLeave;
-}
-var amountFilesQueued = 0;
-function UploadFile(file, startingPath) {
-  if(file.isDirectory) {
-    // Scan the directory
-    var directoryReader = file.createReader();
-    directoryReader.readEntries((entries) => {
-        entries.forEach((file) => {
-        UploadFile(file, startingPath);
-      });
-    });
-  } 
-  else {
-    // Upload the file
-    amountFilesQueued++;
-
-    file.file(async (fileData) => {
-      fileBinary = (await fileData.bytes());
-      fileBase64 = btoa(String.fromCharCode.apply(null, fileBinary));
-      var postBody = JSON.stringify({
-        filePath: currentFolder + file.fullPath,
-        blob: fileBase64
-      });
-  
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json");
-      headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-    
-      fetch("/API/Private/Files/Add", {
-        method: "PUT",
-        body: postBody,
-        headers: headers,
-        credentials: 'same-origin'
-      }).then(() => {
-        amountFilesQueued--;
-        if(amountFilesQueued == 0) {
-          // Send the regenIndex request
-          fetch("/API/Private/Files/RegenIndex", {
-            method: "PUT",
-            headers: headers,
-            credentials: 'same-origin'
-          });
-          // Remove the loading screen
-          GetTutorials();
-          OnFileLeave(null);
-        }
-      });
-    })
-  }
-}
-function OnFileDrop(ev) {
-  ev.preventDefault();
-  
-  var fileDropScreen = document.getElementById("on-file-drag");
-  fileDropScreen.getElementsByTagName("h1")[0].innerHTML = "Even geduld.";
-  fileDropScreen.getElementsByTagName("p")[0].innerHTML = "De files worden nu geupload";
-
-  [...ev.dataTransfer.items].forEach(async (file) => {
-    var entry = file.webkitGetAsEntry();
-    UploadFile(entry, entry.fullPath);
-  });
-}
-function OnFileDrag(ev) {
-  ev.preventDefault();
-}
-function OnFileEnter(ev) {
-  ev.preventDefault();
-
-  var fileDropScreen = document.getElementById("on-file-drag");
-  fileDropScreen.getElementsByTagName("h1")[0].innerHTML = "Drop die files!";
-  fileDropScreen.getElementsByTagName("p")[0].innerHTML = "Upload bestanden door ze hier te droppen";
-
-  if(fileDropScreenTransitionTimeout != null) {
-    clearTimeout(fileDropScreenTransitionTimeout);
-    fileDropScreenTransitionTimeout = null;
-  }
-  if(!fileDropScreen.classList.contains("files-hover")) {
-    fileDropScreen.style.display = "flex";
-    // Dirty fix for the transition not working the first time
-    setTimeout(function () {
-      fileDropScreen.classList.add("files-hover");
-    }, 1);
-  }
-}
-var fileDropScreenTransitionTimeout = null;
-function OnFileLeave(ev) {
-  if(ev)
-    ev.preventDefault();
-
-  var fileDropScreen = document.getElementById("on-file-drag");
-  if(fileDropScreen.classList.contains("files-hover")) {
-    fileDropScreen.classList.remove("files-hover");
-    fileDropScreenTransitionTimeout = setTimeout(function () {
-      fileDropScreen.style.display = "none";
-    }, 1000);
-  }
-}
-
-async function PopulateInspirationLabels(json) {
-  try {
-    const labelCategories = document.getElementById("label-categories");
-    labelCategories.innerHTML = "";
-    Object.entries(json.labels).forEach(([category, labelsList]) => {
-      var categoryDiv = document.createElement("div");
-      categoryDiv.classList.add("category")
-
-      var topDiv = document.createElement("div");
-      topDiv.className = "top";
-      topDiv.innerHTML = '<i class="fas fa-chevron-right collapse" onmousedown="ToggleCategory(this)"></i><p>' + category + '</p><i class="fas fa-edit edit"></i><i class="fas fa-trash-alt delete"></i>';
-      categoryDiv.appendChild(topDiv);
-
-      var labels = document.createElement("div");
-      labels.classList.add("labels");
-      labelsList.forEach((labelObject, index) => {
-        if(labelObject.name == null) return;
-        
-        var content = document.createElement("p");
-        content.innerText = labelObject.name;
-        content.contentEditable = false;
-        content.ondblclick = OnLabelDoubleClick.bind(content, content);
-        content.onblur = OnLabelEditEnd.bind(content, content);
-        content.onkeydown = OnLabelInput.bind(content, content);
-        content.classList.add("content");
-
-        var label = document.createElement("p");
-        label.classList.add("inspiration-label");
-        label.style.backgroundColor = "hsl(" + labelObject.color + ", 60%, 70%)";
-        label.draggable = "true";
-        label.ondragstart = OnLabelDragStart.bind(label, label);
-        label.ondragend = OnLabelDragEnd.bind(label, label);
-        label.ondblclick = OnLabelDoubleClick.bind(label, label);
-        label.onblur = OnLabelEditEnd.bind(label, label);
-        label.labelName = labelObject.name;
-        label.category = category;
-        label.appendChild(content);
-
-        labels.appendChild(label);
-      });
-      var bottomWidget = document.createElement("div");
-      {
-        addButton = document.createElement("i");
-        addButton.className = "fas fa-plus";
-        addButton.onmousedown = AddLabel.bind(addButton, addButton, category);
-        bottomWidget.appendChild(addButton);
-
-        addInput = document.createElement("input");
-        addInput.type = "text";
-        addInput.placeholder = "Nieuwe label";
-        bottomWidget.appendChild(addInput);
-
-        colorButton = document.createElement("button");
-        colorButton.innerHTML = '<i class="fas fa-sync-alt">';
-        colorButton.onmousedown = RegenerateColor.bind(colorButton, colorButton);
-        RegenerateColor(colorButton);
-        bottomWidget.appendChild(colorButton);
-      }
-      labels.appendChild(bottomWidget);
-      categoryDiv.appendChild(labels);
-
-      labelCategories.appendChild(categoryDiv);
-    });
-
-  } catch(err) {
-    console.error(err.message);
-  }
-}
-async function AddCategory() {
-  try {
-    const categoryName = document.getElementById("new-category-name").value;
-    const body = JSON.stringify({"name":categoryName});
-
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
-    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-    const response = await fetch("/API/Private/Inspiration/AddCategory", { method: "PUT", credentials: 'same-origin', headers:headers, body: body });
-
-    document.getElementById("new-category-name").value = "";
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`);
-
-    FetchInspiration();
-
-  } catch(err) {
-    console.error(err.message);
-  }
-}
-function ToggleCategory(element) {
-  var labels = element.parentElement.parentElement.getElementsByClassName("labels")[0];
-  if(labels.style.maxHeight == "300px") {
-    labels.style.maxHeight = "0px";
-    element.classList.remove("fa-rotate-90");
-  } else {
-    labels.style.maxHeight = "300px";
-    element.classList.add("fa-rotate-90");
-  }
-}
-function RegenerateColor(element) {
-  var oldHue = element.hue == undefined ? -100000 : element.hue;
-  do {
-    element.hue = Math.floor(Math.random() * 360);
-  } while(Math.abs(element.hue - oldHue) < 30);
-  element.style.backgroundColor = "hsl(" + element.hue + ", 60%, 70%)";
-}
-async function AddLabel(element, categoryName) {
-  try {
-    var labelName = element.parentElement.getElementsByTagName("input")[0].value;
-    var hue = element.parentElement.getElementsByTagName("button")[0].hue;
-    if(labelName.length == 0)
-      return;
-  
-    const body = JSON.stringify({"name":labelName, "category":categoryName, "color":hue});
-
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-    const response = await fetch("/API/Private/Inspiration/AddLabel", { method: "PUT", credentials: 'same-origin', headers:headers, body: body });
-
-    element.parentElement.getElementsByTagName("input")[0].value = "";
-    if (!response.ok)
-      throw new Error(`Response status: ${response.status}`);
-
-    FetchInspiration();
-
-  } catch(err) {
-    console.error(err.message);
-  }
-}
-function ExpandTrashbin() {
-  var bin = document.getElementById("delete-draggables");
-  bin.style.height = "";
-  bin.style.margin = "";
-  bin.style.padding = "";
-}
-function RetractTrashbin() {
-  var bin = document.getElementById("delete-draggables");
-  bin.style.height = "0px";
-  bin.style.margin = "0";
-  bin.style.padding = "0";
-}
-function OnLabelDoubleClick(element, ev) {
-  ev.stopPropagation();
-
-  element.parentElement.draggable = "";
-  element.contentEditable = true;
-  element.focus();
-  element.oldContent = element.innerText;
-}
-function OnLabelInput(element, ev) {
-  if(ev.keyCode == 13) {
-    ev.preventDefault();
-    element.blur();
-  }
-}
-async function OnLabelEditEnd(element, ev) {
-  element.parentElement.draggable = "true";
-  element.contentEditable = false;
-
-  if(element.oldContent != element.innerText) {
-    try {    
-      var labelName = element.parentElement.labelName;
-      var category = element.parentElement.category;
-      const body = JSON.stringify({"name":labelName, "category":category, "newName":element.innerText});
-  
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json");
+    if(includeCredentials)
       headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-      const response = await fetch("/API/Private/Inspiration/EditLabel", { method: "PUT", credentials: 'same-origin', headers:headers, body: body });
-  
-      if (!response.ok)
-        throw new Error(`Response status: ${response.status}`);
-      
-      OnInspirationChange();
-  
-    } catch(err) {
-      console.error(err.message);
-    }
-  }
-}
-var currentDraggedLabel = null;
-function OnLabelDragStart(element, ev) {
-  //ev.preventDefault();
-  ExpandTrashbin();
-  currentDraggedLabel = element;
-}
-function OnLabelDragEnd(element, ev) {
-  //ev.preventDefault();
-  RetractTrashbin();
-  currentDraggedLabel = null;
-}
 
-async function OnTrashbinDrop(ev) {
-  ev.preventDefault();
-  if(currentDraggedLabel != null) {
-    try {    
-      var labelName = currentDraggedLabel.labelName;
-      var category = currentDraggedLabel.category;
-      const body = JSON.stringify({"name":labelName, "category":category});
-  
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json");
-      headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-      const response = await fetch("/API/Private/Inspiration/DeleteLabel", { method: "PUT", credentials: 'same-origin', headers:headers, body: body });
-  
-      if (!response.ok)
-        throw new Error(`Response status: ${response.status}`);
-      
-      OnInspirationChange();
-  
-    } catch(err) {
-      console.error(err.message);
-    }
-  }
-}
-
-var allUserPermissions = new Map();
-async function PopulateUserModifier() {
-  // remove all childs except first one
-  const usersPage = document.getElementById("modify-user-users");
-  while (usersPage.childNodes.length > 5) {
-    usersPage.removeChild(usersPage.lastChild);
-  }
-  try {
-    const headers = new Headers();
-    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-    const response = await fetch("/API/Private/Permission/GetAll", { credentials: 'same-origin', headers:headers });
+    const response = await fetch(url, { 
+      credentials: 'same-origin', 
+      headers: headers, 
+      method: method, 
+      body: body
+    });
     if (!response.ok)
-      throw new Error(`Response status: ${response.status}`);
+      throw new Error(await response.text());
+    
+    if(jsonResponse)
+      return [true, await response.json()];
+    else
+      return [true, await response.text()];
+  } catch(err) { console.error(err.message); return [false, err.message]; }
+}
 
-    const json = await response.json();
-    for(let i = 0; i < json.length; i++) {
-      var user = document.createElement("div");
-      user.classList.add("user");
-      user.onmousedown = SelectUser.bind(user, json[i].username, user);
-
-      var innerHTML = '';
-      innerHTML += '<i class="fas fa-user-alt fa-fw"></i>';
-      innerHTML += '<p>' + json[i].username + '</p>';
-      innerHTML += '<i class="fas fa-pen fa-fw"></i>';
-
-      user.innerHTML = innerHTML;
-      usersPage.appendChild(user);
-
-      allUserPermissions.set(json[i].username, new Object());
-
-      allUserPermissions.get(json[i].username).modifyUsers = json[i].modifyUsers;
-      allUserPermissions.get(json[i].username).addFiles = json[i].addFiles;
-      allUserPermissions.get(json[i].username).modifyInspiration = json[i].modifyInspiration;
-      allUserPermissions.get(json[i].username).modifyProjects = json[i].modifyProjects;
+function IsValidURL(url) {
+  try {
+    var check = new URL(url);
+  } catch(err) {
+    try {
+      var check = new URL('https://' + url);
+    } catch(err) {
+      return false;
     }
-  } catch (error) {
-    console.error(error.message);
   }
+  return true;
 }
 
-var currentUserBeingModified = null;
-function SelectUser(username, element, event) {
-  currentUserBeingModified = username;
 
-  document.getElementById("modify-users").getElementsByClassName("next-to-each-other")[0].style.left = "-100%";
-  var user = document.getElementById("modify-user-screen").getElementsByClassName("user")[0];
-  user.innerHTML = '<i class="fas fa-user-alt fa-fw"></i><p>' + username + '</p>';
-  var userPermissions = allUserPermissions.get(username);
-  document.getElementById("modify-users-permission").checked = !!+userPermissions.modifyUsers;
-  document.getElementById("add-files-permission").checked = !!+userPermissions.addFiles;
-  document.getElementById("modify-project-permission").checked = !!+userPermissions.modifyProjects;
-  document.getElementById("modify-inspiration-permission").checked = !!+userPermissions.modifyInspiration;
-
-  document.getElementById("modify-users-permission").disabled = false;
-  document.getElementById("add-files-permission").disabled = false;
-  document.getElementById("modify-project-permission").disabled = false;
-  document.getElementById("modify-inspiration-permission").disabled = false;
-
-  document.getElementById("delete-user").style.opacity = "1";
-  document.getElementById("change").style.opacity = "1";
-  if(username == GetCookie("username")) {
-    document.getElementById("delete-user").style.opacity = "0";
-    document.getElementById("change").style.opacity = "0";
-
-    document.getElementById("modify-users-permission").disabled = true;
-    document.getElementById("add-files-permission").disabled = true;
-    document.getElementById("modify-project-permission").disabled = true;
-    document.getElementById("modify-inspiration-permission").disabled = true;
+/* + ======================================================================== +
+/* | Input fields                                                             |
+/* + ========================================================================*/
+// https://css-tricks.com/the-cleanest-trick-for-autogrowing-textareas/
+function TextareaAutoGrow(element) {
+  if(!element.parentNode.classList.contains("auto-grow")) {
+    element.outerHTML = '<div class="auto-grow">' + element.outerHTML + '</div>';
   }
+  element.parentNode.dataset.replicatedValue = element.value;
 }
 
-// User window form submits -----------------------
 
-function ShowAddUserFaultMessagePopUp(element, message) {
-  element.focus();
-
-  var popover = document.getElementById("add-user-wrong");
-  var projectSuggestionPage = document.getElementById("add-user");
-  var offsetParent = element;
-  var offsetTop = 0;
-  while(offsetParent != projectSuggestionPage) {
-    var style = getComputedStyle(offsetParent);
+/* + ======================================================================== +
+/* | Form fault message                                                       |
+/* + ========================================================================*/
+// Used to automaticly calculate the offset from the top of the form to the input element
+function ShowFaultMessage(forElement, message) {
+  var offsetParent = forElement;
+  var style = getComputedStyle(offsetParent);
+  var offsetTop = parseFloat(style.height, 10) - parseFloat(style.paddingTop, 10) - parseFloat(style.borderTop, 10);
+  var offsetLeft = 0;
+  while(offsetParent.nodeName != 'FORM') {
+    style = getComputedStyle(offsetParent);
     offsetTop += offsetParent.offsetTop + parseFloat(style.paddingTop, 10) + parseFloat(style.marginTop, 10) + parseFloat(style.borderTop, 10);
+    offsetLeft += offsetParent.offsetLeft + parseFloat(style.paddingLeft, 10) + parseFloat(style.marginLeft, 10) + parseFloat(style.borderLeft, 10);
     offsetParent = offsetParent.offsetParent;
-  }
-  popover.style.display = "inline-block";
-  popover.style.top = (offsetTop + element.clientHeight - 10) + "px";
-  popover.innerHTML = message;
-
-  popover.style.opacity = 1;
-
-}
-async function AddUser() {
-  var username = document.getElementById("new-username").value;
-  if(!username)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Specificeer een naam");
-  else if(username.length > 255)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Maximum lengte is 255");
-  else if(username.indexOf('"') != -1)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Kan geen \" erin hebben");
-
-  var password = document.getElementById("new-password").value;
-  if(!password)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password"), "Specificeer een wachtwoord");
-  else if(password.length > 255)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password"), "Maximum lengte is 255");
-  else if(password.indexOf('"') != -1)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password"), "Kan geen \" erin hebben");
-
-  var passwordRepeat = document.getElementById("new-password-repeat").value;
-  if(!passwordRepeat)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Herhaal het wachtwoord");
-  else if(passwordRepeat.length > 255)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Maximum lengte is 255");
-  else if(passwordRepeat.indexOf('"') != -1)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Kan geen \" erin hebben");
-
-  // process the password
-  var buffer = new ArrayBuffer( password.length );
-  var passwordArray = new Uint8Array(buffer);
-  for(var i = 0; i < password.length; i++) {
-    if(password.charCodeAt(i) > 255 || password.charCodeAt(i) < 0)
-      return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Kan geen " + password.charCodeAt(i) + " erin hebben");
-    passwordArray[i] = password.charCodeAt(i);
-  }
-  var encrypted = new Uint8Array(await window.crypto.subtle.digest("SHA-256", buffer));
-  var base64 = btoa(String.fromCharCode.apply(null, encrypted));
-
-  if(password != passwordRepeat)
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-password-repeat"), "Moet hetzelfde zijn als het wachtwoord");
-
-  var submitButton = document.getElementById("add-user-submit");
-  submitButton.value = "Aan het versturen ...";
-
-  var postBody = JSON.stringify({
-    username: username,
-    password: base64
-  });
-
-  const headers = new Headers();
-  headers.append("Content-Type", "application/json");
-  headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-
-  const response = await fetch("/API/Private/User/Add", {
-    method: "PUT",
-    body: postBody,
-    headers: headers,
-    credentials: 'same-origin'
-  });
-
-  if(!response.ok) {
-    submitButton.value = "Maak nieuwe gebruiker";
-    var error = await response.text();
-    if(error == "Gebruikersnaam bestaat al!")
-      return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Gebruikersnaam bestaat al");
-    return ShowAddUserFaultMessagePopUp(document.getElementById("new-username"), "Error: " + error);
+    if(offsetParent.parentElement == undefined) throw new Error("Invalid faultmessage -> requested element isn't part of a FORM element");
   }
 
-  submitButton.value = "Aangemaakt!";
-  document.getElementById("new-username").value = "";
-  document.getElementById("new-password").value = "";
-  document.getElementById("new-password-repeat").value = "";
+  var tooltip = document.createElement('p');
+  tooltip.innerText = message;
+  tooltip.className = 'tooltip js-controlled fault-message bottom';
+  tooltip.style.top = offsetTop + 'px';
+  tooltip.style.left = (offsetLeft + (tooltip.clientWidth / 2)) + 'px';
+  offsetParent.appendChild(tooltip);
+  body.addEventListener('click', TryCloseFaultMessage.bind(null, tooltip), {once: true});
   setTimeout(() => {
-    var submitButton = document.getElementById("add-user-submit");
-    submitButton.value = "Maak nieuwe gebruiker";
-  }, 3000);
-
-  PopulateUserModifier();
+    tooltip.classList.add('open');
+  }, 1);
 }
 
-async function OnModifyUserSubmit(event) {
-  if(event.submitter.id == "delete-user") {
-    if(event.submitter.style.opacity == "0") return;
-
-    if(event.submitter.value == "Verwijder gebruiker") { event.submitter.value = "Zeker weten?"; return; }
-    else if(event.submitter.value == "Zeker weten?") { event.submitter.value = "Absoluut zeker?"; return; }
-    else if(event.submitter.value == "Absoluut zeker?") { event.submitter.value = "Vernietig!!!"; return; }
-
-    var postBody = JSON.stringify({
-      username: currentUserBeingModified
-    });
-    
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-
-    const response = await fetch("/API/Private/User/Delete", {
-      method: "PUT",
-      body: postBody,
-      headers: headers,
-      credentials: 'same-origin'
-    });
-    if(response.ok) PopulateUserModifier();
-    else throw new Error("Failed to delete user: " + await response.text());
-
-  } else if(event.submitter.id == "change") {
-    if(document.getElementById("change").style.opacity == "0") return;
-
-    var postBody = JSON.stringify({
-      username: currentUserBeingModified,
-      modifyUsers: document.getElementById("modify-users-permission").checked ? "1" : "0",
-      addFiles: document.getElementById("add-files-permission").checked ? "1" : "0",
-      modifyProjects: document.getElementById("modify-project-permission").checked ? "1" : "0",
-      modifyInspiration: document.getElementById("modify-inspiration-permission").checked ? "1" : "0"
-    });
-
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
-
-    const response = await fetch("/API/Private/Permission/Grant", {
-      method: "PUT",
-      body: postBody,
-      headers: headers,
-      credentials: 'same-origin'
-    });
-    if(response.ok) PopulateUserModifier();
-    else throw new Error("Failed to modify user: " + await response.text());
+function TryCloseFaultMessage(tooltip, ev) {
+  if(!ev.target.classList.contains('fault-message')) {
+    tooltip.classList.remove('open');
+    setTimeout(() => {
+      tooltip.remove();
+    }, 1000);
+  } else {
+    body.addEventListener('click', TryCloseFaultMessage.bind(null, tooltip), {once: true});
   }
-  document.getElementById("modify-users").getElementsByClassName("next-to-each-other")[0].style.left = "0%";
 }
+
+
+/* + ======================================================================== +
+/* | Website preview                                                          |
+/* + ========================================================================*/
+const InspirationTypes = Object.freeze({
+  None: -1,
+  YT_Video: 0,
+  YT_Channel: 1,
+  Github_account: 2,
+  Github_repository: 3,
+  Website: 4,
+});
+function SetWebsitePreview(element, data) {
+  if(data.type == InspirationTypes.None) throw new Error("Invalid website data");
+  else if(data.type == InspirationTypes.YT_Video) {
+    element.getElementsByClassName("website-content")[0].style.backgroundImage = 'url(' + data.json.thumbnails.medium.url + ')';
+    element.getElementsByClassName("website-author-icon")[0].style.backgroundImage = 'url(' + data.json.channelThumbnails.medium.url + ')';
+    element.getElementsByClassName("website-author-name")[0].innerHTML = data.name;
+    element.getElementsByClassName("website-author-name")[0].style.backgroundColor = "rgba(0,0,0,0)";
+    element.getElementsByClassName("website-extra-info")[0].style.backgroundColor = "rgba(0,0,0,0)";
+  } else if(data.type == InspirationTypes.YT_Channel) {
+
+  } else if(data.type == InspirationTypes.Github_account) {
+
+  } else if(data.type == InspirationTypes.Github_repository) {
+
+  } else if(data.type == InspirationTypes.Website) {
+
+  }
+}
+
+
+/* + ======================================================================== +
+/* | Inspiration labels                                                       |
+/* + ========================================================================*/
+var isInspirationLoaded = false;
+var labels = FetchInfo('/Data/Labels.json', 'GET', null);
+var labelListeners = [];
+// Called after the page has been loaded
+async function AwaitLabels() {
+  var [succes, json] = await labels;
+  if(!succes) throw new Error("Failed to fetch inspiration labels");
+  isInspirationLoaded = true;
+  labels = json;
+  labelListeners.forEach((func) => {
+    func(json);
+  });
+}
+
+function AddLabelListener(func) {
+  labelListeners.push(func);
+  if(isInspirationLoaded) func(labels);
+}
+
+
+/* + ======================================================================== +
+/* | General loading                                                          |
+/* + ========================================================================*/
+var pageLoaded = false;
+addEventListener("load", async (event) => {
+  pageLoaded = true;
+  if(loggedIn) return;
+  GeneralLoad();
+});
+
+function GeneralLoad() {
+  pageLoaded = true;
+  GoToURLWindow();
+  PrepareFooter();
+  AwaitLabels();
+}
+
+
+/* + ======================================================================== +
+/* | Sidebar                                                                  |
+/* + ========================================================================*/
+var currentWindow = null;
+function GoToWindow(name) {
+  if(currentWindow != null && currentWindow.id == name) return;
+  if(currentWindow != null) currentWindow.style.display = 'none';
+  currentWindow = document.getElementById(name);
+  currentWindow.style.display = 'block';
+
+  PushWindowParam("window", name);
+}
+
+function GoToURLWindow() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const selectedWindowName = urlParams.get('window');
+  try {
+    currentWindow = document.getElementById(selectedWindowName);
+    currentWindow.style.display = 'block';
+  } catch(err) {
+    currentWindow = document.getElementById('home');
+    currentWindow.style.display = 'block';
+  }
+}
+
+
+/* + ======================================================================== +
+/* | Footer                                                                   |
+/* + ========================================================================*/
+function PrepareFooter() {
+  const windows = document.getElementsByClassName("window");
+  var innerHTML = '<a class="github" href="https://github.com/hidde2727/Eureka-website"><i class="fab fa-github fa-fw"></i></a>';
+  innerHTML += '<a class="instagram" href="https://instagram.com"><i class="fab fa-instagram fa-fw"></i></a>';
+  innerHTML += '<a class="copyright" onclick="OnCopyrightClick()">©2024 by Hidde Meiburg</a>';
+
+  for (var i = 0; i < windows.length; i++) {
+    var footer = document.createElement("div");
+    footer.classList.add("footer");
+    footer.innerHTML = innerHTML;
+
+    windows[i].appendChild(footer);
+  }
+}
+
+
+/* + ======================================================================== +
+/* | Suggestion window                                                        |
+/* + ========================================================================*/
+function PrepareSuggestionLabelSelectors(labels) {
+  const labelSelector = document.getElementById('suggestion-label-selector');
+  for (const [category, values] of new Map(Object.entries(labels.labels))) {
+    var innerHTML = '<label class="inline">' + category + '</label><div class="inline-input">';
+    values.forEach((value) => {
+      innerHTML += '<p class="label ' + value.id + '" onclick="ToggleSuggestionLabel(this)">' + value.name + '</p>';
+    });
+    innerHTML += '</div>'
+    labelSelector.innerHTML += innerHTML;
+  }
+}
+AddLabelListener(PrepareSuggestionLabelSelectors);
+
+var selectedLabels = [];
+function ToggleSuggestionLabel(element) {
+  if(element.state == undefined) element.state = false;
+
+  if(element.state == false) {
+    element.state = true;
+    element.style.backgroundColor = 'var(--accent)';
+    element.style.color = 'var(--prominent-text)';
+    selectedLabels.push(element.classList[1]);
+  } else if(element.state == true) {
+    element.state = false;
+    element.style.backgroundColor = '';
+    element.style.color = '';
+    selectedLabels = selectedLabels.filter(item => item != element.classList[1]);
+  }
+}
+
+function OnURLSuggestionKeyDown(inputElement, event, websitePreviewID) {
+  if(event.keyCode == 13) {
+    event.preventDefault();
+    inputElement.blur();
+  }
+}
+
+async function OnURLSuggestionChange(inputElement, event, websitePreviewID) {
+  if(!IsValidURL(inputElement.value)) return;
+  var [succes, urlInfo] = await FetchInfo('API/RetrieveURLInfo/', 'PUT', JSON.stringify({'url':inputElement.value}));
+  if(!succes) return;
+  SetWebsitePreview(document.getElementById(websitePreviewID), urlInfo);
+}
+
+async function OnProjectSuggestionSubmit(form) {
+  var projectName = document.getElementById('project-name').value;
+  if(!projectName) return ShowFaultMessage(document.getElementById('project-name'), 'Specificeer een naam');
+  else if(projectName.length > 255) return ShowFaultMessage(document.getElementById('project-name'), 'Maximale lengte 255');
+
+  var projectDescription = document.getElementById('project-description').value;
+  if(!projectDescription) return ShowFaultMessage(document.getElementById('project-description'), 'Specificeer een omschrijving');
+  else if(projectDescription.length > 65535) return ShowFaultMessage(document.getElementById('project-description'), 'Maximale lengte 65535');
+
+  var urls = [];
+  var link1 = document.getElementById('project-link1').value;
+  if(link1) {
+    if(link1.length > 255) return ShowFaultMessage(document.getElementById('project-link1'), 'Maximale lengte 255');
+    else if(!IsValidURL(link1)) return  ShowFaultMessage(document.getElementById('project-link1'), 'Moet valide link zijn');
+    urls.push(link1);
+  }
+  var link2 = document.getElementById('project-link2').value;
+  if(link2) {
+    if(link2.length > 255) return ShowFaultMessage(document.getElementById('project-link2'), 'Maximale lengte 255');
+    else if(!IsValidURL(link2)) return  ShowFaultMessage(document.getElementById('project-link2'), 'Moet valide link zijn');
+    urls.push(link2);
+  }
+  var link3 = document.getElementById('project-link3').value;
+  if(link3) {
+    if(link3.length > 255) return ShowFaultMessage(document.getElementById('project-link3'), 'Maximale lengte 255');
+    else if(!IsValidURL(link3)) return  ShowFaultMessage(document.getElementById('project-link3'), 'Moet valide link zijn');
+    urls.push(link3);
+  }
+
+  var projectSuggestorName = document.getElementById('project-suggestor-name').value;
+  if(!projectSuggestorName) return ShowFaultMessage(document.getElementById('project-suggestor-name'), 'Specificeer je naam');
+  else if(projectSuggestorName.length > 255) return ShowFaultMessage(document.getElementById('project-suggestor-name'), 'Maximale lengte 255');
+
+  var projectSuggestorEmail = document.getElementById('project-suggestor-email').value;
+  if(!projectSuggestorEmail) return ShowFaultMessage(document.getElementById('project-suggestor-email'), 'Specificeer je email');
+  else if(projectSuggestorEmail.length > 255) return ShowFaultMessage(document.getElementById('project-suggestor-email'), 'Maximale lengte 255');
+
+  const [succes, response] = await FetchInfo('/API/SuggestProject/', 'POST', JSON.stringify(
+    {
+      'name':projectName,
+      'description':projectDescription,
+      'links':urls,
+      'suggestorName':projectSuggestorName,
+      'suggestorEmail':projectSuggestorEmail
+    }
+  ), {jsonResponse:false});
+
+  if(!succes) {
+    form.innerHTML = '<div class="center-content"><i class="fas fa-sad-tear" style="font-size:2rem;"></i></div><div class="center-content"><h2>Error bij het indienen</h2></div><div class="center-content"><p>' + response + '</p></div>';
+    return;
+  }
+  
+  document.getElementById('project-name').value = '';
+  document.getElementById('project-description').value = '';
+  document.getElementById('project-link1').value = '';
+  document.getElementById('project-link2').value = '';
+  document.getElementById('project-link3').value = '';
+  document.getElementById('project-suggestor-name').value = '';
+  document.getElementById('project-suggestor-email').value = '';
+
+  form.innerHTML = '<div class="center-content"><i class="fas fa-smile-beam" style="font-size:2rem;"></i></div><div class="center-content"><h2>Alles is goed gegaan!</h2></div><div class="center-content"><p>We proberen in een week bij je terug te komen!</p></div>';
+}
+
+async function OnInspirationSuggestion(form) {
+  var url = document.getElementById('inspiration-url').value;
+  if(!url) return ShowFaultMessage(document.getElementById('inspiration-url'), 'Specificeer een naam');
+  else if(url.length > 255) return ShowFaultMessage(document.getElementById('inspiration-url'), 'Maximale lengte 255');
+  else if(!IsValidURL(url)) return  ShowFaultMessage(document.getElementById('inspiration-url'), 'Moet valide zijn');
+
+  var description = document.getElementById('inspiration-description').value;
+  if(!description) return ShowFaultMessage(document.getElementById('inspiration-description'), 'Specificeer een omschrijving');
+  else if(description.length > 65535) return ShowFaultMessage(document.getElementById('inspiration-description'), 'Maximale lengte 65535');
+
+  var suggestions = [];
+  var link1 = document.getElementById('inspiration-suggestion1').value;
+  if(link1) {
+    if(link1.length > 255) return ShowFaultMessage(document.getElementById('inspiration-suggestion1'), 'Maximale lengte 255');
+    else if(!IsValidURL(link1)) return  ShowFaultMessage(document.getElementById('inspiration-suggestion1'), 'Moet valide link zijn');
+    suggestions.push(link1);
+  }
+  var link2 = document.getElementById('inspiration-suggestion2').value;
+  if(link2) {
+    if(link2.length > 255) return ShowFaultMessage(document.getElementById('inspiration-suggestion2'), 'Maximale lengte 255');
+    else if(!IsValidURL(link2)) return  ShowFaultMessage(document.getElementById('inspiration-suggestion2'), 'Moet valide link zijn');
+    suggestions.push(link2);
+  }
+
+  const [succes, response] = await FetchInfo('/API/SuggestInspiration/', 'POST', JSON.stringify(
+    {
+      'url':url,
+      'description':description,
+      'recommendations':suggestions,
+      'labels':selectedLabels
+    }
+  ), {jsonResponse:false});
+
+  if(!succes) {
+    form.innerHTML = '<div class="center-content"><i class="fas fa-sad-tear" style="font-size:2rem;"></i></div><div class="center-content"><h2>Error bij het indienen</h2></div><div class="center-content"><p>' + response + '</p></div>';
+    return;
+  }
+  
+  document.getElementById('inspiration-url').value = '';
+  document.getElementById('inspiration-description').value = '';
+  document.getElementById('inspiration-suggestion1').value = '';
+  document.getElementById('inspiration-suggestion2').value = '';
+
+  form.innerHTML = '<div class="center-content"><i class="fas fa-smile-beam" style="font-size:2rem;"></i></div><div class="center-content"><h2>Alles is goed gegaan!</h2></div><div class="center-content"><p>We proberen het binnen een week op de website te hebben staan!</p></div>';
+
+}
+
+
+/* + ======================================================================== +
+/* | Login page                                                               |
+/* + ========================================================================*/
+// For those sneaking around in the code, yes there is a login page. Good luck with getting in! (Please if you find a bug, report to the creator and do not attempt to hack into this website. !Do not see this as an encouragement to hack the site!)
+var counter = 0;
+function OnCopyrightClick() {
+  counter++;
+  if(counter > 5) {
+    counter = 0;
+    document.getElementById('login-popover').showPopover();
+  }
+}
+
+async function OnLoginAttempt(form) {
+  var username = document.getElementById('login-user').value;
+  if(!username) return ShowFaultMessage(document.getElementById('login-user'), 'Specificeer een naam');
+  else if(username.length > 255) return ShowFaultMessage(document.getElementById('login-user'), 'Maximum lengte is 255');
+
+  var password = document.getElementById('login-password').value;
+  if(!password) return ShowFaultMessage(document.getElementById('login-password'), 'Specificeer een wachtwoord');
+  else if(password.length > 255) return ShowFaultMessage(document.getElementById('login-password'), 'Maximum lengte is 255');
+
+  var encoder = new TextEncoder();
+  var encodedPassword = new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(password)));
+  var base64 = btoa(String.fromCharCode.apply(null, encodedPassword));
+
+  var [succes, response] = await FetchInfo('API/Login/', 'POST', JSON.stringify({
+    'username':username,
+    'password':base64
+  }), {jsonResponse: false});
+
+  if(!succes)
+    return ShowFaultMessage(document.getElementById('login-user'), 'Fout wachtwoord of gebruikersnaam');
+
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-password').value = '';
+
+  window.location.reload();
+}
+
+
+/* + ======================================================================== +
+/* | Login checks and script downloads                                        |
+/* + ========================================================================*/
+var loggedIn = false;
+async function CheckPermissions() {
+  if(GetCookie("sessionID") == undefined || GetCookie("sessionCredential") == undefined) return;
+  loggedIn = true;
+  
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = '/Management/loader.js';
+  script.async = 'true';
+
+  document.head.appendChild(script);
+}
+CheckPermissions();

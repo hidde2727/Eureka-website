@@ -17,12 +17,12 @@ if(await DB.IsTableEmpty("users")) {
   // Generate default user (username: admin & password: password)
   const crypto = require('node:crypto');
   await Login.GenerateUser("admin", await crypto.subtle.digest("SHA-256", Buffer.from("password")));
-  await Login.GiveUserPermissions("admin", true, true, true, true, true);
+  await Login.GiveUserPermissions((await DB.GetUserByName("admin")).id, true, true, true, true, true, true);
 }
 
 // Static content
 app.use(express.static('Public'));
-app.use('/Data/Inspiration.json', express.static('Data/Inspiration.json'));
+app.use('/Data/Labels.json', express.static('Data/Labels.json'));
 app.use('/Data/Projects.json', express.static('Data/Projects.json'));
 app.use('/Data/Tutorials', express.static('Data/Tutorials'));
 

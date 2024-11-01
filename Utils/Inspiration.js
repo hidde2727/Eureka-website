@@ -1,50 +1,46 @@
 const YT = require("./YT.js");
+const DB = require("./DB.js");
 
 async function GetURLInfo(urlString) {
+    var url = "";
     try {
-        var url = new URL(urlString);
+        url = new URL(urlString)
+    } catch(err) {
+        url = new URL('https://' + urlString);
+    }
 
-        var type = "None";
-        var name = "None";
-        var ID = "None";
-        var json = {};
-        // Youtube based on: https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
-        if(url.hostname === "youtube.be" || url.hostname === "www.youtube.be")
-            await SetYoutubeVideoInfo(url.pathname, type, name, ID, json);
-        else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && (url.pathname.indexOf("/embed") == 0 || url.pathname.indexOf("/shorts") == 0))
-            await SetYoutubeVideoInfo(url.pathname.substring(url.pathname.indexOf('/')), type, name, ID, json);
-        else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("v"))
-            await SetYoutubeVideoInfo(url.searchParams.get("v"), type, name, ID, json);
-        else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("vi"))
-            await SetYoutubeVideoInfo(url.searchParams.get("vi"), type, name, ID, json);
-        else
-            return ReturnError(res, "Illegale website string");
-    } catch(err) { console.error(err); return ReturnError(res, "Bestaad al"); }
-
-    return {
-        "type": type,
-        "name": name,
-        "ID": ID,
-        "json": json
-    };
+    var info = {
+        type: DB.InspirationTypes.None,
+        name:"None",
+        ID:"None",
+        json:{}
+    }
+    // Youtube based on: https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
+    if(url.hostname === "youtube.be" || url.hostname === "www.youtube.be")
+        await SetYoutubeVideoInfo(url.pathname, info);
+    else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && (url.pathname.indexOf("/embed") == 0 || url.pathname.indexOf("/shorts") == 0))
+        await SetYoutubeVideoInfo(url.pathname.substring(url.pathname.indexOf('/')), info);
+    else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("v"))
+        await SetYoutubeVideoInfo(url.searchParams.get("v"), info);
+    else if((url.hostname === "youtube.com" || url.hostname === "www.youtube.com" ) && url.searchParams.has("vi"))
+        await SetYoutubeVideoInfo(url.searchParams.get("vi"), info);
+    else
+        throw new Error("Illegale website string: " + urlString);
+    return info;
 }
 
-async function SetYoutubeVideoInfo(videoID, type, name, ID, json) {
-    const value = await DB.DoesYTVideoExists(videoID);
-    console.log(value);
-    if(value) throw new Error("YT video already exists");
-
+async function SetYoutubeVideoInfo(videoID, info) {
     const yt = await YT.GetGeneralInfo(videoID);
 
-    type = DB.InspirationTypes.YT_video;
-    name = yt.title;
-    ID = videoID;
+    info.type = DB.InspirationTypes.YT_Video;
+    info.name = yt.title;
+    info.ID = videoID;
 
-    json.videoID = videoID;
-    json.title = yt.title;
-    json.thumbnails = yt.thumbnails;
-    json.channelTitle = yt.channelTitle;
-    json.channelThumbnails = yt.channelThumbnails;
+    info.json.videoID = videoID;
+    info.json.title = yt.title;
+    info.json.thumbnails = yt.thumbnails;
+    info.json.channelTitle = yt.channelTitle;
+    info.json.channelThumbnails = yt.channelThumbnails;
 }
 
 module.exports = {

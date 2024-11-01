@@ -28,8 +28,9 @@ function SetupLoginSystem(forceRegenerate = false) {
 async function ValidatePassword(username, password) {
     if(!pepper) throw new Error("No pepper generated");
     if(!hmacSecret) throw new Error("No hmac secret generated");
-    try {        
-        hashedPassword = (await DB.GetUserByName(username))['password'];
+    try {
+        var user = await DB.GetUserByName(username);
+        hashedPassword = user["password"];
         const hmac = crypto.createHmac("sha256", hmacSecret);
         hmac.update(Buffer.from(password));
         hmac.update(Buffer.from(pepper));
@@ -38,15 +39,16 @@ async function ValidatePassword(username, password) {
         if(hashedPassword === undefined) { // The user was not found
             // Prevent timing attack so still hash and verify
             const result = await bcrypt.compare(pepperedPassword, "$2b$10$dEPL9hQYCgl3pGA29Ev8FOLhfDWmaQJCPCGOtzhPkdos/1cvAvRlu");
-            return false;
+            return [false, null];
         }
         // Check the password
-        const result = await bcrypt.compare(pepperedPassword, hashedPassword);
+        const result = await bcrypt.compare(pepperedPassword, hashedPassword.toString('ascii'));
         if(!result) // Wrong password
-            return false;
-        return true;
-    } catch(exc) {
-        return false;
+            return [false, null];
+        return [true, user["id"]];
+    } catch(err) {
+        console.log(err.message);
+        return [false, null];
     }
 }
 
@@ -69,23 +71,23 @@ async function DeleteUser(username) {
     await DB.DeleteUserWithName(username);
 }
 
-async function CreateSession(res, username) {
+async function CreateSession(res, userID) {
     var sessionID = null;
     do { sessionID = crypto.randomBytes(32).toString("ascii"); }
     while(await DB.DoesSessionIDExist(sessionID.toString("ascii")));
     sessionCredential = crypto.randomBytes(32).toString("ascii");
 
-    await DB.CreateSession(sessionID, sessionCredential, username);
+    await DB.CreateSession(sessionID, sessionCredential, userID);
 
     res.cookie("sessionID", encodeURI(sessionID), { maxAge: 720000, secure: true });
     res.cookie("sessionCredential", encodeURI(sessionCredential), { maxAge: 720000, secure: true });
-    res.cookie("username", encodeURI(username), { maxAge: 720000, secure: true });
+    res.cookie("userID", encodeURI(userID), { maxAge: 720000, secure: true });
 }
 
 function RemoveSessionCookies(res) {
     res.clearCookie("sessionID");
     res.clearCookie("sessionCredential");
-    res.clearCookie("username");
+    res.clearCookie("userID");
     return false;
 }
 var sessionUsername = null;
@@ -94,20 +96,21 @@ async function CheckSession(req, res, repeatRequired = true) {
     if(req.cookies.sessionID == undefined) return RemoveSessionCookies(res);
     if(req.cookies.sessionCredential == undefined) return RemoveSessionCookies(res);
     if(repeatRequired && req.headers["sessioncredentialrepeat"] == undefined) return RemoveSessionCookies(res);
-    if(req.cookies.username == undefined) return RemoveSessionCookies();
+    if(req.cookies.userID == undefined) return RemoveSessionCookies();
 
     sessionID = decodeURI(req.cookies.sessionID);
     sessionCredential = decodeURI(req.cookies.sessionCredential);
     if(repeatRequired && sessionCredential != decodeURIComponent(req.headers["sessioncredentialrepeat"]))
         return RemoveSessionCookies(res);
-    sessionUsername = decodeURI(req.cookies.username);
+    sessionUserID = decodeURI(req.cookies.userID);
 
+    await DB.DeleteInvalidSessions();
     session = await DB.GetSession(sessionID);
 
     if(session == undefined) return RemoveSessionCookies(res);
     if(session.id != sessionID) return RemoveSessionCookies(res);
     if(session.credential != sessionCredential) return RemoveSessionCookies(res);
-    if(session.username != sessionUsername) return RemoveSessionCookies(res);
+    if(session.user_ID != sessionUserID) return RemoveSessionCookies(res);
 
     sessionUsername = session.username;
     sessionUserID = session.user_ID;
@@ -142,8 +145,8 @@ async function HasUserPermission(permissionName) {
         return false;
     }
 }
-async function GiveUserPermissions(username, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles) {
-    await DB.SetUserPermissions(username, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles);
+async function GiveUserPermissions(id, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles, watchLogs) {
+    await DB.SetUserPermissions(id, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles, watchLogs);
 }
 
 module.exports = {

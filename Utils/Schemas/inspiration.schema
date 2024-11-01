@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS inspiration (
     version_name TINYTEXT NOT NULL,
     version_description TINYTEXT NOT NULL,
     version_suggestor TINYTEXT NOT NULL,
-    version_suggestor_id INT UNSIGNED,
+    version_suggestor_id INT UNSIGNED DEFAULT NULL,
 
     type TINYINT NOT NULL,
     name TINYTEXT NOT NULL,
@@ -29,4 +29,4 @@ CREATE TABLE IF NOT EXISTS inspiration (
 
     INDEX (active_version),
     INDEX (original_id)
-)
+);

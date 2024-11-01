@@ -4,5 +4,5 @@ node_modules/
 Utils/Config.js
 
 Data/Tutorials
-Data/Inspiration.json
+Data/Labels.json
 Data/Projects.json

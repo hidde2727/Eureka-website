@@ -1,852 +1,608 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Serif:opsz,wght@8..144,600&display=swap');
+
 :root {
     color-scheme: light dark;
-    background-color: light-dark(#eee, #111);
-    color: light-dark(#111, #eee);
+    background-color: var(--background);
+    color: var(--prominent-text);
 
-    font-family: "Times New Roman", Times, serif;
+    --background: light-dark(#111, #111);
+    --prominent-background: light-dark(#222, #222);
+    --extra-prominent-background: light-dark(#3A3A3A, #3A3A3A);
+    --prominent-text: light-dark(#EEE, #EEE);
+    --normal-text: light-dark(#AAA, #AAA);
+    --non-prominent-text: light-dark(#777, #777);
+    --seperator: light-dark(#777, #777);
+    --border: light-dark(#444, #444);
+    --label: light-dark(#CCC, #CCC);
+    --prominent-label: light-dark(#FFF, #FFF);
+    --yt-video: light-dark(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2));
+    --yt-description: light-dark(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1));
+    --input-border: light-dark(#777, #777);
+    --conformation: light-dark(#00712D, #00712D);
+    --denial: light-dark(#B90E0A, #B90E0A);
+    --checkbox: light-dark(#292929, #292929);
+    --popover-background: rgba(0,0,0,0.1);
+    --accent: light-dark(#0f4d92, #0f4d92);
+
+    --small-border: 5px;
+    --big-border: 10px;
+
+    font-family: "Roboto Serif", serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+    font-variation-settings:
+        "wdth" 100,
+        "GRAD" 0;
 }
-html input {
-    font-family: Consolas, Monaco, "Lucida Console", monospace;
-    font-size: 0.8125rem;
+input, textarea {
+    font-family: "Roboto Serif", serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+    font-variation-settings:
+        "wdth" 100,
+        "GRAD" 0;
 }
-html textarea {
-    font-family: Consolas, Monaco, "Lucida Console", monospace;
-    font-size: 0.8125rem;
-}
-html {
-    overflow: hidden;
+* {
+    box-sizing: border-box;
 }
 body {
-    margin: 0px;
+    margin: 0;
 }
 
-/* =========================================
--------- General ---------------------------
-============================================ */
-.popup {
-    position: absolute;
-    background-color: light-dark(#ccc, #444);
-    padding: 10px;
 
-    left: 10px;
-    border: 2px solid light-dark(#aaa, #555);
-
-    border-radius: 5px;
-
-    transition: opacity 0.5s;
-
-    opacity: 0;
+/* + ======================================================================== +
+/* | Text                                                                     |
+/* + ========================================================================*/
+h1 {
+    color: light-dark(#CCC, #CCC);
+    font-size: 3rem;
+    padding: 2px 30px;
+    margin: 5px 0px;
+    border-bottom: solid 2px var(--seperator);
+    text-transform: uppercase;
 }
-.horizontal-break {
-    display: block;
-    margin: 10px;
+h2 {
+    color: var(--normal-text);
+    font-size: 2rem;
+    margin: 10px 0px;
 }
-.horizontal-break p {
-    font-size: 1rem;
-    color: light-dark(#555, #aaa);
-
-    overflow: hidden;
-    position: relative;
-    width: 100%;
-
-    text-align: center;
+p {
+    color: var(--normal-text);
+    font-size: 0.75rem;
+    margin: 15px 0px 5px 15px;
 }
-.horizontal-break p:before {
-    left: -20px;
-}
-.horizontal-break p:before,
-.horizontal-break p:after {
-    display: inline-block;
-    position: absolute;
 
-    content: "";
-    width: 50%;
 
-    height: 2px;
-    background-color: light-dark(#aaa, #555);
-
-    top: 50%;
-    margin-left: 7px;
-}
-/* General input */
-input::placeholder,
-textarea::placeholder {
-    color: light-dark(#777, #888);
-    opacity: 1;
+/* + ======================================================================== +
+/* | Input & textareas & buttons                                              |
+/* + ========================================================================*/
+label:has(+input),
+label:has(+textarea),
+label:has(+.auto-grow) {
+    margin-left: 30px;
+    font-size: 0.875rem;
 }
 input:not(.iconed *),
 textarea,
 button {
-    width: 100%;
+    position: relative;
 
-    background-color: light-dark(#eee, #111);
-    border: 2px solid light-dark(#aaa, #555);
-    border-radius: 5px;
-    
-    transition: border 1s;
+    width: calc(100% - 40px);
+
+    background-color: var(--background);
+    color: var(--prominent-text);
+    border: 2px solid var(--input-border);
+    border-radius: var(--small-border);
+    transition: border 0.5s, z-index 0.5s;
+
+    z-index: 0;
 
     padding: 12px 20px;
-    vertical-align: top;
-    
+    margin: 1px 20px 10px 20px;
+
     overflow-y: hidden;
     resize: none;
+    vertical-align: top;
 
     display: block;
+    
+    outline: none;
+
+    font-size: 0.75rem;
+}
+input::placeholder,
+textarea::placeholder {
+    color: var(--non-prominent-text);
+    opacity: 1;
 }
 input:not(.iconed *):focus,
 textarea:focus {
-    outline: none;
-    border: 2px solid light-dark(#555, #aaa);
+    border: 2px solid var(--normal-text);
+    z-index: 100;
 }
+
 input[type="submit"] {
-    width: calc(100% - 50px);
-    margin: 10px 20px 5px 20px;
+    width: calc(100% - 20px);
+    margin: 30px 10px 0px 10px;;
 }
 input[type="submit"]:focus,
 button:focus {
-    border: 2px solid light-dark(#aaa, #555);
+    border: 2px solid var(--normal-text);
+    z-index: 100;
 }
 input[type="submit"]:focus:hover,
 button:focus:hover {
-    border: 2px solid light-dark(#555, #aaa);
+    border: 2px solid var(--normal-text);
+    z-index: 100;
 }
 input[type="submit"]:hover,
 button:hover {
-    border: 2px solid light-dark(#555, #aaa);
-}
-/* Input with icon next to it */
-.iconed:has(input:focus) {
-    border: 2px solid light-dark(#555, #aaa);
+    border: 2px solid var(--normal-text);
     z-index: 100;
 }
+
+
+/* + ======================================================================== +
+/* | Iconed input                                                             |
+/* + ========================================================================*/
 .iconed {
-    position: relative;
-    display: inline-flex;
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--input-border);
+    border-radius: var(--small-border);
+    background-color: var(--background);
 
-    margin: 0px 20px -4px 4px;
+    margin: 0px 20px 10px 20px;
+    padding: 5px 10px;
 
-    border: 2px solid light-dark(#aaa, #555);
-    border-radius: 5px;
-    transition: border 1s, z-index 1s;
-    background-color: light-dark(#eee, #111);
-
-    overflow: hidden;
+    transition: border 0.5s;
 }
-.iconed input {
+.iconed:has(> input:focus) {
+    border: 2px solid var(--normal-text);
+}
+.iconed > input {
     outline: none;
     border: none;
     background-color: rgba(0,0,0,0);
+    font-size: 0.75rem;
+    color: var(--prominent-text);
+
+    padding: 7px 10px;
+    flex: 1;
+}
+.iconed > label {
+    margin-left: 0px;
+}
+.iconed > label > i {
+    font-size: 1.75rem;
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+
+/* + ======================================================================== +
+/* | Auto growing textareas                                                   |
+/* + ========================================================================*/
+/* https://css-tricks.com/the-cleanest-trick-for-autogrowing-textareas/ */
+.auto-grow {
+    display: grid;
+}
+.auto-grow > textarea,
+.auto-grow::after {
+    width: 100%; 
+
+    grid-area: 1 / 1 / 2 / 2;
+
     padding: 12px 20px;
-
-    flex: 0 0 auto;
-
-    width: calc(100% - 78px);
-
-    transition: width 1s;
-}
-.iconed-label {
-    margin: 0px 0px -4px 40px;
-}
-.iconed i {
-    flex: 0 0 auto;
-    font-size: 1.5rem;
-    padding: 8px 0px;
-    width: 38px;
-
-    border-radius: 5px 0px 0px 5px;
-
-    text-align: center;
-
-    transition: background-color 1s;
-}
-/* Labels for inputs */
-label.label-above,
-p.label-above {
-    display: block;
-
-    margin: 0px 0px 0px 10px;
+    margin: 0px;
 
     font-size: 0.75rem;
-    color: light-dark(#555, #aaa);
 }
-input.label-above,
-textarea.label-above,
-button.label-above {
-    box-sizing: border-box;
-    display: block;
-
-    width: calc(100% - 50px);
-
-    margin: 0px 20px 5px 30px;
-}
-.iconed.label-above {
-    box-sizing: border-box;
-    width: calc(100% - 50px);    
-    margin: 0px 20px 5px 30px;
+.auto-grow::after {
+    content: attr(data-replicated-value) " ";
+    white-space: pre-wrap;
+    visibility: hidden;
 }
 
-label.label-aside,
-p.label-aside {
+
+/* + ======================================================================== +
+/* | Inline label                                                             |
+/* + ========================================================================*/
+label.inline {
     display: inline-block;
-    width: calc(30% - 40px);
-
-    margin: 0px 0px 5px 40px;
+    width: calc(30% - 10px);
+    margin: 0px 0px 7px 50px;
     padding: 12px 0px;
-}
-input.label-aside,
-textarea.label-aside,
-button.label-aside {
-    display: inline-block;
-    width: calc(70% - 80px);
 
+    font-size: 0.875rem;
+}
+label.inline + input,
+label.inline + textarea,
+label.inline + .iconed,
+label.inline + .auto-grow,
+label.inline + .inline-input {
+    width: calc(70% - 65px);
     margin: 0px 20px 5px 0px;
-}
-.iconed.label-aside {
-    width: calc(70% - 40px);
-    
-    margin: 0px 20px 5px 0px;
-}
-/* Slider toggle */
-.slider-toggle {
-    --width: 45px;
-    --height: 24px;
-
-    position: relative;
     display: inline-block;
-    width: calc(var(--width) + 4px);
-    height: calc(var(--height) + 4px);
-
-    background-color: light-dark(#ccc, #333);
-
-    border-radius: calc(var(--height) / 2);
-
-    transition: border 0.4s, margin 0.4s, background-color .4s;
-
-    top: calc((var(--height)) / 2 - 4px);
 }
-.slider-toggle:has(input:checked) {
-    background-color: light-dark(#00712D, #00712D);
+label.inline + .auto-grow {
+    display: inline-grid;
 }
-.slider-toggle input {
-    width: 0px;
-    height: 0px;
-    opacity: 0;
-    vertical-align: middle;
-}
-.slider-toggle .internal-slider {
-    display: inline-block;
-    width: var(--height);
-    height: var(--height);
-    background-color: light-dark(#eee, #111);
-    border-radius: 100%;
-
-    position: absolute;
-    top: 2.5px;
-    left: 4px;
-
-    transition: left .4s, width .4s, height .4s, top .4s, left .4s;
-}
-.slider-toggle:has(input:active) .internal-slider {
-    width: calc(var(--height) - 2px);
-    height: calc(var(--height) - 2px);
-
-    top: 3.5px;
-    left: 5px;
-}
-.slider-toggle input:checked + .internal-slider {
-    left: calc(var(--width) - var(--height));
+input,
+textarea,
+.iconed,
+.auto-grow,
+.inline-input {
+    vertical-align: top;
 }
 
-/* Additive input list */
-.additive-input-list {
+
+/* + ======================================================================== +
+/* | Split window and seperators                                              |
+/* + ========================================================================*/
+.split-window {
+    display: grid;
+    grid-template-columns: calc(50% - 25px) calc(50% - 25px);
+}
+.split-window > * {
     position: relative;
-    margin-bottom: 20px;
+    padding: 0px 10px 0px 30px;
 }
-.additive-input-list label:nth-child(2) {
-    margin-bottom: -3px;
-}
-.additive-input-list .list-item.label-aside {
-    margin: 0px 20px -4px 4px;
-}
-.additive-input-list .list-item.label-above {
-    margin: 0px 20px -4px 30px;
-}
-.additive-input-list .list-item.label-aside:nth-child(3) {
-    position: relative;
-    left: -4px;
-    margin-bottom: -5px;
-}
-.additive-input-list .list-item input {
-    width: calc(100% - 40px);
-    padding: 12px 20px 12px 20px;
-}
-.additive-input-list .list-item:not(:nth-child(3)):hover input {
-    width: calc(100% - 40px - 38px);
-}
-.additive-input-list .list-item i {
-    flex: 0 0 auto;
-    font-size: 1.5rem;
-    padding: 8px 0px;
-    background-color: light-dark(#B90E0A, #B90E0A);
-    color: light-dark(#eee, #111);
-    width: 38px;
-
-    border-radius: 5px 0px 0px 5px;
-
-    text-align:center;
-
-    transition: background-color 1s;
-}
-.additive-input-list .list-item i:hover {
-    background-color: light-dark(#E3242B, #E3242B);
-}
-.additive-input-list .plus {
+.split-window.seperator > :first-child::after {
+    content: "";
     position: absolute;
-    bottom: -17px;
-    left: calc(30% - 12px);
+    right:0px;
+    top: 20px;
+    height: calc(100% - 40px);
+    width: 2px;
+    background-color: var(--seperator);
+}
+hr {
+    color: var(--seperator);
+    margin: 0px 10px;
+}
 
-    font-size: 1.75rem;
-    text-align:center;
 
-    color: light-dark(#00712D, #00712D);
-    background-color: light-dark(#eee, #111);
-    border-radius: 100%;
+/* + ======================================================================== +
+/* | Tooltips                                                                 |
+/* + ========================================================================*/
+*:has(> .tooltip) {
+    position: relative;
+}
+.tooltip {
+    position: absolute;
+    margin: 0;
 
-    padding-top: 4px;
+    background-color: var(--extra-prominent-background);
+    color: var(--prominent-text);
+    padding: 6px;
+    border-radius: 5px;
 
     z-index: 200;
 
-    transition: color 1s;
-}
-.additive-input-list:has(.label-above) .plus {
-    left: 12px;
-}
-.additive-input-list .plus:hover {
-    color: light-dark(#3CB043, #3CB043);
-}
-
-/* Sidebar */
-:root {
-    --sidebar-size: 2rem;
-    --sidebar-height: calc(var(--sidebar-size) * 1.25);
-}
-body {
-    display: grid;
-    grid-template-columns: calc(var(--sidebar-height) + 16px) 11px auto;
-}
-#sidebar {
-    z-index: 100;
-
-    user-select: none;
-
-    position: relative;
-    font-size: var(--sidebar-size);
-    overflow-x: visible;
-
-    margin-top: 8px;
-    margin-bottom: 8px;
-
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-
-    height: calc(100vh - 16px);
-}
-#sidebar .sidebar-tab {
-    background-color: light-dark(#ddd, #222);
-    color: light-dark(#222, #ddd);
-
-    display: grid;
-    grid-template-columns: var(--sidebar-height) auto;
-    grid-template-rows: var(--sidebar-height);
-    border-radius: 5px;
-
-    width: var(--sidebar-height);
-    overflow: hidden;
-
-    padding: 4px;
-    margin-bottom: 8px;
-    margin-left: 8px;
-
-    transition: width 1s;
-}
-#sidebar i {
-    margin-right: 4px;
-}
-#sidebar p {
-    margin: 0px 0px 0px 4px;
-    padding-right: 4px;
-}
-#sidebar .log-out {
-    margin-top: auto;
-}
-
-#middle-border {
-    margin-left: 10px;
-    border: 1px solid light-dark(#aaa, #555);
-}
-
-/* Main content */
-#main-content {
-    overflow-x: hidden;
-    overflow-y: hidden;
-}
-
-#main-content-scroll-animation {
-    height: 100%;
-    width: 100%;
-
-    overflow: visible;
-
-    display: grid;
-    grid-template-columns: 100%;
-    grid-template-rows: repeat(6, 100vh);
-
-    top: 0vh;
-    transition: top 1s;
-
-    position: relative;
-}
-.content-wrapper {
-    overflow-x: hidden;
-    overflow-y: auto;
-    height: 100vh;
-}
-.content-window {
-    overflow: visible;
-    
-    min-height: calc(100vh - 30px);
-    height: auto;
-
-    position: relative;
-}
-.content-window > * {
-    padding-left: 39px;
-}
-.content-window h1 {
-    border-bottom: 2px solid light-dark(#aaa, #555);
-    margin: 0px;
-    font-weight: bold;
-    font-size: 3em;
-    padding-bottom: 9px;
-    margin-bottom: 20px;
-}
-
-/* Projects window */
-#projects {
-    --margin-top: 10px;
-    --margin-bottom: 10px;
-
-    column-gap: 20px;
-    column-width: 400px;
-    margin-bottom: calc(var(--margin-bottom) + var(--margin-top));
-
-    margin-right: 60px;
-
-    min-height: calc(100vh - 30px - (var(--margin-bottom) + var(--margin-top)));
-}
-
-.project {
-    display: block;
-    width: 100%;
-    height: auto;
-    overflow: hidden;
-
-    padding: 0px;
-
-    background-color: light-dark(#ddd, #222);
-    color: light-dark(#222, #ddd);
-    border-radius: 5px;
-
-    margin: 20px 20px 10px 40px;
-
-    position: relative;
-    top: var(--margin-top);
-}
-
-.project:nth-child(2) {
-    margin-top: calc(var(--margin-top) * -1);
-}
-
-.project * {
-    padding: 0px;
-}
-
-.project .project-name {
-    margin-left: 20px;
-    margin-right: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-
-    border-bottom: 2px solid light-dark(#aaa, #555);
-
-    font-size: 2rem;
-    font-weight: bold;
-}
-.project .project-requester {
-    display: inline-block;
-    width: calc(50% - 10px);
-    margin-left: 10px;
-    font-size: 0.75rem;
-}
-.project .project-requester p {
-    margin: 0px;
-    color: light-dark(#555, #aaa);
-}
-.project .project-requester p:nth-child(2) {
-    font-size: 1rem;
-    color: light-dark(#111, #eee);
-}
-.project .project-executor {
-    display: inline-block;
-    width: calc(50% - 10px);
-    margin-right: 10px;
-    font-size: 0.75rem;
-}
-.project .project-executor p {
-    margin: 0px;
-    color: light-dark(#555, #aaa);
-}
-.project .project-executor p:nth-child(2) {
-    font-size: 1rem;
-    color: light-dark(#111, #eee);
-}
-.project .project-description {
-    margin: 10px 10px 0px 10px;
-    color: light-dark(#555, #aaa);
-}
-.project .project-description::after {
-    content: "";
-    display: block;
-
-    margin: 5px 20px 0px 20px;
-
-    border-top: 2px solid light-dark(#aaa, #555);
-}
-.project .project-links {
-    margin: 2px 10px 5px 10px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    row-gap: 5px;
-    column-gap: 5px;
-
-    color: light-dark(#111, #eee);
-    font-size: 1rem;
-}
-.project .project-links a:visited {
-    color: light-dark(#111, #eee);
-}
-/* Inspiration */
-.inspiration-label {
-    border-radius: 2px;
-    color: #111;
-    padding: 2px 4px 4px 0px!important;
-    margin: 1px!important;
-    background-color: #666;
-}
-.inspiration-label::before {
-    content: "";
-    width: 4px;
-    height: 4px;
-    border-radius: 100%;
-    background-color: light-dark(#111, #111);
-    display: inline-block;
-    margin: 0px 5px 2px 5px;
-}
-
-/* Tutorials */
-#tutorials p {
-    color: light-dark(#555, #aaa);
-    margin: 0px;
-}
-#tutorials .tutorial {
-    border-radius: 5px;
-
-    width: 100%;
-    height: auto;
-    overflow: hidden;
-
-    user-select: none;
-    cursor: pointer;
-}
-#tutorials .tutorial i {
-    color: light-dark(#555, #aaa);
-    font-size: 2.5rem;
-    text-align: center;
-    display: block;
-
-    transition: color 0.5s;
-}
-#tutorials .tutorial:hover i {
-    color: light-dark(#333, #ccc);
-}
-#tutorials .tutorial p {
-    color: light-dark(#111, #eee);
-    text-align: center;
-    display: block;
-    font-size: 1rem;
-}
-#tutorials #folders,
-#tutorials #files {
-    column-gap: 20px;
-    column-width: 100px;
-}
-#tutorials #on-file-drag {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
-    padding: 0px;
-    z-index: 100;
-
-    background-color: light-dark(#eee, #111);
-
-    align-items: center;
-    justify-content: center;
-
-    display: none;
     opacity: 0;
+    transition: opacity 0.5s, visibility 0.5s allow-discrete;
+    visibility: hidden;
 
-    transition: opacity 1s;
+    font-family: "Roboto Serif", serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+    font-variation-settings:
+        "wdth" 100,
+        "GRAD" 0;
 }
-#tutorials #on-file-drag.files-hover {
+*:hover > .tooltip:not(.js-controlled) {
+    transition-delay: 1s;
+}
+*:hover > .tooltip:not(.js-controlled),
+.tooltip.js-controlled.open {
     opacity: 1;
+    visibility: visible;
 }
-#tutorials #on-file-drag * {
-    pointer-events: none;
-}
-#tutorials #file-navigation {
-    border-bottom: 2px solid light-dark(#aaa, #555);
-    margin: -10px 20px 10px 20px;
-    padding: 0px 19px 10px 19px;
+.tooltip:before {
+    content: "";
 
-    user-select: none;
-}
-#tutorials #file-navigation i {
-    font-size: 1rem;
+    background-color: var(--extra-prominent-background);
     display: inline-block;
-    vertical-align: middle;
-    color: light-dark(#555, #aaa);;
-}
-#tutorials #file-navigation i:first-child {
-    margin-top: -3px;
-    margin-right: 10px;
-    color: light-dark(#111,#eee);
+    width: 8px;
+    height: 8px;
+    rotate: 45deg;
 
-    cursor: pointer;
-}
-#tutorials #file-navigation i:not(:first-child) {
-    font-size: 0.75rem;
-    font-weight: normal;
-}
-#tutorials #file-navigation p {
-    font-size: 1rem;
-    display: inline-block;
-    color: light-dark(#111, #eee);
-    margin: 0px 10px 0px 10px;
-
-    cursor: pointer;
-}
-
-/* Suggestions */
-.split-screen {
-    height: calc(100vh - 120px);
-
-    min-width: 690px;
-}
-.split-screen > * {
-    display: inline-block;
-
-    width: calc(50% - 30px);
-    height: calc(100% - 20px);
-
-    margin: 10px 10px 10px 10px;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    scrollbar-width: thin;
-    scrollbar-color: light-dark(#aaa, #555);
-}
-.split-screen > *:nth-child(1) {
-    border-right: 2px solid light-dark(#aaa, #555);
-}
-
-#project-suggestion {
-    position: relative;
-    min-width: 320px;
-}
-
-#suggestions h2 {
-    margin: 0px 20px 0px 0px;
-    font-weight: bold;
-    font-size: 2rem;
-    padding-bottom: 9px;
-}
-#suggestions h3 {
-    margin: 0px 20px 0px 0px;
-    font-weight: bold;
-    font-size: 1.25rem;
-}
-#suggestions p {
-    color: light-dark(#555, #aaa);
-    font-size: 1rem;
-    margin: 0px 0px 0px 20px;
-}
-
-#suggestions #links {
-    position: relative;
-}
-#suggestions .where-to-find-you {
-    margin-top: 20px;
-    margin-bottom: 5px;
-}
-
-#project-suggestion-wrong {
-    left: calc(30% + 10px);
-}
-
-#project-succes-page {
-    display: none;
+    z-index: -100;
 
     position: absolute;
-    top: 0px;
-    left: 0px;
+}
+.tooltip.right {
+    top: calc(50% - 12px);
+    left: 100%;
+}
+.tooltip.right:before {
+    top: calc(50% - 4px);
+    left: -4px;
+}
+.tooltip.bottom {
+    top: 100%;
+    left: calc(50% - 12px);
+}
+.tooltip.bottom:before {
+    top: -4px;
+    left: calc(50% - 4px);
+}
 
-    width: 100%;
-    height: 100%;
 
-    background-color: light-dark(#eee, #111);
+/* + ======================================================================== +
+/* | Popover                                                                  |
+/* + ========================================================================*/
+[popover]::backdrop {
+    backdrop-filter: blur(3px);
+    background-color: var(--popover-background);
+}
+[popover] {
+    position: fixed;
+    width: fit-content;
+    height: fit-content;
+    margin: auto;
+
+    border: none;
+    background-color: rgba(0,0,0,0);
+
+    color: var(--prominent-text);
+
+    visibility: hidden;
+    display: block;
+
+    overflow: hidden;
+
+    z-index: 1000;
+}
+[popover]:popover-open {
+    visibility: visible;
+}
+
+[popover]:not(:has(.left,.middle,.right)),
+[popover] .left,
+[popover] .middle .top,
+[popover] .middle .bottom,
+[popover] .middle:not(:has(.top,.bottom)),
+[popover] .right {
+    border: 2px solid var(--border);
+    border-radius: var(--big-border);
+    padding: 15px;
+    overflow: auto;
+    background-color: var(--background);
+
+    transform: translateY(-16px);
     opacity: 0;
 
-    transition: opacity 0.5s;
+    transition: opacity 0.5s ease-in-out, transform ease-in-out 0.5s, visibility 0.5s ease-in-out allow-discrete;
+}
+[popover]:has(.left,.middle,.right) {
+    display: grid;
+    grid-template-columns: fit-content fit-content fit-content;
+    grid-template-areas: 
+        'left middle right';
+}
+[popover] .left,
+[popover]:popover-open .left.closed {
+    grid-area: left;
 
-    z-index: 100000;
+    border-radius: var(--big-border) 0px 0px var(--big-border);
+    border-right: none;
+    transform: translateX(-16px);
+
+    opacity: 0;
+    visibility: hidden;
 }
-#project-succes-page i {
-    display: block;
-    font-size: 4rem;
-    text-align: center;
+[popover] .middle {
+    grid-area: middle;
 }
-#project-succes-page h2 {
-    margin-top: 50px;
+[popover] .middle:not(:has(.top, .bottom)),
+[popover]:popover-open .middle.closed:not(:has(.top, .bottom)),
+[popover] .middle .top,
+[popover]:popover-open .middle .top.closed {
+    border-radius: var(--big-border);
+    transform: translateY(-16px);
+
+    opacity: 0;
+    visibility: hidden;
 }
-#project-succes-page p {
-    color: light-dark(#111, #eee);
+[popover] .middle .bottom,
+[popover]:popover-open .middle .bottom.closed {
+    border-radius: 0px 0px var(--big-border) var(--big-border);
+    border-top: none;
+    transform: translateY(16px);
+
+    opacity: 0;
+    visibility: hidden;
+}
+[popover] .right,
+[popover]:popover-open .right.closed {
+    grid-area: right;
+
+    border-radius: 0px var(--big-border) var(--big-border) 0px;
+    border-left: none;
+    transform: translateX(16px);
+
+    opacity: 0;
+    visibility: hidden;
+}
+[popover]:popover-open:not(:has(.left,.middle,.right)),
+[popover]:popover-open .left,
+[popover]:popover-open .middle .top,
+[popover]:popover-open .middle .bottom,
+[popover]:popover-open .middle:not(:has(.top,.bottom)),
+[popover]:popover-open .right {
+    transform: none;
+    opacity: 1;
+    visibility: visible;
 }
 
-#inspiration-suggestions {
-    min-width: 320px;
-    position: relative;
-}
-#inspiration-suggestions #inspiration-url {
-    margin: 0 auto;
-    display: block;
-}
-#inspiration-suggestions .labels {
-    display: inline-flex;
-    flex-direction: row;
-    flex-wrap: wrap;
 
-    width: calc(70% - 40px);
-    
-    margin: 0px 20px 5px 0px;
+/* + ======================================================================== +
+/* | Website                                                                  |
+/* + ========================================================================*/
+.website {
+    display: inline-grid;
+
+    width: 311.11px;
+    height: 217px;
+
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+
+    grid-template-areas:
+        "cont cont"
+        "icon info1"
+        "icon info2";
 }
-#inspiration-suggestions .inspiration-label {
-    color: #111!important;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    user-select: none;
-}
-#inspiration-suggestions #preview {
-    margin: 10px auto;
-    width: fit-content;
-}
-#inspiration-suggestions .thumbnail {
+.website .website-content {
+    grid-area: cont;
+
     aspect-ratio: 16/9;
     height: 175px;
-    background-color: rgba(255,255,255,0.2);
+    background-color: var(--yt-video);
     border-radius: 12px;
     outline: none;
     border: 0;
 
     background-size: contain;
 }
-#inspiration-suggestions .bottom-video {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto;
-    align-items: center;
-}
-#inspiration-suggestions .channel-thumbnail {
+.website .website-author-icon {
+    grid-area: icon;
+
     aspect-ratio: 1/1;
     height: 36px;
     border-radius: 100%;
-    background-color: rgba(255,255,255,0.1);
+    background-color: var(--yt-description);
 
     display: inline-block;
 
     background-size: contain;
+
+    margin-top: 6px;
 }
-#inspiration-suggestions .channel-info-block {
-    display: inline-block;
-    margin-left: 20px;
-}
-#inspiration-suggestions .channel-info {
-    background-color: rgba(255,255,255,0.1);
-    border-radius: 5px;
+.website .website-author-name,
+.website .website-extra-info {
+    grid-area: info1;
+
+    background-color: var(--yt-description);
+    color: var(--prominent-text);
+    border-radius: var(--small-border);
     width: 200px;
     height: 15px;
 
     display: block;
 
-    margin: 6px 0px 4px 0px;
+    margin: 6px 0px 0px 15px;
 }
-#inspiration-suggestions .channel-info:not(:first-child) {
+.website .website-extra-info {
+    grid-area: info2;
     width: 150px;
 }
-#inspiration-suggestion p {
-    color: light-dark(#555, #aaa);
+
+
+/* + ======================================================================== +
+/* | Inspiration labels                                                       |
+/* + ========================================================================*/
+.label {
+    border-radius: var(--small-border);
+    color: var(--label);
+    padding: 5px 5px 5px 0px;
+    margin: 1px 10px 1px 1px;
+    background-color: var(--prominent-background);
+
+    display: inline;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
-#inspiration-suggestions #label-selector p {
-    color: light-dark(#111, #eee);
-    margin-left: 40px;
+.label::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 100%;
+    background-color: var(--label);
+    display: inline-block;
+    margin: 0px 5px 1px 5px;
 }
 
-#inspiration-succes-page {
+
+/* + ======================================================================== +
+/* | Remaining general components                                             |
+/* + ========================================================================*/
+.center-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* + ======================================================================== +
+/* | Sidebar                                                                  |
+/* + ========================================================================*/
+body {
+    margin: 0px!important;
+    grid-template-columns: 58px calc(100% - 58px) !important;
+    grid-template-rows: 100vh;
+
+    height: 100vh;
+}
+#sidebar {
+    height: 100%;
+    padding: 20px 0px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    row-gap: 15px;
+}
+#sidebar > * {
+    row-gap: 15px;
+    display: flex;
+    flex-direction: column;
+}
+#sidebar-top {
+    margin-top: 0;
+    margin-bottom: auto;
+}
+#sidebar-bottom {
+    margin-top: auto;
+    margin-bottom: 0;
+}
+#sidebar i {
+    color: var(--non-prominent-text);
+    font-size: 2rem;
+
+    transition: color 0.5s;
+}
+#sidebar i:hover {
+    color: var(--prominent-text);
+}
+#sidebar .tooltip.right {
+    left: calc(100% + 15px);
+}
+
+
+/* + ======================================================================== +
+/* | Windows                                                                  |
+/* + ========================================================================*/
+.window {
     display: none;
 
-    position: absolute;
-    top: 0px;
-    left: 0px;
-
-    width: 100%;
     height: 100%;
 
-    background-color: light-dark(#eee, #111);
-    opacity: 0;
-
-    transition: opacity 0.5s;
-
-    z-index: 100000;
-}
-#inspiration-succes-page i {
-    display: block;
-    font-size: 4rem;
-    text-align: center;
-}
-#inspiration-succes-page h2 {
-    margin-top: 50px;
-}
-#inspiration-succes-page p {
-    color: light-dark(#111, #eee);
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
-/* Footer */
+
+/* + ======================================================================== +
+/* | Footer                                                                   |
+/* + ========================================================================*/
 .footer {
     display: flex;
     column-gap: 5px;
@@ -870,374 +626,58 @@ body {
     user-select: none;
 }
 
-/* Loggin */
-#login-window {
-    display: flex;
-    align-items: center;
-    justify-content: center;
 
-    height: calc(100% - 90px);
-}
-#login-window > form {
-    border: 2px solid light-dark(#aaa, #555);
-    padding: 5px;
-    border-radius: 5px;
-}
+/* + ======================================================================== +
+/* | Home window                                                              |
+/* + ========================================================================*/
 
-#login-window .iconed {
-    display: flex;
 
-    margin: 10px 10px 0px 10px;
+
+/* + ======================================================================== +
+/* | Projects window                                                          |
+/* + ========================================================================*/
+
+
+/* + ======================================================================== +
+/* | Inspiration window                                                       |
+/* + ========================================================================*/
+
+
+/* + ======================================================================== +
+/* | Files window                                                             |
+/* + ========================================================================*/
+
+
+/* + ======================================================================== +
+/* | Suggestion window                                                        |
+/* + ========================================================================*/
+label:has(+ #project-link2, + #project-link3) {
+    margin-top: -13px;
 }
-#login-window label {
+#project-link2,
+#project-link3 {
+    margin-top: -7px;
+}
+#inspiration-suggestion1 + .website,
+#inspiration-suggestion2 + .website {
+    margin-left: 20px;
+}
+#suggestion-label-selector label.inline {
+    margin: 0px 0px 0px 50px;
+    padding: 10px 0px;
+}
+#suggestion-label-selector .inline-input {
+    margin: 0px;
+
     display: inline-flex;
-    justify-content: center;
-    align-items: center;
-
-    width: 44px;
-    height: 44px;
-}
-#login-window i {
-    width: 44px;
-    font-size: 2rem;
-    background-color: light-dark(#eee, #111);
-    color: light-dark(#111, #eee);
-}
-#login-window input {
-    flex-grow: 1;
-}
-
-#login-window p {
-    margin: 5px 10px 0px 10px;
-}
-
-/* User */
-#logged-in-window {
-    column-gap: 20px;
-    column-width: 330px;
-    min-height: calc(100% - 87px);
-}
-#logged-in-window > * {
-    position: relative;
-
-    background-color: light-dark(#ddd, #222);
-    border-radius: 5px;
-
-    padding: 10px;
-
-    box-sizing: border-box;
-    overflow: hidden;
-}
-#logged-in-window h2 {
-    border-bottom: 2px solid light-dark(#aaa, #555);
-    margin: 0px;
-    font-weight: bold;
-    font-size: 2em;
-    padding: 0px 20px 5px 20px;
-    margin-bottom: 5px;
-}
-#logged-in-window p {
-    display: inline-block;
-    margin: 5px 0px 5px 0px;
-}
-#logged-in-window i {
-    display: inline-block;
-    font-size: 2rem;
-    vertical-align: middle;
-}
-#logged-in-window input[type="submit"],
-#logged-in-window button {
-    width: calc(100% - 20px);
-    margin: 20px 10px 5px 10px;
-}
-
-#approve-suggestions .suggestion {
-    padding: 10px;
-    margin: 0px 20px 0px 20px;
-    border-top: 2px solid light-dark(#aaa, #555);
-
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-
-    top: 0px;
-}
-#approve-suggestions .suggestion:nth-child(1) {
-    border: 0px;
-}
-#modify-users h2 {
-    margin-bottom: -1.5px;
-}
-#approve-suggestions .suggestion i:nth-child(1) {
-    display: inline-block;
-    margin: 0px 10px 0px 0px;
-}
-#approve-suggestions .suggestion i:nth-child(3) {
-    font-size: 1.25rem;
-    line-height: 2rem;
-}
-#approve-suggestions .suggestion p {
-    display: inline-block;
-    margin: 0px;
-    line-height: 2rem;
-}
-#select-suggestion {
-    overflow-y: auto;
-
-    scrollbar-width: thin;
-    scrollbar-color: light-dark(#aaa, #555);
-
-    max-height: 214px;
-}
-#approve-suggestions button {
-    margin-top: 0px;
-}
-#approve-suggestion::backdrop {
-    backdrop-filter: blur(2px);
-}
-#approve-suggestion {
-    border-radius: 10px;
-
-    background-color: light-dark(#eee, #111);
-
-    border: 2px solid light-dark(#aaa, #555);
-
-    min-width: 100px;
-    min-height: 100px;
-    width: 80vw;
-    max-width: 500px;
-}
-#approve-suggestion input[type="submit"] {
-    display: inline-block;
-    width: calc(50% - 20px);;
-}
-#approve-suggestion #deny {
-    background-color: light-dark(#B90E0A, #B90E0A);
-    border: 0px;
-    transition: background-color 1s;
-}
-#approve-suggestion #deny:hover {
-    background-color: light-dark(#E3242B, #E3242B);
-}
-#approve-suggestion #accept {
-    background-color: light-dark(#00712D, #00712D);
-    border: 0px;
-    transition: background-color 1s;
-}
-#approve-suggestion #accept:hover {
-    background-color: light-dark(#3CB043, #3CB043);
-}
-
-#modify-users {
-    max-height: 322px;
-    height: 100vh;
-}
-#modify-users .hide-overflow {
-    overflow-x: hidden;
-
-    height: 100%;
-}
-#logged-in-window .user {
-    padding: 10px;
-    margin: 0px 20px 0px 20px;
-    border-top: 2px solid light-dark(#aaa, #555);
-
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-
-    top: 0px;
-}
-#logged-in-window .user:nth-child(2) {
-    border: 0px;
-}
-#modify-users h2 {
-    margin-bottom: -1.5px;
-}
-#logged-in-window .user i:nth-child(1) {
-    display: inline-block;
-    margin: 0px 10px 0px 0px;
-}
-#logged-in-window .user i:nth-child(3) {
-    font-size: 1.25rem;
-    line-height: 2rem;
-}
-
-#logged-in-window .user p {
-    display: inline-block;
-    margin: 0px;
-    line-height: 2rem;
-}
-
-#logged-in-window .next-to-each-other {
-    position: relative;
-
-    display: grid;
-    grid-template-columns: 50% 50%;
-
-    left: 0%;
-    transition: left 1s;
-
-    height: 100%;
-    width: 200%;
-
-    overflow-x: hidden;
-}
-#modify-user-users {
-    overflow-y: auto;
-
-    scrollbar-width: thin;
-    scrollbar-color: light-dark(#aaa, #555);
-}
-#modify-user-screen .user {
-    border: 0px solid rgba(0,0,0,0);
-    margin-bottom: -10px;
-}
-
-#modify-user-screen .slider-toggle {
-    --width: 45px;
-    --height: 24px;
-    margin-left: 10px;
-}
-#modify-user-screen label {
-    display: inline-block;
-    font-size: 1rem;
-    color: light-dark(#111, #eee);
-    margin-left: 10px;
-}
-#modify-user-screen #delete-user {
-    background-color: light-dark(#B90E0A, #B90E0A);
-    border: 0px;
-    transition: background-color 1s;
-}
-#modify-user-screen #delete-user:hover {
-    background-color: light-dark(#E3242B, #E3242B);
-}
-#modify-user-screen #cancel {
-    display: inline-block;
-    width: calc(50% - 18px);
-
-    margin: 5px 0px 5px 10px;
-}
-#modify-user-screen #change {
-    display: inline-block;
-    width: calc(50% - 18px);
-
-    margin: 5px 10px 5px 10px;
-    padding: 12px 10px;
-}
-
-
-
-
-
-
-#modify-labels i {
-    line-height: 23px;
-    cursor: pointer;
-}
-#modify-labels > i {
-    line-height: 43px;
-}
-#modify-labels input[type="text"] {
-    display: inline-block;
-    width: calc(100% - 40px - 50px);
-}
-#modify-labels #label-categories {
-    margin-bottom: 10px;
-}
-#modify-labels .category {
-    margin: 0px 20px 10px 20px;
-    padding-top: 5px;
-}
-#modify-labels .category:not(:first-child) {
-    border-top: 2px solid light-dark(#bbb, #555);
-}
-#modify-labels .category > p {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin: 0px;
-}
-#modify-labels .category i {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-right: 10px;
-}
-#modify-labels .category .top {
-    display: flex;
-    align-items: center;
-    cursor: grab;
-    user-select: none;
-}
-#modify-labels .category .top .collapse {
-    transition: transform 1s;
-}
-#modify-labels .category .top .edit {
-    margin-right: 10px;
-    margin-left: auto;
-}
-#modify-labels .category .top .delete {
-    margin-right: 0px;
-}
-#modify-labels .labels {
-    margin: 0px 0px 0px 40px;
-    font-size: 1rem;
-
-    overflow: hidden;
-    max-height: 0px;
-
-    transition: max-height 1s;
-
-    display: flex;
-    flex-direction: row;
     flex-wrap: wrap;
-}
-#modify-labels .labels p {
-    margin: 0px;
-}
-#modify-labels .labels i {
-    font-size: 1.25rem;
-    line-height: 31px;
-    margin-right: 3px;
-    margin-top: 5px;
-}
-#modify-labels .labels input,
-#modify-labels .labels button {
-    padding: 6px 10px;
-    margin-top: 5px;
-    display: inline-block;
-}
-#modify-labels .labels button {
-    margin: 5px 5px;
-    font-size: 0.77rem;
-    color: #111;
-    border: none;
-    width: 31px;
-    height: 31px;
-    padding: 0px;
-}
-#modify-labels .labels button i {
-    margin: 0px;
-}
-#modify-labels .inspiration-label {
-    cursor: grab;
-    user-select: none;
-}
-#modify-labels .inspiration-label .content {
-    cursor: text;
-    outline: none;
-}
-#modify-labels #delete-draggables {
-    background-color: light-dark(#B90E0A, #B90E0A);
-    margin: 10px -10px -10px -10px;
-    transition: background-color 1s;
-    padding: 5px 10px;
+    row-gap: 2px;
 
-    transition: margin 1s, padding 1s, height 1s;
-    overflow: hidden;
+    position: relative;
+    top: 5px;
 }
-#modify-labels #delete-draggables i {
-    font-size: 1.25rem;
-    margin-right: 5px;
-}
-#modify-labels #delete-draggables:hover {
-    background-color: light-dark(#E3242B, #E3242B);
+#suggestion-label-selector .label {
+    transition: color 0.2s, background-color 0.2s;
+    user-select: none;
+    cursor: pointer;
 }

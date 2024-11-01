@@ -1,16 +1,16 @@
 CREATE TABLE IF NOT EXISTS projects (
-    uuid INT UNSIGNED NOT NULL PRIMARY KEY,
+    uuid INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
 
     original_id INT UNSIGNED NOT NULL,
-    active_version BOOL NOT NULL,
-    votes JSON NOT NULL,
-    next_version INT UNSIGNED NOT NULL,
-    previous_version INT UNSIGNED NOT NULL,
+    active_version BOOL NOT NULL DEFAULT FALSE,
+    votingResult BOOL DEFAULT NULL,
+    next_version INT UNSIGNED DEFAULT NULL,
+    previous_version INT UNSIGNED DEFAULT NULL,
     
     version_name TINYTEXT NOT NULL,
     version_description TINYTEXT NOT NULL,
     version_suggestor TINYTEXT NOT NULL,
-    version_suggestor_id INT UNSIGNED,
+    version_suggestor_id INT UNSIGNED DEFAULT NULL,
 
     name TINYTEXT NOT NULL,
     description TEXT NOT NULL,
@@ -29,4 +29,4 @@ CREATE TABLE IF NOT EXISTS projects (
 
     INDEX (active_version),
     INDEX (original_id)
-)
+);

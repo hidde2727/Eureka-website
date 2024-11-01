@@ -41,7 +41,7 @@ async function GetGeneralInfo(videoID) {
     channelSnippet = channelSnippet.items[0].snippet;
     return {
         "title": videoSnippet.title,
-        "thumnnails": videoSnippet.thumbnails,
+        "thumbnails": videoSnippet.thumbnails,
         "channelTitle": videoSnippet.channelTitle,
         "channelThumbnails": channelSnippet.thumbnails
     }

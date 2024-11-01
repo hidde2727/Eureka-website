@@ -26,7 +26,7 @@ router.use("/Files", Files);
 router.use("/Inspiration", Inspiration);
 
 // General Private API
-router.get("/LogOut", async (req, res) => {
+router.post("/LogOut", async (req, res) => {
     await Login.RemoveSession(req, res);
     res.send("Succes");
 });

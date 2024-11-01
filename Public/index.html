@@ -1,249 +1,210 @@
 <!DOCTYPE html>
-
 <html>
-    <!-- HEAD START -->
-    <head>
-        <link rel="stylesheet" href="index.css">
-        <script src="index.js"></script>
-        <link rel="stylesheet" href="/fontawesome-free-6.6.0-web/css/all.min.css">
+<head>
+    <title>Eureka</title>
+    <link rel="stylesheet" href="index.css">
+    <script type="text/javascript" src="index.js"></script>
 
-        <title>Eureka</title>
-    </head>
-    <!-- BODY START -->
-    <body>
-        <!-- SIDEBAR -->
-        <div id="sidebar">
-            <span class="sidebar-tab" target="home"><i class="fas fa-house fa-fw"></i><p>Home</p></span>
-            <span class="sidebar-tab" target="projects"><i class="fas fa-wrench fa-fw"></i><p>Projecten</p></span>
-            <span class="sidebar-tab" target="inspiration"><i class="fas fa-lightbulb fa-fw"></i><p>Inspiratie</p></span>
-            <span class="sidebar-tab" target="files"><i class="fas fa-folder fa-fw"></i><p>Tom's&nbsp;hoekje</p></span>
-            <span class="sidebar-tab" target="suggesties"><i class="fas fa-comments fa-fw"></i><p>Suggesties</p></span>
-            <span class="sidebar-tab user-tab" target="user" style="display: none"><i class="fas fa-user-circle fa-fw"></i><p>Loggin</p></span>
+    <link rel="stylesheet" href="/fontawesome-free-6.6.0-web/css/all.min.css">
 
-            <span class="sidebar-tab log-out" style="display: none" onmousedown="Logout()"><i class="fas fa-sign-out-alt fa-fw"></i><p>Log&nbsp;uit</p></span>
+</head>
+<body class="split-window seperator">
+    <div id="sidebar">
+        <div id="sidebar-top">
+            <i class="fas fa-home fa-fw" onclick="GoToWindow('home')"><p class="tooltip right">Home</p></i>
+            <i class="fas fa-wrench fa-fw" onclick="GoToWindow('projects')"><p class="tooltip right">Projecten</p></i>
+            <i class="fas fa-lightbulb fa-fw" onclick="GoToWindow('inspiration')"><p class="tooltip right">Inspiratie</p></i>
+            <i class="far fa-file fa-fw" onclick="GoToWindow('files')"><p class="tooltip right">Tom's&nbsp;hoekje</p></i>
+            <i class="fas fa-comments fa-fw" onclick="GoToWindow('suggestions')"><p class="tooltip right">Suggesties</p></i>
         </div>
-        <div id="middle-border"></div>
-        <div id="main-content">
-        <div id="main-content-scroll-animation">
-            <!-- HOME -->
-            <div class="content-wrapper">
-                <div class="content-window" id="home">
-                    <h1>HOME</h1>
+        <div id="sidebar-middle">
+        </div>
+        <div id="sidebar-bottom">
+            <i class="fas fa-sun fa-fw"><p class="tooltip right">Licht&nbsp;thema</p></i>
+        </div>
+    </div>
+
+    <div id="body">
+<!----------------------------------------------------------------------------------+
+| Home                                                                              |
++----------------------------------------------------------------------------------->
+        <div class="window" id="home">
+            <div class="split-window seperator">
+                <div>
+                    <h1>Hello world</h1>
+                    <form>
+                        <p>kategorie 1</p>
+
+                        <label for="test">Hello</label>
+                        <input type="text" id="test" placeholder="hehehehe">
+                        
+                        <div class="iconed"><label for="test2"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="heheheh" id="test2"></div>
+
+                        <p>kategorie 2</p>
+                        
+                        <label class="inline" for="test4">Hello</label>
+                        <input type="text" id="test4" placeholder="hehehehe">
+
+                        <input type="submit">
+                    </form>
+                </div>
+                <div>
+                    <h2>Suggereer een project</h2>
+                    <form>
+                        <label for="test1">Hello</label>
+                        <input type="text" id="test1" placeholder="hehehehe">
+        
+                        <input type="submit">
+                    </form>
                 </div>
             </div>
-            <!-- PROJECTS -->
-            <div class="content-wrapper">
-                <div class="content-window" id="projects">
-                    <h1>PROJECTEN</h1>
-                    <!-- Here the projects are inserted by index.js -->
-                </div>
+            <hr>
+            <p>Hello world</p>
+            <button popovertarget="testpopover1">Popover</button>
+            <div id="testpopover1" popover>
+                <h2>COntent hier</h2>
+                <label for="test6">Hello</label>
+                <input type="text" id="test6" placeholder="hehehehe">
+                            
+                <div class="iconed"><label for="test7"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="heheheh" id="test7"></div>
             </div>
-            <!-- INSPIRATION -->
-            <div class="content-wrapper">
-                <div class="content-window" id="inspiration">
-                    <h1>INSPIRATIE</h1>
-                    <!-- Here the inspiration is inserted by index.js -->
+            <button popovertarget="testpopover">Popover</button>
+            <div id="testpopover" popover>
+                <div class="right">
+                    <p>hehehe</p>
                 </div>
-            </div>
-            <!-- TUTORIALS -->
-            <div class="content-wrapper">
-                <div class="content-window" id="tutorials">
-                    <h1>TUTORIALS</h1>
-                    <div id="file-navigation">
-                        <i class="fas fa-home" onclick="GoToFolder('/')"></i>
-                        <i class="fas fa-greater-than"></i>
-                        <!-- Here is the navigation inserted by index.js -->
+                <div class="left closed">
+                    <p>hehehe</p>
+                </div>
+                <div class="middle">
+                    <div class="top">
+                        <h2>COntent hier</h2>
+                        <label for="test6">Hello</label>
+                        <input type="text" id="test6" placeholder="hehehehe">
+                                
+                        <div class="iconed"><label for="test7"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="heheheh" id="test7"></div>
                     </div>
-                    <p>Folders:</p>
-                    <div id="folders">
-                        <!-- Here the folders are inserted by index.js -->
+                    <div class="bottom">
+
                     </div>
-                    <p>Files:</p>
-                    <div id="files">
-                        <!-- Here the tutorials are inserted by index.js -->
-                    </div>
-                    <div id="on-file-drag" display="none"><span><h1>Drop die files!</h1><p>Upload bestanden door ze hier te droppen</p></span></div>
                 </div>
             </div>
-            <!-- SUGGESTIONS -->
-            <div class="content-wrapper">
-                <div class="content-window" id="suggestions">
-                    <h1>SUGGESTIES</h1>
+        </div>
+<!----------------------------------------------------------------------------------+
+| Projects                                                                          |
++----------------------------------------------------------------------------------->
+        <div class="window" id="projects">
+
+        </div>
+<!----------------------------------------------------------------------------------+
+| Inspiration                                                                       |
++----------------------------------------------------------------------------------->
+        <div class="window" id="inspiration">
+
+        </div>
+<!----------------------------------------------------------------------------------+
+| Files                                                                             |
++----------------------------------------------------------------------------------->
+        <div class="window" id="files">
+
+        </div>
+<!----------------------------------------------------------------------------------+
+| Suggestions                                                                       |
++----------------------------------------------------------------------------------->
+        <div class="window" id="suggestions">
+            <div class="split-window seperator">
+                <form onsubmit="event.preventDefault(); OnProjectSuggestionSubmit(this);">
+                    <h2>Suggereer een project</h2>
+                    <p>Wat is het project?</p>
                     
-                    <div class="split-screen">
-                        <form id="project-suggestion" onsubmit="event.preventDefault(); OnProjectSuggestionSubmit();">
-                            
-                            <h2>Suggereer een project</h2>
+                    <label for="project-name" class="inline">Naam*</label>
+                    <input type="text" id="project-name" placeholder="Project naam">
 
-                            <p>Wat is het project?</p>
+                    <label for="project-description" class="inline">Omschrijving*</label>
+                    <div class="auto-grow"><textarea oninput="TextareaAutoGrow(this)" id="project-description" placeholder="Een mooie omschrijving"></textarea></div>
 
-                            <label class="label-aside" for="project-name">Naam*</label>
-                            <input class="label-aside" type="text" id="project-name" placeholder="Project naam"><br>
+                    <label for="project-link1" class="inline">Linkjes</label>
+                    <input type="text" id="project-link1" placeholder="www.youtube.com">
+                    <label for="project-link2" class="inline"></label>
+                    <input type="text" id="project-link2" placeholder="www.youtube.com">
+                    <label for="project-link3" class="inline"></label>
+                    <input type="text" id="project-link3" placeholder="www.youtube.com">
 
-                            <label class="label-aside" for="project-description">Omschrijving*</label>
-                            <textarea class="label-aside" placeholder="Een mooie omschrijving..." id="project-description" rows="5" onkeyup="AutoGrow(this)"></textarea><br>
-                            
-                            <div class="additive-input-list" id="links">
-                                <i class="plus fas fa-plus-circle fa-fw" onmousedown="AddLinkToAdditiveInputList('links', 'ww.youtube.com', true)"></i>
-                                <label class="label-aside">Linkjes</label>
-                                <div class="list-item iconed label-aside"><input type="text" class="link1" placeholder="www.youtube.com"><i class="fas fa-minus-circle fa-wf"></i></div>
-                            </div>
+                    <p>Hoe houden we je op de hoogte?</p>
+                    <label for="project-suggestor-name" class="inline">Naam*</label>
+                    <input type="text" id="project-suggestor-name" placeholder="De biologie sectie">
 
-                            <p class="where-to-find-you">Hoe houden we je op de hoogte?</p>
-                            <label class="label-aside" for="project-suggestor">Naam*</label>
-                            <input class="label-aside" type="text" id="project-suggestor" placeholder="Pietje Bakker"><br>
-                            <label class="label-aside" for="project-suggestor-email">Email*</label>
-                            <input class="label-aside" type="text" id="project-suggestor-email" placeholder="PietjeBakker@usgym.nl">
+                    <label for="project-suggestor-email" class="inline">Email*</label>
+                    <input type="text" id="project-suggestor-email" placeholder="eureka@usgym.nl">
 
-                            <input type="submit" value="Insturen" id="submit-project-suggestion">
+                    <input type="submit" value="Insturen">
 
-                            <div class="popup" id="project-suggestion-wrong"></div>
-                            <div id="project-succes-page">
-                                <i class="fas fa-smile"></i>
-                                <h2>Bedankt voor je suggestie!</h2>
-                                <p>We proberen in maximaal een week bij je terug te komen</p>
-                            </div>
+                </form>
+                <form onsubmit="event.preventDefault(); OnInspirationSuggestion(this);">
+                    <h2>Suggereer inspiratie</h2>
+                    <p>Wat is de url?</p>
 
-                        </form>
-                        <form id="inspiration-suggestions" onsubmit="event.preventDefault(); SendInspirationSuggestion(this);">
-                            
-                            <h2>Geef wat inspiratie</h2>
+                    <label for="inspiration-url" class="inline">URL*</label>
+                    <input type="text" id="inspiration-url" placeholder="www.youtube.com" onchange="OnURLSuggestionChange(this, event, 'inspiration-preview');" onkeydown="OnURLSuggestionKeyDown(this, event, 'inspiration-preview');">
 
-                            <p>Wat is de url?</p>
-
-                            <input class="label-aside" type="text" id="inspiration-url" placeholder="https://www.youtube.com/watch?v=GFq6wH5JR2A" onkeydown="OnURLKeyDown(this, event)" onblur="OnVideoURLInput(this, event)">
-                            <div id="preview">
-                                <div class="thumbnail"></div>
-                                <div class="bottom-video">
-                                    <span class="channel-thumbnail"></span>
-                                    <span class="channel-info-block"><p class="channel-info"></p><p class="channel-info"></p></span>
-                                </div>
-                            </div>
-                            <p>Waar gaat het over?</p>
-                            <div id="label-selector">
-                                <!-- Here the labels are inserted by index.js -->
-                            </div>
-
-                            <input type="submit" value="Insturen" id="submit-inspiration-suggestion">
-
-                            <div id="inspiration-succes-page">
-                                <i class="fas fa-smile"></i>
-                                <h2>Bedankt voor je suggestie!</h2>
-                                <p>We proberen in maximaal een week je suggestie op de site te hebben</p>
-                            </div>
-
-                        </form>
-                    </div>
-
-                </div>
-            </div>
-            <!-- USER -->
-            <div class="content-wrapper">
-                <div class="content-window" id="user">
-                    <h1>LOGGIN</h1>
-                    <div id="login-window">
-                        <form onsubmit="event.preventDefault(); TryLogin();">
-                            <div class="iconed">
-                                <label for="username"><i class="fas fa-user-alt"></i></label>
-                                <input type="text" id="username">
-                            </div>
-
-                            <div class="iconed">
-                                <label for="password"><i class="fas fa-lock"></i></label>
-                                <input type="password" id="password">
-                            </div>
-
-                            <p id="wrong-password" style="opacity:0; cursor:default;">Verkeerd wachtwoord of gebruiker</p>
-
-                            <input type="submit" value="Login">
-                        </form>
-                    </div>
-                    <div id="logged-in-window" style="display: none">
-                        <div id="approve-suggestions">
-                            <h2>Beoordeel suggesties</h2>
-                            <div id="select-suggestion">
-                                <!-- index.js will add the suggestions here -->
-                            </div>
-                            <div class="horizontal-break"><p>Of</p></div>
-                            <button>Beoordeel alle</button>
-                        </div>
-                        <div id="approve-suggestion" popover>
-                            <!-- index.js will add content here -->
-                        </div>
-                        <form id="add-user" onsubmit="event.preventDefault(); AddUser();" style="display: none">
-
-                            <h2>Nieuwe gebruiker</h2>
-
-                            <label class="label-above" for="new-username">Gebruikersnaam</label>
-                            <input class="label-above" type="text" id="new-username" placeholder="Gebruikersnaam">
-
-                            <label class="label-above" for="new-password">Wachtwoord</label>
-                            <input class="label-above" type="text" id="new-password" placeholder="Wachtwoord">
-
-                            <label class="label-above" for="new-password-repeat">Herhaal wachtwoord</label>
-                            <input class="label-above" type="text" id="new-password-repeat" placeholder="Herhaal wachtwoord">
-
-                            <div class="popup" id="add-user-wrong"></div>
-
-                            <input type="submit" id="add-user-submit" value="Maak nieuwe gebruiker">
-
-                        </form>
-                        <div id="modify-users" style="display: none">
-                        <div class="hide-overflow">
-                            <div class="next-to-each-other">
-                                <div id="modify-user-users">
-                                    <h2>Pas gebruikers aan</h2>
-                                    <!-- index.js will add the users here -->
-
-                                </div>
-                                <form id="modify-user-screen" onsubmit="event.preventDefault(); OnModifyUserSubmit(event);">
-                                    <div class="user"></div>
-                                    <label class="slider-toggle">
-                                        <input type="checkbox" id="modify-users-permission">
-                                        <span class="internal-slider"></span>
-                                    </label>
-                                    <label for="modify-users-permission">Gebruikers veranderen</label>
-                                    <br>
-                                    <label class="slider-toggle">
-                                        <input type="checkbox" id="add-files-permission">
-                                        <span class="internal-slider"></span>
-                                    </label>
-                                    <label for="add-files-permission">Files toevoegen</label>
-                                    <br>
-                                    <label class="slider-toggle">
-                                        <input type="checkbox" id="modify-project-permission">
-                                        <span class="internal-slider"></span>
-                                    </label>
-                                    <label for="modify-project-permission">Projecten aanpassen</label>
-                                    <br>
-                                    <label class="slider-toggle">
-                                        <input type="checkbox" id="modify-inspiration-permission">
-                                        <span class="internal-slider"></span>
-                                    </label>
-                                    <label for="modify-inspiration-permission">Inspiratie aanpassen</label>
-
-                                    <input type="submit" id="delete-user" value="Verwijder gebruiker">
-                                    <input type="submit" id="cancel" value="Annuleer">
-                                    <input type="submit" id="change" value="Pas aan">
-                                    
-                                </form>
-                            </div>
-                        </div>
-                        </div>
-                        <div id="modify-labels">
-                            <h2>Pas labels aan</h2>
-                            <div id="label-categories">
-                                <!-- index.js will add the labels here -->
-                            </div>
-
-                            <i class="fas fa-plus" onmousedown="AddCategory()"></i>
-                            <input type="text" id="new-category-name" placeholder="Nieuwe categorie">
-                            <div id="delete-draggables" ondrop="OnTrashbinDrop(event)" ondragover="event.preventDefault()" style="height:0px;margin:0px;padding:0px"><i class="fas fa-trash-alt"></i><p>Verwijder</p></div>
+                    <label class="inline"></label>
+                    <div class="center-content inline-input" style="display: inline-flex">
+                        <div class="website" id="inspiration-preview">
+                            <div class="website-content"></div>
+                            <div class="website-author-icon"></div>
+                            <p class="website-author-name"></p>
+                            <p class="website-extra-info"></p>
                         </div>
                     </div>
-                </div>
+
+                    <p>Waar gaat het over?</p>
+
+                    <label for="inspiration-description" class="inline">Korte omschrijving*</label>
+                    <div class="auto-grow"><textarea oninput="TextareaAutoGrow(this)" id="inspiration-description" placeholder="Dit is een geweldige video om te bekijken als je graag meer te weten wilt komen over AI. Het start op een perfect niveau om voor iedereen begrijpbaar te zijn en zal je een solide basis geven voor de rest van de serie. Absoluut een aanrader om te kijken als je graag meer te weten wilt komen over AI." rows="5"></textarea></div>
+
+                    <p>Welke label zijn van toepassing?</p>
+                    <div id="suggestion-label-selector">
+                        <!-- Here the labels are inserted by index.js -->
+                    </div>
+
+                    <p>Suggesties om na afloop te bekijken?</p>
+                    <div class="split-window">
+                        <div>
+                            <label for="inspiration-suggestion1">Suggestie 1</label>
+                            <input type="text" id="inspiration-suggestion1" placeholder="www.youtube.com" onchange="OnURLSuggestionChange(this, event, 'inspiration-preview1');" onkeydown="OnURLSuggestionKeyDown(this, event, 'inspiration-preview1');">
+                            <div class="website" id="inspiration-preview1">
+                                <div class="website-content"></div>
+                                <div class="website-author-icon"></div>
+                                <p class="website-author-name"></p>
+                                <p class="website-extra-info"></p>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="inspiration-suggestion2">Suggestie 2</label>
+                            <input type="text" id="inspiration-suggestion2" placeholder="www.youtube.com" onchange="OnURLSuggestionChange(this, event, 'inspiration-preview2');" onkeydown="OnURLSuggestionKeyDown(this, event, 'inspiration-preview2');">
+                            <div class="website" id="inspiration-preview2">
+                                <div class="website-content"></div>
+                                <div class="website-author-icon"></div>
+                                <p class="website-author-name"></p>
+                                <p class="website-extra-info"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="submit" value="Insturen">
+
+                </form>
             </div>
         </div>
-        </div>
-    </body>
+    </div>
+<!----------------------------------------------------------------------------------+
+| Login page                                                                        |
++----------------------------------------------------------------------------------->
+    <form id="login-popover" popover onsubmit="event.preventDefault(); OnLoginAttempt(this)">
+        <div class="iconed"><label for="login-user"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="Gebruikersnaam" id="login-user"></div>
+        <div class="iconed"><label for="login-password"><i class="fas fa-lock"></i></label><input type="password" placeholder="Wachtwoord" id="login-password"></div>
+        <input type="submit" value="Inloggen">
+    </form>
+
+</body>
 </html>
