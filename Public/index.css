@@ -11,7 +11,7 @@
     --prominent-text: light-dark(#EEE, #EEE);
     --normal-text: light-dark(#AAA, #AAA);
     --non-prominent-text: light-dark(#777, #777);
-    --seperator: light-dark(#777, #777);
+    --seperator: light-dark(#444, #444);
     --border: light-dark(#444, #444);
     --label: light-dark(#CCC, #CCC);
     --prominent-label: light-dark(#FFF, #FFF);
@@ -21,11 +21,14 @@
     --conformation: light-dark(#00712D, #00712D);
     --denial: light-dark(#B90E0A, #B90E0A);
     --checkbox: light-dark(#292929, #292929);
+    --checkbox-hover: light-dark(#444, #444);
     --popover-background: rgba(0,0,0,0.1);
     --accent: light-dark(#0f4d92, #0f4d92);
 
-    --small-border: 5px;
-    --big-border: 10px;
+    --small-border-radius: 5px;
+    --big-border-radius: 10px;
+
+    --border-width: 1px;
 
     font-family: "Roboto Serif", serif;
     font-optical-sizing: auto;
@@ -60,7 +63,7 @@ h1 {
     font-size: 3rem;
     padding: 2px 30px;
     margin: 5px 0px;
-    border-bottom: solid 2px var(--seperator);
+    border-bottom: solid var(--border-width) var(--seperator);
     text-transform: uppercase;
 }
 h2 {
@@ -68,10 +71,24 @@ h2 {
     font-size: 2rem;
     margin: 10px 0px;
 }
+h2.card-title {
+    font-size: 1.75rem;
+
+    margin: 5px;
+    padding: 0px 30px;
+    border-bottom: var(--border-width) solid var(--border);
+
+    color: var(--prominent-text);
+}
 p {
     color: var(--normal-text);
     font-size: 0.75rem;
     margin: 15px 0px 5px 15px;
+}
+a {
+    color: var(--normal-text);
+    font-size: 0.75rem;
+    margin: 0px;
 }
 
 
@@ -93,8 +110,8 @@ button {
 
     background-color: var(--background);
     color: var(--prominent-text);
-    border: 2px solid var(--input-border);
-    border-radius: var(--small-border);
+    border: var(--border-width) solid var(--input-border);
+    border-radius: var(--small-border-radius);
     transition: border 0.5s, z-index 0.5s;
 
     z-index: 0;
@@ -119,7 +136,7 @@ textarea::placeholder {
 }
 input:not(.iconed *):focus,
 textarea:focus {
-    border: 2px solid var(--normal-text);
+    border: var(--border-width) solid var(--normal-text);
     z-index: 100;
 }
 
@@ -129,17 +146,17 @@ input[type="submit"] {
 }
 input[type="submit"]:focus,
 button:focus {
-    border: 2px solid var(--normal-text);
+    border: var(--border-width) solid var(--normal-text);
     z-index: 100;
 }
 input[type="submit"]:focus:hover,
 button:focus:hover {
-    border: 2px solid var(--normal-text);
+    border: var(--border-width) solid var(--normal-text);
     z-index: 100;
 }
 input[type="submit"]:hover,
 button:hover {
-    border: 2px solid var(--normal-text);
+    border: var(--border-width) solid var(--normal-text);
     z-index: 100;
 }
 
@@ -150,8 +167,8 @@ button:hover {
 .iconed {
     display: flex;
     align-items: center;
-    border: 2px solid var(--input-border);
-    border-radius: var(--small-border);
+    border: var(--border-width) solid var(--input-border);
+    border-radius: var(--small-border-radius);
     background-color: var(--background);
 
     margin: 0px 20px 10px 20px;
@@ -160,7 +177,7 @@ button:hover {
     transition: border 0.5s;
 }
 .iconed:has(> input:focus) {
-    border: 2px solid var(--normal-text);
+    border: var(--border-width) solid var(--normal-text);
 }
 .iconed > input {
     outline: none;
@@ -240,6 +257,130 @@ textarea,
 
 
 /* + ======================================================================== +
+/* | Checkbox                                                                 |
+/* + ========================================================================*/
+span:has(>input[type="checkbox"]) {
+    position: relative;
+
+    display: inline-block;
+
+    width: 16px;
+    height: 16px;
+
+    background-color: var(--extra-prominent-background);
+    border-radius: var(--extra-small-border-radius);
+
+    transition: background-color 0.5s;
+
+    margin-left: 5px;
+}
+span:has(>input[type="checkbox"]):hover {
+    background-color: var(--checkbox-hover);
+}
+span:has(>input[type="checkbox"])::before {
+    transform-origin: bottom left;
+    clip-path: polygon(15.625% 43.75%, 7.5% 46.875%, 37.5% 76.5625%, 89.0625% 25%, 82.8125% 18.75%, 37.5% 64.0625%);
+
+    background-color: var(--normal-text);
+
+    content: "";
+    width: 16px;
+    height: 16px;
+    display: inherit;
+
+    position: absolute;
+    top: 0px;
+    left: 0px;
+
+    transform: scale(0) rotate(-45deg);
+    transitioN: transform 0.2s;
+}
+span:has(>input[type="checkbox"]:checked)::before {
+    transform: scale(1) rotate(0deg);
+}
+input[type="checkbox"] {
+    display: inline-block;
+
+    width: 16px;
+    height: 16px;
+
+    margin: 0px;
+
+    opacity: 0;
+}
+span:has(>input[type="checkbox"]) + label {
+    display: inline-block;
+    margin: 0px 0px 0px 10px;
+    width: calc(100% - 55px);
+    vertical-align: middle;
+    font-size: 0.75rem;
+    color: var(--normal-text);
+}
+
+
+/* + ======================================================================== +
+/* | Dropdown select list                                                     |
+/* + ========================================================================*/
+.select {
+    position: relative;
+    display: inline-block;
+    width: fit-content;
+
+    font-size: 0.75rem;
+    color: var(--normal-text);
+
+    cursor: pointer;
+    user-select: none;
+}
+.select .active {
+    display: inline-block;
+    width: fit-content;
+}
+.select .active::after {
+    content: "\f078";
+    font-weight: 900;
+    font-family: "Font Awesome 6 Free";
+    
+    margin-left: 10px;
+}
+.select .dropdown {
+    position: absolute;
+    z-index: 100;
+    left: -10px;
+    top: calc(100% + 2px);
+
+    transform: translateY(-16px);
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity 0.5s ease-in-out 0.1s, transform ease-in-out 0.5s 0.1s, visibility 0.5s ease-in-out allow-discrete 0.1s, background-color 0.2s ease-in-out;
+    
+    background-color: rgba(0,0,0,0);
+    padding: 5px;
+
+    border-radius: var(--extra-small-border-radius);
+}
+
+.select.open .dropdown {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+
+    background-color: var(--prominent-background);
+
+    transition: opacity 0.5s ease-in-out, transform ease-in-out 0.5s, visibility 0.5s ease-in-out allow-discrete, background-color 0.2s ease-in-out 0.3s;
+}
+.select .dropdown > * {
+    padding: 5px;
+    transition: background-color 0.5s;
+}
+.select .dropdown > *:hover {
+    background-color: var(--extra-prominent-background);
+    border-radius: var(--extra-small-border-radius);
+}
+
+
+/* + ======================================================================== +
 /* | Split window and seperators                                              |
 /* + ========================================================================*/
 .split-window {
@@ -256,7 +397,7 @@ textarea,
     right:0px;
     top: 20px;
     height: calc(100% - 40px);
-    width: 2px;
+    width: var(--border-width);
     background-color: var(--seperator);
 }
 hr {
@@ -275,16 +416,20 @@ hr {
     position: absolute;
     margin: 0;
 
-    background-color: var(--extra-prominent-background);
-    color: var(--prominent-text);
-    padding: 6px;
-    border-radius: 5px;
+    background-color: var(--extra-prominent-background) !important;
+    color: var(--prominent-text) !important;
+    padding: 6px !important;
+    border-radius: var(--small-border-radius) !important;
 
-    z-index: 200;
+    z-index: 100000;
 
-    opacity: 0;
-    transition: opacity 0.5s, visibility 0.5s allow-discrete;
-    visibility: hidden;
+    opacity: 0 !important;
+    transition: opacity 0.5s, visibility 0.5s allow-discrete !important;
+    visibility: hidden !important;
+
+    text-wrap: nowrap !important;
+    line-height: 1rem;
+    font-size: 0.75rem;
 
     font-family: "Roboto Serif", serif;
     font-optical-sizing: auto;
@@ -295,12 +440,12 @@ hr {
         "GRAD" 0;
 }
 *:hover > .tooltip:not(.js-controlled) {
-    transition-delay: 1s;
+    transition-delay: 1s !important;
 }
 *:hover > .tooltip:not(.js-controlled),
 .tooltip.js-controlled.open {
-    opacity: 1;
-    visibility: visible;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 .tooltip:before {
     content: "";
@@ -342,9 +487,8 @@ hr {
 }
 [popover] {
     position: fixed;
-    width: fit-content;
-    height: fit-content;
-    margin: auto;
+    width: 100%;
+    height: 100%;
 
     border: none;
     background-color: rgba(0,0,0,0);
@@ -354,22 +498,34 @@ hr {
     visibility: hidden;
     display: block;
 
-    overflow: hidden;
+    overflow: auto;
 
     z-index: 1000;
+
+    display: flex;
 }
 [popover]:popover-open {
     visibility: visible;
 }
 
-[popover]:not(:has(.left,.middle,.right)),
-[popover] .left,
-[popover] .middle .top,
-[popover] .middle .bottom,
-[popover] .middle:not(:has(.top,.bottom)),
-[popover] .right {
-    border: 2px solid var(--border);
-    border-radius: var(--big-border);
+*:has([popover]:popover-open) {
+    overflow: hidden;
+}
+
+[popover] .content {
+    width: fit-content;
+    height: fit-content;
+    margin: auto;
+}
+
+[popover] .content:not(:has(.left,.middle,.right)),
+[popover] .content .left,
+[popover] .content .middle .top,
+[popover] .content .middle .bottom,
+[popover] .content .middle:not(:has(.top,.bottom)),
+[popover] .content .right {
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--big-border-radius);
     padding: 15px;
     overflow: auto;
     background-color: var(--background);
@@ -379,17 +535,17 @@ hr {
 
     transition: opacity 0.5s ease-in-out, transform ease-in-out 0.5s, visibility 0.5s ease-in-out allow-discrete;
 }
-[popover]:has(.left,.middle,.right) {
+[popover] .content:has(.left,.middle,.right) {
     display: grid;
     grid-template-columns: fit-content fit-content fit-content;
     grid-template-areas: 
         'left middle right';
 }
-[popover] .left,
-[popover]:popover-open .left.closed {
+[popover] .content .left,
+[popover]:popover-open .content .left.closed {
     grid-area: left;
 
-    border-radius: var(--big-border) 0px 0px var(--big-border);
+    border-radius: var(--big-border-radius) 0px 0px var(--big-border-radius);
     border-right: none;
     transform: translateX(-16px);
 
@@ -399,42 +555,42 @@ hr {
 [popover] .middle {
     grid-area: middle;
 }
-[popover] .middle:not(:has(.top, .bottom)),
-[popover]:popover-open .middle.closed:not(:has(.top, .bottom)),
-[popover] .middle .top,
-[popover]:popover-open .middle .top.closed {
-    border-radius: var(--big-border);
+[popover] .content .middle:not(:has(.top, .bottom)),
+[popover]:popover-open .content .middle.closed:not(:has(.top, .bottom)),
+[popover] .content .middle .top,
+[popover]:popover-open .content .middle .top.closed {
+    border-radius: var(--big-border-radius);
     transform: translateY(-16px);
 
     opacity: 0;
     visibility: hidden;
 }
-[popover] .middle .bottom,
-[popover]:popover-open .middle .bottom.closed {
-    border-radius: 0px 0px var(--big-border) var(--big-border);
+[popover] .content .middle .bottom,
+[popover]:popover-open .content .middle .bottom.closed {
+    border-radius: 0px 0px var(--big-border-radius) var(--big-border-radius);
     border-top: none;
     transform: translateY(16px);
 
     opacity: 0;
     visibility: hidden;
 }
-[popover] .right,
-[popover]:popover-open .right.closed {
+[popover] .content .right,
+[popover]:popover-open .content .right.closed {
     grid-area: right;
 
-    border-radius: 0px var(--big-border) var(--big-border) 0px;
+    border-radius: 0px var(--big-border-radius) var(--big-border-radius) 0px;
     border-left: none;
     transform: translateX(16px);
 
     opacity: 0;
     visibility: hidden;
 }
-[popover]:popover-open:not(:has(.left,.middle,.right)),
-[popover]:popover-open .left,
-[popover]:popover-open .middle .top,
-[popover]:popover-open .middle .bottom,
-[popover]:popover-open .middle:not(:has(.top,.bottom)),
-[popover]:popover-open .right {
+[popover]:popover-open .content:not(:has(.left,.middle,.right)),
+[popover]:popover-open .content .left,
+[popover]:popover-open .content .middle .top,
+[popover]:popover-open .content .middle .bottom,
+[popover]:popover-open .content .middle:not(:has(.top,.bottom)),
+[popover]:popover-open .content .right {
     transform: none;
     opacity: 1;
     visibility: visible;
@@ -490,7 +646,7 @@ hr {
 
     background-color: var(--yt-description);
     color: var(--prominent-text);
-    border-radius: var(--small-border);
+    border-radius: var(--small-border-radius);
     width: 200px;
     height: 15px;
 
@@ -508,7 +664,7 @@ hr {
 /* | Inspiration labels                                                       |
 /* + ========================================================================*/
 .label {
-    border-radius: var(--small-border);
+    border-radius: var(--small-border-radius);
     color: var(--label);
     padding: 5px 5px 5px 0px;
     margin: 1px 10px 1px 1px;
@@ -593,10 +749,10 @@ body {
 .window {
     display: none;
 
-    height: 100%;
-
     overflow-x: hidden;
     overflow-y: auto;
+
+    height: 100vh;
 }
 
 
@@ -609,6 +765,11 @@ body {
     align-items: center;
 
     margin-bottom: 2px;
+
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+    width: calc(100% - 65px);
 }
 .footer a {
     margin-left: 5px;
@@ -636,6 +797,92 @@ body {
 /* + ======================================================================== +
 /* | Projects window                                                          |
 /* + ========================================================================*/
+#projects {
+    column-gap: 20px;
+    column-width: 400px;
+
+    padding-top: 10px;
+}
+#projects h1 {
+    padding-top: 0px;
+    margin-top: 0px;
+}
+.project {
+    display: block;
+
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--big-border-radius);
+
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+
+    margin-top: 20px;
+}
+.project p {
+    margin: 0px 0px 5px 0px;
+}
+.project .requestor,
+.project .executor {
+    padding: 0px 15px;
+}
+.project .requestor p:nth-child(2),
+.project .executor p:nth-child(2) {
+    color: var(--prominent-text);
+}
+.project .description {
+    margin: 10px 5px;
+    padding: 0px 10px 5px 10px;
+}
+.project .description:has(+.urls) {
+    border-bottom: var(--border-width) solid var(--border);
+}
+.project .urls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 5px;
+    column-gap: 5px;
+
+    margin: 5px 15px;
+}
+.project .urls a {
+    color: var(--prominent-text);
+}
+.project .urls a:visited {
+    color: var(--prominent-text);
+}
+
+
+/* + ======================================================================== +
+/* | Projects window popover                                                  |
+/* + ========================================================================*/
+#project-popover .right {
+    max-width: 350px;
+}
+#project-popover .middle {
+    width: 750px;
+}
+#project-popover .split-window {
+    grid-template-columns: repeat( auto-fit, minmax(50%, 1fr) );
+}
+#project-popover .split-window:nth-child(2) {
+    margin-top: 5px;
+}
+#project-popover .split-window > * {
+    margin: 0px;
+    padding: 0px;
+    border: none;
+}
+#project-popover .split-window > *:nth-child(2) {
+    margin-left: 10px;
+}
+#project-popover .description {
+    margin: 10px 0px;
+    padding: 0px 10px 5px 0px;
+}
+
 
 
 /* + ======================================================================== +
@@ -651,8 +898,15 @@ body {
 /* + ======================================================================== +
 /* | Suggestion window                                                        |
 /* + ========================================================================*/
+#suggestions > .split-window {
+    min-height: 100%;
+    padding-bottom: 20px;
+}
 label:has(+ #project-link2, + #project-link3) {
     margin-top: -13px;
+}
+#project-link1 {
+    top: 1px;
 }
 #project-link2,
 #project-link3 {

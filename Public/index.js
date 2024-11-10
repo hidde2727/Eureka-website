@@ -22,8 +22,11 @@ function GetCookie(cookie) { // Taken from https://www.w3schools.com/js/js_cooki
   return undefined;
 }
 
-async function FetchInfo(url, method, body, {jsonResponse=true, includeCredentials=false}={}) {
+var fetchCache = new Map;
+async function FetchInfo(url, method, body, {jsonResponse=true, includeCredentials=false, useCache=true}={}) {
   try {
+    if(useCache && method == 'GET' && fetchCache.has(url)) return [true, fetchCache.get(url)];
+
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     if(includeCredentials)
@@ -37,11 +40,16 @@ async function FetchInfo(url, method, body, {jsonResponse=true, includeCredentia
     });
     if (!response.ok)
       throw new Error(await response.text());
-    
+
+    var decodedResult = null;
     if(jsonResponse)
-      return [true, await response.json()];
+      decodedResult = await response.json();
     else
-      return [true, await response.text()];
+    decodedResult = await response.text();
+
+    fetchCache.set(url, decodedResult);
+
+    return [true, decodedResult];
   } catch(err) { console.error(err.message); return [false, err.message]; }
 }
 
@@ -68,6 +76,28 @@ function TextareaAutoGrow(element) {
     element.outerHTML = '<div class="auto-grow">' + element.outerHTML + '</div>';
   }
   element.parentNode.dataset.replicatedValue = element.value;
+}
+
+function OnSelectClick(el, ev) {
+  if(el.classList.contains('open')) {
+    var dropdown = el.getElementsByClassName('dropdown')[0];
+    if(dropdown.contains(ev.target) && ev.target != dropdown) {
+      el.getElementsByClassName('active')[0].innerText = ev.target.innerText;
+      el.value = ev.target.innerText;
+
+      el.classList.remove('open');
+    }
+  } else {
+    el.classList.add('open');
+    body.addEventListener('click', OutsideSelectClick.bind(null, el), {once: true});
+  }
+}
+function OutsideSelectClick(el, ev) {
+  if(el.contains(ev.target)) {
+    body.addEventListener('click', OutsideSelectClick.bind(null, el), {once: true});
+  } else {
+    if(el.classList.contains('open')) el.classList.remove('open');
+  }
 }
 
 
@@ -123,22 +153,35 @@ const InspirationTypes = Object.freeze({
   Github_repository: 3,
   Website: 4,
 });
-function SetWebsitePreview(element, data) {
-  if(data.type == InspirationTypes.None) throw new Error("Invalid website data");
-  else if(data.type == InspirationTypes.YT_Video) {
-    element.getElementsByClassName("website-content")[0].style.backgroundImage = 'url(' + data.json.thumbnails.medium.url + ')';
-    element.getElementsByClassName("website-author-icon")[0].style.backgroundImage = 'url(' + data.json.channelThumbnails.medium.url + ')';
-    element.getElementsByClassName("website-author-name")[0].innerHTML = data.name;
-    element.getElementsByClassName("website-author-name")[0].style.backgroundColor = "rgba(0,0,0,0)";
-    element.getElementsByClassName("website-extra-info")[0].style.backgroundColor = "rgba(0,0,0,0)";
-  } else if(data.type == InspirationTypes.YT_Channel) {
+// ifInvalid -> previewInvalid/hide
+function SetWebsitePreview(element, data, ifInvalid='previewInvalid') {
+  try {
+    element.style.display = '';
+    if(data.type == InspirationTypes.None) throw new Error("Invalid website data");
+    else if(data.type == InspirationTypes.YT_Video) {
+      element.getElementsByClassName("website-content")[0].style.backgroundImage = 'url(' + data.json.thumbnails.medium.url + ')';
+      element.getElementsByClassName("website-author-icon")[0].style.backgroundImage = 'url(' + data.json.channelThumbnails.medium.url + ')';
+      element.getElementsByClassName("website-author-name")[0].innerHTML = data.name;
+      element.getElementsByClassName("website-author-name")[0].style.backgroundColor = "rgba(0,0,0,0)";
+      element.getElementsByClassName("website-extra-info")[0].style.backgroundColor = "rgba(0,0,0,0)";
+    } else if(data.type == InspirationTypes.YT_Channel) {
 
-  } else if(data.type == InspirationTypes.Github_account) {
+    } else if(data.type == InspirationTypes.Github_account) {
 
-  } else if(data.type == InspirationTypes.Github_repository) {
+    } else if(data.type == InspirationTypes.Github_repository) {
 
-  } else if(data.type == InspirationTypes.Website) {
+    } else if(data.type == InspirationTypes.Website) {
 
+    }
+  } catch(err) {
+    element.getElementsByClassName("website-content")[0].style.backgroundImage = '';
+    element.getElementsByClassName("website-author-icon")[0].style.backgroundImage = '';
+    element.getElementsByClassName("website-author-name")[0].innerHTML = '';
+    element.getElementsByClassName("website-author-name")[0].style.backgroundColor = '';
+    element.getElementsByClassName("website-extra-info")[0].style.backgroundColor = '';
+    if(ifInvalid=='hide') {
+      element.style.display = 'none';
+    }
   }
 }
 
@@ -176,11 +219,13 @@ addEventListener("load", async (event) => {
   GeneralLoad();
 });
 
-function GeneralLoad() {
+async function GeneralLoad() {
   pageLoaded = true;
   GoToURLWindow();
   PrepareFooter();
-  AwaitLabels();
+  await AwaitLabels();
+
+  PopulateProjectsWindow();
 }
 
 
@@ -230,9 +275,95 @@ function PrepareFooter() {
 
 
 /* + ======================================================================== +
+/* | Projects window                                                          |
+/* + ========================================================================*/
+function CreateProjectDiv(data) {
+  var innerHTML = '';
+  innerHTML += '<h2 class="card-title title">' + data.name + '</h2>';
+
+  innerHTML += '<div class="split-window">'
+  innerHTML += '<div class="requestor"><p>Aangevraagd door:</p><p>' + data.requester + '</p></div>';
+  innerHTML += '<div class="executor"><p>Uitgevoerd door:</p><p>' + data.implementer + '</p></div>';
+  innerHTML += '</div>';
+
+  innerHTML += '<p class="description">' + data.description + '</p>';
+  if(data.url1 != undefined) {
+    innerHTML += '<div class="urls">';
+    if(typeof(data.url1) == 'string') data.url1 = JSON.parse(data.url1);
+    var hostname = (new URL(data.url1.url)).hostname;
+    innerHTML += '<a href="' + data.url1.url + '">' + hostname +'</a>';
+    if(data.url2 != undefined) {
+      if(typeof(data.url2) == 'string') data.url2 = JSON.parse(data.url2);
+      hostname = (new URL(data.url2.url)).hostname;
+      innerHTML += '<a href="' + data.url2.url + '">' + hostname +'</a>';
+      if(data.url3 != undefined) {
+        if(typeof(data.url3) == 'string') data.url3 = JSON.parse(data.url3);
+        hostname = (new URL(data.url3.url)).hostname;
+        innerHTML += '<a href="' + data.url3.url + '">' + hostname +'</a>';
+      }
+    }
+    innerHTML += '</div>';
+  }
+
+  var project = document.createElement('div');
+  project.className = 'project';
+  project.innerHTML = innerHTML;
+
+  return project;
+}
+
+var projects = FetchInfo('/Data/Projects.json', 'GET', null);
+async function PopulateProjectsWindow() {
+  var succes = false;
+  [succes, projects] = await projects;
+  if(!succes) throw new Error('Loading projects information failed!');
+
+  var projectsPage = document.getElementById('projects');
+  for(var i = 0; i < projects.length; i++) {
+    var project = CreateProjectDiv(projects[i]);
+
+    project.onclick = OpenProjectPopover.bind(null, projects[i]);
+
+    projectsPage.appendChild(project);
+  }
+}
+
+async function OpenProjectPopover(data) {
+  var popover = document.getElementById('project-popover');
+  popover.getElementsByClassName('project')[0].innerHTML = CreateProjectDiv(data).innerHTML;
+  popover.getElementsByClassName('project')[0].getElementsByClassName('urls')[0].remove();
+
+  SetWebsitePreview(document.getElementById('project-popover-url2'), data.url1, 'hide');
+  SetWebsitePreview(document.getElementById('project-popover-url1'), data.url2, 'hide');
+  SetWebsitePreview(document.getElementById('project-popover-url3'), data.url3, 'hide');
+
+  try {
+    document.getElementById('accept-emails-project-executor').checked = false;
+  } catch(err) {}
+
+  popover.getElementsByClassName('middle')[0].style.width = '';
+  if(data.url2 == undefined) {
+    popover.getElementsByClassName('middle')[0].style.width = '500px';
+  }
+
+  popover.showPopover();
+
+  body.addEventListener('click', TryCloseProjectPopover.bind(null, popover), {once: true});
+}
+
+function TryCloseProjectPopover(popover, event) {
+  if(event.target == popover)
+    popover.hidePopover();
+  else 
+    body.addEventListener('click', TryCloseProjectPopover.bind(null, popover), {once: true});
+}
+
+
+
+/* + ======================================================================== +
 /* | Suggestion window                                                        |
 /* + ========================================================================*/
-function PrepareSuggestionLabelSelectors(labels) {
+function PopulateSuggestionLabelSelector(labels) {
   const labelSelector = document.getElementById('suggestion-label-selector');
   for (const [category, values] of new Map(Object.entries(labels.labels))) {
     var innerHTML = '<label class="inline">' + category + '</label><div class="inline-input">';
@@ -243,7 +374,7 @@ function PrepareSuggestionLabelSelectors(labels) {
     labelSelector.innerHTML += innerHTML;
   }
 }
-AddLabelListener(PrepareSuggestionLabelSelectors);
+AddLabelListener(PopulateSuggestionLabelSelector);
 
 var selectedLabels = [];
 function ToggleSuggestionLabel(element) {
@@ -271,7 +402,7 @@ function OnURLSuggestionKeyDown(inputElement, event, websitePreviewID) {
 
 async function OnURLSuggestionChange(inputElement, event, websitePreviewID) {
   if(!IsValidURL(inputElement.value)) return;
-  var [succes, urlInfo] = await FetchInfo('API/RetrieveURLInfo/', 'PUT', JSON.stringify({'url':inputElement.value}));
+  var [succes, urlInfo] = await FetchInfo('API/RetrieveURLInfo/?url=' + encodeURI(inputElement.value), 'GET', null);
   if(!succes) return;
   SetWebsitePreview(document.getElementById(websitePreviewID), urlInfo);
 }
@@ -397,6 +528,7 @@ function OnCopyrightClick() {
   if(counter > 5) {
     counter = 0;
     document.getElementById('login-popover').showPopover();
+    document.getElementById('login-user').focus();
   }
 }
 

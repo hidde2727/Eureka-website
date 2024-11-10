@@ -62,30 +62,34 @@
             <p>Hello world</p>
             <button popovertarget="testpopover1">Popover</button>
             <div id="testpopover1" popover>
-                <h2>COntent hier</h2>
-                <label for="test6">Hello</label>
-                <input type="text" id="test6" placeholder="hehehehe">
-                            
-                <div class="iconed"><label for="test7"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="heheheh" id="test7"></div>
+                <div class="content">
+                    <h2>COntent hier</h2>
+                    <label for="test6">Hello</label>
+                    <input type="text" id="test6" placeholder="hehehehe">
+                                
+                    <div class="iconed"><label for="test7"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="heheheh" id="test7"></div>
+                </div>
             </div>
             <button popovertarget="testpopover">Popover</button>
             <div id="testpopover" popover>
-                <div class="right">
-                    <p>hehehe</p>
-                </div>
-                <div class="left closed">
-                    <p>hehehe</p>
-                </div>
-                <div class="middle">
-                    <div class="top">
-                        <h2>COntent hier</h2>
-                        <label for="test6">Hello</label>
-                        <input type="text" id="test6" placeholder="hehehehe">
-                                
-                        <div class="iconed"><label for="test7"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="heheheh" id="test7"></div>
+                <div class="content">
+                    <div class="right">
+                        <p>hehehe</p>
                     </div>
-                    <div class="bottom">
+                    <div class="left closed">
+                        <p>hehehe</p>
+                    </div>
+                    <div class="middle">
+                        <div class="top">
+                            <h2>COntent hier</h2>
+                            <label for="test6">Hello</label>
+                            <input type="text" id="test6" placeholder="hehehehe">
+                                    
+                            <div class="iconed"><label for="test7"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="heheheh" id="test7"></div>
+                        </div>
+                        <div class="bottom">
 
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,7 +98,53 @@
 | Projects                                                                          |
 +----------------------------------------------------------------------------------->
         <div class="window" id="projects">
+            <h1>Projecten</h2>
+        </div>
+        <div id="project-popover" popover>
+            <div class="content">
+                <div class="middle">
+                    <div class="split-window">
+                        <div class="project">
 
+                        </div>
+                        <div class="website" id="project-popover-url1">
+                            <div class="website-content"></div>
+                            <div class="website-author-icon"></div>
+                            <p class="website-author-name"></p>
+                            <p class="website-extra-info"></p>
+                        </div>
+                    </div>
+                    <div class="split-window">
+                        <div class="center-content">
+                            <div class="website" id="project-popover-url2">
+                                <div class="website-content"></div>
+                                <div class="website-author-icon"></div>
+                                <p class="website-author-name"></p>
+                                <p class="website-extra-info"></p>
+                            </div>
+                        </div>
+                        <div class="website" id="project-popover-url3">
+                            <div class="website-content"></div>
+                            <div class="website-author-icon"></div>
+                            <p class="website-author-name"></p>
+                            <p class="website-extra-info"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="right">
+                    <h2 class="card-title">Meld je aan!</h2>
+
+                    <label for="project-executor">Naam*</label>
+                    <input type="text" id="project-executor" placeholder="Pietje jan">
+                    <label for="project-executor-email">Email*</label>
+                    <input type="text" id="project-executor-email" placeholder="pietje.jan@gmail.com">
+
+                    <span><input type="checkbox" id="accept-emails-project-executor" checked="false"></span>
+                    <label for="accept-emails-project-executor">Ik geef hierbij Eureka toestemming mij te mailen over dit project*</label>
+
+                    <input type="submit" value="Aanmelden">
+                </div>
+            </div>
         </div>
 <!----------------------------------------------------------------------------------+
 | Inspiration                                                                       |
@@ -201,9 +251,11 @@
 | Login page                                                                        |
 +----------------------------------------------------------------------------------->
     <form id="login-popover" popover onsubmit="event.preventDefault(); OnLoginAttempt(this)">
-        <div class="iconed"><label for="login-user"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="Gebruikersnaam" id="login-user"></div>
-        <div class="iconed"><label for="login-password"><i class="fas fa-lock"></i></label><input type="password" placeholder="Wachtwoord" id="login-password"></div>
-        <input type="submit" value="Inloggen">
+        <div class="content">
+            <div class="iconed"><label for="login-user"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="Gebruikersnaam" id="login-user"></div>
+            <div class="iconed"><label for="login-password"><i class="fas fa-lock"></i></label><input type="password" placeholder="Wachtwoord" id="login-password"></div>
+            <input type="submit" value="Inloggen">
+        </div>
     </form>
 
 </body>

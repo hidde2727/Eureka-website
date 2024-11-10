@@ -3,14 +3,14 @@ CREATE TABLE IF NOT EXISTS inspiration (
 
     original_id INT UNSIGNED NOT NULL,
     active_version BOOL NOT NULL DEFAULT FALSE,
-    votingResult BOOL DEFAULT NULL,
+    voting_result BOOL DEFAULT NULL,
     next_version INT UNSIGNED DEFAULT NULL,
     previous_version INT UNSIGNED DEFAULT NULL,
     
     version_name TINYTEXT NOT NULL,
     version_description TINYTEXT NOT NULL,
-    version_suggestor TINYTEXT NOT NULL,
-    version_suggestor_id INT UNSIGNED DEFAULT NULL,
+    version_proposer TINYTEXT NOT NULL,
+    version_proposer_id INT UNSIGNED DEFAULT NULL,
 
     type TINYINT NOT NULL,
     name TINYTEXT NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS inspiration (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (version_suggestor_id) REFERENCES users(id),
+    FOREIGN KEY (version_proposer_id) REFERENCES users(id),
     FOREIGN KEY (next_version) REFERENCES inspiration(uuid),
     FOREIGN KEY (previous_version) REFERENCES inspiration(uuid),
 

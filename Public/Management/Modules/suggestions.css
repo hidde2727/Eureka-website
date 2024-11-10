@@ -1,0 +1,72 @@
+#suggestionVoting {
+    margin-right: 15px;
+}
+#suggestionVoting h1 {
+    border: 0px solid rgba(0,0,0,0);
+}
+#suggestionVoting p, 
+#suggestionVoting input {
+    margin: 0px;
+}
+#suggestionVoting .top {
+    position: relative;
+
+    display: grid;
+    grid-template-columns: 32px 2.5fr 16px 170px 2fr 150px;
+    align-items: center;
+
+    margin-bottom: 5px;
+}
+#suggestionVoting .align-names {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    grid-template-columns: 64px 32px 0.5fr 2fr 32px;
+    align-items: center;
+}
+#suggestionVoting .align-names p {
+    position: relative;
+    left: -15px;
+
+    font-size: 0.85rem;
+    color: var(--prominent-text);
+}
+#suggestionVoting .align-names p:nth-child(3) {
+    margin-left: 20px;
+}
+
+
+#suggestionVoting .content .suggestion {
+    display: grid;
+    grid-template-columns: 64px 32px 0.5fr 2fr 32px;
+    align-items: center;
+
+    background-color: var(--prominent-background);
+    border-radius: var(--small-border);
+    margin-bottom: 5px;
+    padding: 5px;
+}
+#suggestionVoting .content i:nth-child(1) {
+    margin-left: 12px;
+}
+#suggestionVoting .content i.fa-thumbs-up:nth-child(1) {
+    color: var(--conformation);
+}
+#suggestionVoting .content i.fa-thumbs-down:nth-child(1) {
+    color: var(--denial);
+}
+#suggestionVoting .content i {
+    font-size: 2rem;
+}
+#suggestionVoting .content p {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+
+    padding: 0px 10px;
+}

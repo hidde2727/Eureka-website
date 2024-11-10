@@ -1,0 +1,179 @@
+/* + ======================================================================== +
+/* | Popover toolbar                                                          |
+/* + ========================================================================*/
+[popover] .middle .bottom.toolbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 5px;
+
+    overflow: visible;
+}
+[popover] .middle .bottom.toolbar i {
+    font-size: 2rem;
+    color: var(--normal-text);
+    padding: 0px 5px;
+
+    transition: color 0.5s;
+
+    box-sizing: content-box;
+}
+[popover] .middle .bottom.toolbar i:hover {
+    color: var(--prominent-text);
+}
+[popover] .middle .bottom.toolbar i.fa-thumbs-up:hover,
+[popover] .middle .bottom.toolbar i.fa-thumbs-up.selected {
+    color: var(--conformation);
+}
+[popover] .middle .bottom.toolbar i.fa-thumbs-down:hover,
+[popover] .middle .bottom.toolbar i.fa-thumbs-down.selected {
+    color: var(--denial);
+}
+
+
+/* + ======================================================================== +
+/* | Versioning sidebar                                                       |
+/* + ========================================================================*/
+[popover] .left:has(.version) {
+    width: 255px;
+}
+[popover] .left .version {
+    margin-bottom: 10px;
+
+    transition: background-color 0.2s 0.3s, margin 0s 0.3s, padding 0s 0.3s;
+
+    cursor: context-menu;
+}
+[popover] .left .version.current {
+    background-color: var(--prominent-background);
+    border-radius: var(--small-border-radius);
+
+    margin: -5px;
+    margin-bottom: 5px;
+    padding: 5px;
+
+    transition: background-color 0s, margin 0s, padding 0s;
+}
+[popover] .left .version p {
+    margin: 0px;
+}
+[popover] .left .version .top {
+    display: grid;
+    grid-template-columns: 1fr min-content;
+
+    white-space: nowrap;
+
+    margin-bottom: 5px;
+    column-gap: 5px;
+}
+[popover] .left .version .top > * {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--prominent-text);
+}
+[popover] .left .version .bottom {
+    display: grid;
+    grid-template-columns: 16px 1fr min-content;
+
+    white-space: nowrap;
+    column-gap: 5px;
+}
+[popover] .left .version .bottom > * {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--prominent-text);
+}
+[popover] .left .version .bottom .time {
+    color: var(--normal-text);
+    margin-left: 5px;
+}
+[popover] .left .version .description {
+    margin: 0px!important;
+    padding: 0px!important;
+    font-size: 0rem;
+    color: var(--normal-text);
+
+    visibility: hidden;
+    opacity: 0;
+
+    transition: font-size 0.4s 0.3s, margin 0.4s 0.3s, padding 0.4s 0.3s, visibility allow-discrete 0.7s, opacity 0.4s;
+}
+[popover] .left .version.current .description {
+    margin: 10px 0px 5px 0px!important;
+    padding: 0px 10px!important;
+    font-size: 0.75rem;
+
+    visibility: visible;
+    opacity: 1;
+
+    transition: font-size 0.4s 0.3s, margin 0.4s 0.3s, padding 0.4s 0.3s, visibility allow-discrete 1s, opacity 0.3s 0.7s;
+}
+[popover] .left .version .denied {
+    color: var(--denial);
+}
+[popover] .left .version .active {
+    color: #3CB043;
+}
+
+
+/* + ======================================================================== +
+/* | Double thumbs up icon                                                    |
+/* + ========================================================================*/
+span.double-thumbs {
+    display: inline-block;
+    height: 2rem;
+    line-height: 2rem;
+    position: relative;
+    vertical-align: middle;
+    width: 2.5rem;
+    font-size: 2rem;
+}
+span.double-thumbs :nth-child(1) {
+    top: 0;
+    left: 0;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    z-index: 0;
+}
+span.double-thumbs :nth-child(2) {
+    top: 9px;
+    left: 3px;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    z-index: 100;
+}
+span.double-thumbs :nth-child(3) {
+    top: 8px;
+    left: 2px;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    z-index: 50;
+
+    color: var(--background) !important;
+}
+span.double-thumbs.up:hover i:nth-child(1),
+span.double-thumbs.up:hover i:nth-child(2),
+span.double-thumbs.up.selected i:nth-child(1),
+span.double-thumbs.up.selected i:nth-child(2) {
+    color: var(--conformation)!important;
+}
+span.double-thumbs.down:hover i:nth-child(1),
+span.double-thumbs.down:hover i:nth-child(2),
+span.double-thumbs.down.selected i:nth-child(1),
+span.double-thumbs.down.selected i:nth-child(2) {
+    color: var(--denial)!important;
+}
+span.double-thumbs.up {
+    top: -4px;
+    left: -6px;
+}
+span.double-thumbs.down {
+    top: -4px;
+    left: 2px;
+}

@@ -1,49 +1,34 @@
 const express = require('express');
 
-const DB = require("../../Utils/DB.js");
-const Login = require("../../Utils/Login.js");
+const DB = require('../../Utils/DB.js');
+const Login = require('../../Utils/Login.js');
+const Validator = require('../../Utils/Validator.js');
+const Voting = require('../../Utils/SuggestionVoting.js');
+const Projects = require('../../Utils/Projects.js');
 
 const router = express.Router();
 
-function GetById(suggestions, id) {
-    for(var [key, value] of suggestions) {
-        if(value.id == id)
-            return value;
-    }
-}
-router.get("/GetAll", async (req, res) => {
-    suggestions = await DB.GetVotableRequestsForUser(await Login.GetSessionUserID());
+router.get('/GetAll',  async (req, res) => {
+    res.send(await DB.GetAllSuggestionWithVotes(Login.GetSessionUserID(req)));
+});
 
-    var output = [];
-    for(var i = 0; i < suggestions.length; i++) {
-        var originalJSON = null;
-        var suggestionType = "";
-        if(suggestions[i].original_suggestion != null) {
-            originalJSON = GetById(suggestions, suggestions[i].original_suggestion).json;
-            suggestionType = "New" + suggestions[i].type + "+change";
-        }
-        //else if(suggestions[i].original_inspiration != null) {
-        //    originalJSON = (await DB.GetInspirationByID(suggestions[i].original_inspiration)).json;
-        //    suggestionType = "ChangeInspiration";
-        // }
-        //else if(suggestions[i].original_project != null) {
-        //    originalJSON = GetById(suggestions, suggestions[i].original_suggestion).json;
-        //    suggestionType = "ChangeProject";
-        // }
-        else {
-            originalJSON = suggestions[i].json;
-            suggestionType = "New" + suggestions[i].type;
-        }
+router.put('/Vote', async (req, res) => {
+    var data = req.body;
+    if(Validator.CheckProjectType(res, data.type)) return;
+    if(Validator.CheckUUID(res, data.uuid)) return;
+    if(Validator.CheckVoteValue(res, data.voteValue)) return;
+    if(Validator.CheckIsAdminVote(res, data.adminVote)) return;
 
-        output.push({ 
-            id: suggestions[i].id,
-            type: suggestions[i].type,
-            suggestionType: suggestionType,
-            json: JSON.parse(suggestions[i].json),
-            originalJSON: JSON.parse(originalJSON)
-        });
+    var result = undefined;
+    if(data.type == 'project') {
+        if(!(await DB.IsValidProject(data.uuid))) return Validator.ReturnError(res, 'Specificeer valide uuid');
+        result = await Voting.VoteProject(req, data.uuid, data.voteValue == 'accept', data.adminVote);
+        if(result != 'nothing') await Projects.GenerateProjectJSON();
+    } else if(data.type == 'inspiration') {
+
     }
-    res.json(output);
+
+    res.send(JSON.stringify({result: result}));
 });
 
 module.exports = router;
