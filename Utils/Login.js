@@ -30,7 +30,10 @@ async function ValidatePassword(username, password) {
     if(!hmacSecret) throw new Error('No hmac secret generated');
     try {
         var user = await DB.GetUserByName(username);
-        hashedPassword = user['password'];
+        var hashedPassword = '';
+        try {
+            hashedPassword = user.password;
+        } catch(err) {}
         const hmac = crypto.createHmac('sha256', hmacSecret);
         hmac.update(Buffer.from(password));
         hmac.update(Buffer.from(pepper));

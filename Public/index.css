@@ -496,7 +496,6 @@ hr {
     color: var(--prominent-text);
 
     visibility: hidden;
-    display: block;
 
     overflow: auto;
 

@@ -246,17 +246,17 @@
                 </form>
             </div>
         </div>
+    <!----------------------------------------------------------------------------------+
+    | Login page                                                                        |
+    +----------------------------------------------------------------------------------->
+        <form id="login-popover" popover onsubmit="event.preventDefault(); OnLoginAttempt(this)">
+            <div class="content">
+                <div class="iconed"><label for="login-user"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="Gebruikersnaam" id="login-user"></div>
+                <div class="iconed"><label for="login-password"><i class="fas fa-lock"></i></label><input type="password" placeholder="Wachtwoord" id="login-password"></div>
+                <input type="submit" value="Inloggen">
+            </div>
+        </form>
     </div>
-<!----------------------------------------------------------------------------------+
-| Login page                                                                        |
-+----------------------------------------------------------------------------------->
-    <form id="login-popover" popover onsubmit="event.preventDefault(); OnLoginAttempt(this)">
-        <div class="content">
-            <div class="iconed"><label for="login-user"><i class="fas fa-user-alt"></i></label><input type="text" placeholder="Gebruikersnaam" id="login-user"></div>
-            <div class="iconed"><label for="login-password"><i class="fas fa-lock"></i></label><input type="password" placeholder="Wachtwoord" id="login-password"></div>
-            <input type="submit" value="Inloggen">
-        </div>
-    </form>
 
 </body>
 </html>

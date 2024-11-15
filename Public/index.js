@@ -102,6 +102,23 @@ function OutsideSelectClick(el, ev) {
 
 
 /* + ======================================================================== +
+/* | Input fields                                                             |
+/* + ========================================================================*/
+function OpenPopover(popover) {
+  popover.showPopover();
+  body.addEventListener('click', TryClosePopover.bind(null, popover), {once: true});
+}
+
+function TryClosePopover(popover, event) {
+  if(!popover.matches(':popover-open')) return;
+  if(event.target == popover)
+    popover.hidePopover();
+  else 
+    body.addEventListener('click', TryClosePopover.bind(null, popover), {once: true});
+}
+
+
+/* + ======================================================================== +
 /* | Form fault message                                                       |
 /* + ========================================================================*/
 // Used to automaticly calculate the offset from the top of the form to the input element
@@ -346,18 +363,8 @@ async function OpenProjectPopover(data) {
     popover.getElementsByClassName('middle')[0].style.width = '500px';
   }
 
-  popover.showPopover();
-
-  body.addEventListener('click', TryCloseProjectPopover.bind(null, popover), {once: true});
+  OpenPopover(popover);
 }
-
-function TryCloseProjectPopover(popover, event) {
-  if(event.target == popover)
-    popover.hidePopover();
-  else 
-    body.addEventListener('click', TryCloseProjectPopover.bind(null, popover), {once: true});
-}
-
 
 
 /* + ======================================================================== +
@@ -527,7 +534,7 @@ function OnCopyrightClick() {
   counter++;
   if(counter > 5) {
     counter = 0;
-    document.getElementById('login-popover').showPopover();
+    OpenPopover(document.getElementById('login-popover'))
     document.getElementById('login-user').focus();
   }
 }
