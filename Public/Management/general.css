@@ -177,3 +177,30 @@ span.double-thumbs.down {
     top: -4px;
     left: 2px;
 }
+
+
+/* + ======================================================================== +
+/* | Website url changing                                                     |
+/* + ========================================================================*/
+.website {
+    grid-template-areas:
+    "cont  cont " 
+    "icon  info1" 
+    "icon  info2" 
+    "input input"!important;
+}
+.website input {
+    grid-area: input;
+}
+
+
+/* + ======================================================================== +
+/* | Miscellaneous                                                            |
+/* + ========================================================================*/
+.fa-rotate-45 {
+    rotate: 45deg;
+}
+.conformation-button {
+    background-color: var(--denial);
+    border-color: var(--denial);
+}

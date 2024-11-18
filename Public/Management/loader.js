@@ -126,7 +126,7 @@ function TimeToString(time) {
     difference -= hours * 3600;
     var minutes = Math.floor(difference / 60);
     difference -= minutes * 60;
-    var seconds = difference;
+    var seconds = Math.floor(difference);
 
     if(years != 0) return years + ' jaar geleden';
     else if(months == 1) return '1 maand geleden';
@@ -138,6 +138,6 @@ function TimeToString(time) {
     else if(hours != 0) return hours + ' uur geleden';
     else if(minutes == 1) return '1 minuut geleden'; 
     else if(minutes != 0) return minutes + ' minuten geleden';
-    else if(seconds == 1) return '1 seconde geleden';
+    else if(seconds <= 1) return '1 seconde geleden';
     else return seconds + ' secondes geleden';
 }

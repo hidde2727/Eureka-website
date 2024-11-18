@@ -174,6 +174,7 @@ const InspirationTypes = Object.freeze({
 function SetWebsitePreview(element, data, ifInvalid='previewInvalid') {
   try {
     element.style.display = '';
+    element.innerHTML = '<div class="website-content"></div><div class="website-author-icon"></div><p class="website-author-name"></p><p class="website-extra-info"></p>';
     if(data.type == InspirationTypes.None) throw new Error("Invalid website data");
     else if(data.type == InspirationTypes.YT_Video) {
       element.getElementsByClassName("website-content")[0].style.backgroundImage = 'url(' + data.json.thumbnails.medium.url + ')';

@@ -387,7 +387,7 @@ span:has(>input[type="checkbox"]) + label {
     display: grid;
     grid-template-columns: calc(50% - 25px) calc(50% - 25px);
 }
-.split-window > * {
+.split-window > *:not(button, input) {
     position: relative;
     padding: 0px 10px 0px 30px;
 }
@@ -511,18 +511,18 @@ hr {
     overflow: hidden;
 }
 
-[popover] .content {
+[popover]>.content {
     width: fit-content;
     height: fit-content;
     margin: auto;
 }
 
-[popover] .content:not(:has(.left,.middle,.right)),
-[popover] .content .left,
-[popover] .content .middle .top,
-[popover] .content .middle .bottom,
-[popover] .content .middle:not(:has(.top,.bottom)),
-[popover] .content .right {
+[popover]>.content:not(:has(>.left,>.middle,>.right)),
+[popover]>.content>.left,
+[popover]>.content>.middle>.top,
+[popover]>.content>.middle>.bottom,
+[popover]>.content>.middle:not(:has(>.top,>.bottom)),
+[popover]>.content>.right {
     border: var(--border-width) solid var(--border);
     border-radius: var(--big-border-radius);
     padding: 15px;
@@ -534,14 +534,14 @@ hr {
 
     transition: opacity 0.5s ease-in-out, transform ease-in-out 0.5s, visibility 0.5s ease-in-out allow-discrete;
 }
-[popover] .content:has(.left,.middle,.right) {
+[popover]>.content:has(>.left,>.middle,>.right) {
     display: grid;
     grid-template-columns: fit-content fit-content fit-content;
     grid-template-areas: 
         'left middle right';
 }
-[popover] .content .left,
-[popover]:popover-open .content .left.closed {
+[popover]>.content>.left,
+[popover]:popover-open>.content>.left.closed {
     grid-area: left;
 
     border-radius: var(--big-border-radius) 0px 0px var(--big-border-radius);
@@ -551,21 +551,21 @@ hr {
     opacity: 0;
     visibility: hidden;
 }
-[popover] .middle {
+[popover]>.middle {
     grid-area: middle;
 }
-[popover] .content .middle:not(:has(.top, .bottom)),
-[popover]:popover-open .content .middle.closed:not(:has(.top, .bottom)),
-[popover] .content .middle .top,
-[popover]:popover-open .content .middle .top.closed {
+[popover]>.content>.middle:not(:has(>.top, >.bottom)),
+[popover]:popover-open>.content>.middle.closed:not(:has(>.top, >.bottom)),
+[popover]>.content>.middle>.top,
+[popover]:popover-open>.content>.middle>.top.closed {
     border-radius: var(--big-border-radius);
     transform: translateY(-16px);
 
     opacity: 0;
     visibility: hidden;
 }
-[popover] .content .middle .bottom,
-[popover]:popover-open .content .middle .bottom.closed {
+[popover]>.content>.middle>.bottom,
+[popover]:popover-open>.content>.middle>.bottom.closed {
     border-radius: 0px 0px var(--big-border-radius) var(--big-border-radius);
     border-top: none;
     transform: translateY(16px);
@@ -573,8 +573,8 @@ hr {
     opacity: 0;
     visibility: hidden;
 }
-[popover] .content .right,
-[popover]:popover-open .content .right.closed {
+[popover]>.content>.right,
+[popover]:popover-open>.content>.right.closed {
     grid-area: right;
 
     border-radius: 0px var(--big-border-radius) var(--big-border-radius) 0px;
@@ -584,12 +584,12 @@ hr {
     opacity: 0;
     visibility: hidden;
 }
-[popover]:popover-open .content:not(:has(.left,.middle,.right)),
-[popover]:popover-open .content .left,
-[popover]:popover-open .content .middle .top,
-[popover]:popover-open .content .middle .bottom,
-[popover]:popover-open .content .middle:not(:has(.top,.bottom)),
-[popover]:popover-open .content .right {
+[popover]:popover-open>.content:not(:has(>.left,>.middle,>.right)),
+[popover]:popover-open>.content>.left,
+[popover]:popover-open>.content>.middle>.top,
+[popover]:popover-open>.content>.middle>.bottom,
+[popover]:popover-open>.content>.middle:not(:has(>.top,>.bottom)),
+[popover]:popover-open>.content>.right {
     transform: none;
     opacity: 1;
     visibility: visible;
@@ -869,12 +869,12 @@ body {
 #project-popover .split-window:nth-child(2) {
     margin-top: 5px;
 }
-#project-popover .split-window > * {
+#project-popover .split-window > *:not(button, input) {
     margin: 0px;
     padding: 0px;
     border: none;
 }
-#project-popover .split-window > *:nth-child(2) {
+#project-popover .split-window > *:not(button, input):nth-child(2) {
     margin-left: 10px;
 }
 #project-popover .description {
