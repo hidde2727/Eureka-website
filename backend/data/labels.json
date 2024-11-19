@@ -1,0 +1,20 @@
+{"labels":{
+    "Onderwerp": [
+        {"name":"AI", "id":1},
+        {"name":"CNC", "id":2},
+        {"name":"Robot arm", "id":3},
+        {"name":"Mechanische loper", "id":4},
+        {"name":"Display", "id":5}
+    ],
+    "Voorkennis":[
+        {"name":"Geen voorkennis", "id":6},
+        {"name":"Beetje voorkennis", "id":7},
+        {"name":"Veel voorkennis", "id":8}
+    ],
+    "Type":[
+        {"name":"Tutorial", "id":9},
+        {"name":"Project", "id":10},
+        {"name":"Programeren", "id":11},
+        {"name":"Robotica", "id":12}
+    ]
+}, "amountInspirationPages":1}

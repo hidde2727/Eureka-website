@@ -1,0 +1,21 @@
+{
+  "name": "frontend",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "The frontend of the Eureka site",
+  "main": "index.jsx",
+  "scripts": {
+    "start": "vite dev --port 5000",
+    "build": "vite build && vite preview"
+  },
+  "author": "Hidde Meiburg",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^5.4.11"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "backend",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Backend of the Eureka site",
+  "main": "server.js",
+  "scripts": {
+    "start": "set NODE_ENV=development && node --watch server.js"
+  },
+  "author": "Hidde Meiburg",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.1",
+    "mysql": "^2.18.1",
+    "validator": "^13.12.0"
+  }
+}
