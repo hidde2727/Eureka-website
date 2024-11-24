@@ -52,7 +52,7 @@ try {
     var links = [];
     for (var i = 0; i < data.links.length; i++) {
         if (data.links[i] == undefined) continue;
-        else if (Validator.CheckLink(data.links[i])) return;
+        else if (Validator.CheckLink(res, data.links[i])) return;
         links.push(data.links[i]);
     }
 
@@ -109,6 +109,7 @@ try {
 
     res.send('Inspiratie is aangevraagd!');
 } catch(err) {
+    if(err.message.includes('Illegale website string: ')) return Validator.ReturnError(res, 'Inspiratie url is incorrect');
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
     console.error(err.message);

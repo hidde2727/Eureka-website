@@ -479,6 +479,32 @@ hr {
 
 
 /* + ======================================================================== +
+/* | Form error screen                                                        |
+/* + ========================================================================*/
+form:has(.form-succes-screen) {
+    position: relative;
+}
+.form-succes-screen > * {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.form-succes-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: var(--background);    
+    z-index: 100000000000;
+    padding-top: 16px;
+}
+.form-succes-screen i {
+    font-size: 2rem;
+}
+
+
+/* + ======================================================================== +
 /* | Popover                                                                  |
 /* + ========================================================================*/
 [popover]::backdrop {
@@ -694,11 +720,55 @@ hr {
     justify-content: center;
 }
 
+.loading a {
+    color: var(--prominent-text);
+    font-size: 0.875rem;
+    margin-left: 50px;
+}
+.loading .dot {
+    display: inline-block;
+    width: 0.3em;
+    height: 0.3em;
+    border-radius: 100%;
+    background-color: var(--prominent-text);
+    vertical-align: baseline;
+    position: relative;
+    top: 0.05em;
+    margin-left: 2px;
+
+    opacity: 0;
+}
+@keyframes first-dot {
+    25% {
+        opacity: 1;
+    }
+}
+@keyframes second-dot {
+    50% {
+        opacity: 1;
+    }
+}
+@keyframes third-dot {
+    75% {
+        opacity: 1;
+    }
+}
+.loading .dot:nth-child(2) {
+    animation: first-dot 4s infinite;
+}
+.loading .dot:nth-child(3) {
+    animation: second-dot 4s infinite;
+}
+.loading .dot:nth-child(4) {
+    animation: third-dot 4s infinite;
+}
+
+
 
 /* + ======================================================================== +
 /* | Sidebar                                                                  |
 /* + ========================================================================*/
-body {
+#body {
     margin: 0px!important;
     grid-template-columns: 58px calc(100% - 58px) !important;
     grid-template-rows: 100vh;

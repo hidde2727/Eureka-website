@@ -2,6 +2,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import crypto from 'node:crypto';
 import path from 'path';
+import url from 'node:url';
 
 import API from './api/api.js';
 import * as DB from './utils/db.js';
@@ -28,7 +29,7 @@ if(process.env.NODE_ENV == "development") {
 }
 // !!!! DELETE IN PRODUCTION !!!!!
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 // Static content
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
