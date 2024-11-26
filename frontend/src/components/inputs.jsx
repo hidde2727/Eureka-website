@@ -1,11 +1,11 @@
 import { useId, useState } from 'react';
 
-export function Input(props) {
-    const labelClassName = props.inline ? 'inline' : '';
-    const id = props.id != undefined ? props.id : useId();
+export function Input({ inline, id=undefined, type, label, placeholder, name, onChange=undefined }) {
+    const labelClassName = inline ? 'inline' : '';
+    const idInternal = id != undefined ? id : useId();
 
     var onKeyDown = undefined;
-    if(props.type == "text") {
+    if(type == "text") {
         onKeyDown = (event) => {
             if(event.keyCode == 13) {
                 event.preventDefault();
@@ -16,21 +16,41 @@ export function Input(props) {
 
     return (
         <>
-            <label htmlFor={id} className={labelClassName}>{props.label}</label>
-            <input type={props.type} id={id} placeholder={props.placeholder} name={props.name} onKeyDown={onKeyDown} onChange={props.onChange} />
+            <label htmlFor={idInternal} className={labelClassName}>{label}</label>
+            <input type={type} id={idInternal} placeholder={placeholder} name={name} onKeyDown={onKeyDown} onChange={onChange} />
         </>
     );
 }
 
-export function Textarea(props) {
-    const labelClassName = props.inline ? 'inline' : '';
+export function IconedInput({ iconClass, id, type, placeholder, name, onChange=undefined }) {
+    const idInternal = id != undefined ? id : useId();
+
+    var onKeyDown = undefined;
+    if(type == "text") {
+        onKeyDown = (event) => {
+            if(event.keyCode == 13) {
+                event.preventDefault();
+                event.target.blur();
+            }
+        };
+    }
+
+    return (
+        <div className="iconed">
+            <label htmlFor={idInternal}><i className={iconClass}></i></label>
+            <input type={type} id={idInternal} placeholder={placeholder} name={name} onKeyDown={onKeyDown} onChange={onChange} />
+        </div>
+    );
+}
+export function Textarea({ inline, id=undefined, label, placeholder, name, rows=undefined }) {
+    const labelClassName = inline ? 'inline' : '';
     const [value, setValue] = useState();
-    const id = props.id != undefined ? props.id : useId();
+    const idInternal = id != undefined ? id : useId();
 
     return (
         <>
-            <label htmlFor={id} className={labelClassName}>{props.label}</label>
-            <div className="auto-grow" data-replicated-value={value}><textarea onInput={(ev) => { setValue(ev.target.value) }} id={id} placeholder={props.placeholder} name={props.name} rows={props.rows}></textarea></div>
+            <label htmlFor={idInternal} className={labelClassName}>{label}</label>
+            <div className="auto-grow" data-replicated-value={value}><textarea onInput={(ev) => { setValue(ev.target.value) }} id={idInternal} placeholder={placeholder} name={name} rows={rows}></textarea></div>
         </>
     );
 }

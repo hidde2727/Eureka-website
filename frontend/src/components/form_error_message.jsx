@@ -16,9 +16,9 @@ function CalculateOffsets(forElement) {
 }
 
 export function SetFormErrorMessage(errorMessaging, errorMessage, errorInput) {
-    errorMessaging.setProjectError(errorMessage);
+    errorMessaging.setError(errorMessage);
     const [offsetTop, offsetLeft] = CalculateOffsets(errorInput);
-    errorMessaging.setProjectErrorInput({offsetTop, offsetLeft});
+    errorMessaging.setErrorAtInput({offsetTop, offsetLeft});
 
     errorInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
     errorInput.focus();
@@ -41,7 +41,7 @@ export function FormErrorMessage({atInput, message}) {
             window.addEventListener('keydown', HandleOutsideClick);
             return () => {
                 window.removeEventListener('click', HandleOutsideClick);
-                window.addEventListener('keydown', HandleOutsideClick);
+                window.removeEventListener('keydown', HandleOutsideClick);
             }
         }
     }, [isTriggered, ref]);

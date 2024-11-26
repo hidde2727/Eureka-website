@@ -10,7 +10,6 @@ import PageManager from './pages/page_manager.jsx';
 import '../public/index.css';
 
 const queryClient = new QueryClient();
-
 export default function App() {
   const [currentWindow, setWindow] = useState(GetWindowParam('window', 'home'));
   PushWindowParam('window', currentWindow);

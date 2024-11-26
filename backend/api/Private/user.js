@@ -13,7 +13,7 @@ router.use(async (req, res, next) => {
     }
     next();
 });
-router.put('/Add', async (req, res) => {
+router.put('/add', async (req, res) => {
     var data = req.body;
 
     if(await Validator.CheckUsernameU(res, data.username))
@@ -26,7 +26,7 @@ router.put('/Add', async (req, res) => {
     res.send('Gebruiker aangemaakt!');
 });
 
-router.put('/Delete', async (req, res) => {
+router.put('/delete', async (req, res) => {
     var data = req.body;
 
     if(await Validator.CheckUsernameNS(res, data.username)) return;
@@ -38,7 +38,7 @@ router.put('/Delete', async (req, res) => {
     res.send('Gebruiker verwijdert!');
 });
 
-router.get('/GetAll', async (req, res) => {
+router.get('/get', async (req, res) => {
     userInfo = await DB.GetAllUserData();
 
     var output = [];
@@ -56,7 +56,7 @@ router.get('/GetAll', async (req, res) => {
     res.json(output);
 });
 
-router.put('/Grant', async (req, res) => {
+router.put('/grant', async (req, res) => {
     var data = req.body;
 
     if(await Validator.CheckUsernameNS(res, data.username)) return;

@@ -1,7 +1,10 @@
-export default function Projects(props) {
+import Footer from '../components/footer.jsx';
+
+export default function Projects({isActive}) {
     return (
-        <div className="window" id="projects" style={props.isActive ? {display: 'block'} : {display: 'none'}}>
+        <div className="window" id="projects" style={isActive ? {display: 'block'} : {display: 'none'}}>
             
+            <Footer />
         </div>
     )
 }

@@ -1,7 +1,10 @@
-export default function Files(props) {
+import Footer from '../components/footer.jsx';
+
+export default function Files({isActive}) {
     return (
-        <div className="window" id="files" style={props.isActive ? {display: 'block'} : {display: 'none'}}>
+        <div className="window" id="files" style={isActive ? {display: 'block'} : {display: 'none'}}>
             
+            <Footer />
         </div>
     )
 }

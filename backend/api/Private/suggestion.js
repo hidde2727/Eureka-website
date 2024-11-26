@@ -7,11 +7,11 @@ import * as Validator from '../../utils/validator.js';
 import * as Voting from '../../utils/suggestion_voting.js';
 import * as Projects from '../../utils/projects.js';
 
-router.get('/GetAll',  async (req, res) => {
+router.get('/get',  async (req, res) => {
     res.send(await DB.GetAllSuggestionWithVotes(Login.GetSessionUserID(req)));
 });
 
-router.put('/Vote', async (req, res) => {
+router.put('/vote', async (req, res) => {
     var data = req.body;
     if(Validator.CheckProjectType(res, data.type)) return;
     if(Validator.CheckUUID(res, data.uuid)) return;

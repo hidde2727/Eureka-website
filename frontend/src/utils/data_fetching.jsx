@@ -1,9 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
+import { GetCookie, DeleteCookie } from './utils.jsx';
 
-var fetchCache = new Map;
-export async function FetchInfo(url, method, body, {jsonResponse=true, includeCredentials=false, useCache=true}={}) {
-  if(useCache && method == 'GET' && fetchCache.has(url)) return [true, fetchCache.get(url)];
-
+export async function FetchInfo(url, method, body, { jsonResponse=true, includeCredentials=false }) {
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
   if(includeCredentials)
@@ -15,8 +13,11 @@ export async function FetchInfo(url, method, body, {jsonResponse=true, includeCr
     method: method, 
     body: body
   });
-  if (!response.ok)
-    throw new Error(await response.text());
+  if (!response.ok) {
+    const error = await response.text();
+    if(error == 'Log in voor dit deel van de API') { DeleteCookie('sessionCredential'); DeleteCookie('sessionID'); DeleteCookie('userID'); return window.location.reload(); }
+    throw new Error(error);
+  }
 
   var decodedResult = null;
   if(jsonResponse)
@@ -24,15 +25,13 @@ export async function FetchInfo(url, method, body, {jsonResponse=true, includeCr
   else
     decodedResult = await response.text();
 
-  fetchCache.set(url, decodedResult);
-
   return decodedResult;
 }
 
-export default function FetchOptionsInt(url, method, body, {jsonResponse=true, includeCredentials=false, useCache=true, enable=true}={}) {
+export default function FetchOptionsInt(url, method, body, { jsonResponse=true, includeCredentials=false, enable=true }={}) {
     return queryOptions({
         queryKey: [url, method, body],
-        queryFn: () => FetchInfo(url, method, body, {jsonResponse: jsonResponse, includeCredentials: includeCredentials, useCache: useCache}),
+        queryFn: () => FetchInfo(url, method, body, { jsonResponse: jsonResponse, includeCredentials: includeCredentials }),
         staleTime: Infinity,
         enabled: enable
     });

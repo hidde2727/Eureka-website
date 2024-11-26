@@ -1,7 +1,10 @@
-export default function Inspiration(props) {
+import Footer from '../components/footer.jsx';
+
+export default function Inspiration({isActive}) {
     return (
-        <div className="window" id="inspiration" style={props.isActive ? {display: 'block'} : {display: 'none'}}>
+        <div className="window" id="inspiration" style={isActive ? {display: 'block'} : {display: 'none'}}>
             
+            <Footer />
         </div>
     )
 }

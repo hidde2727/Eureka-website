@@ -47,8 +47,9 @@ app.use('/api', API);
 
 // Error handeling
 app.use((err, req, res, next) => {
+  console.error('Error ontvangen tijdens uitvoeren server:\n')
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).send('Er is iets fout gegaan op de server!');
 })
 
 // Start the server

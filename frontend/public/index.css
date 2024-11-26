@@ -834,11 +834,6 @@ form:has(.form-succes-screen) {
     align-items: center;
 
     margin-bottom: 2px;
-
-    position: fixed;
-    bottom: 0px;
-    right: 0px;
-    width: calc(100% - 65px);
 }
 .footer a {
     margin-left: 5px;
@@ -1003,4 +998,13 @@ label:has(+ #project-link2, + #project-link3) {
     transition: color 0.2s, background-color 0.2s;
     user-select: none;
     cursor: pointer;
+}
+
+
+
+/* + ======================================================================== +
+/* | Login popover                                                            |
+/* + ========================================================================*/
+#login-popover .content {
+    overflow: hidden;
 }

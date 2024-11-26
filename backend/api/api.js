@@ -2,8 +2,8 @@ import { Router } from 'express';
 const router = Router();
 
 // Connect the private API
-import PrivateAPI from './Private/private.js';
-router.use('/Private', PrivateAPI);
+import PrivateAPI from './private/private.js';
+router.use('/private', PrivateAPI);
 
 // Public API
 import * as Validator from '../utils/validator.js';
@@ -11,7 +11,7 @@ import * as Login from '../utils/login.js';
 import * as DB from '../utils/db.js';
 import * as INS from '../utils/inspiration.js';
 
-router.post('/Login', async (req, res) => {
+router.post('/login', async (req, res) => {
 try {
     var data = req.body;
     if(data.length > 255+29+14) return Validator.ReturnError(res, 'Aanvraag te groot');
@@ -40,7 +40,7 @@ try {
     console.error(err.message);
 }
 });
-router.post('/SuggestProject', async (req, res) => {
+router.post('/suggest/project', async (req, res) => {
 try {
     var data = req.body;
     if(data.length > 1000000) return Validator.ReturnError(res, 'Aanvraag te groot');
@@ -76,7 +76,7 @@ try {
 }
 });
 
-router.post('/SuggestInspiration', async (req, res) => {
+router.post('/suggest/inspiration', async (req, res) => {
 try {
     var data = req.body;
     if(data.length > 1000000) return Validator.ReturnError(res, 'Aanvraag te groot');
@@ -115,7 +115,7 @@ try {
     console.error(err.message);
 }
 });
-router.get('/RetrieveURLInfo', async (req, res) => {
+router.get('/retrieve/url', async (req, res) => {
 try {
     if(Validator.CheckLink(res, req.query.url)) return;
 

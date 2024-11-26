@@ -4,8 +4,8 @@ import bcrypt from 'bcrypt';
 
 import * as DB from './db.js';
 
-let pepper = null;
-let hmacSecret = null;
+var pepper = null;
+var hmacSecret = null;
 export function SetupLoginSystem(forceRegenerate = false) {
     // Make sure all the correct folders are here
     if (!fs.existsSync('./data/')) fs.mkdirSync('./data');
@@ -37,7 +37,7 @@ export async function ValidatePassword(username, password) {
         const hmac = crypto.createHmac('sha256', hmacSecret);
         hmac.update(Buffer.from(password));
         hmac.update(Buffer.from(pepper));
-        pepperedPassword = hmac.digest('ascii');
+        const pepperedPassword = hmac.digest('ascii');
 
         if(hashedPassword === undefined) { // The user was not found
             // Prevent timing attack so still hash and verify
@@ -63,9 +63,9 @@ export async function GenerateUser(username, password) {
     const hmac = crypto.createHmac('sha256', hmacSecret);
     hmac.update(Buffer.from(password));
     hmac.update(Buffer.from(pepper));
-    pepperedPassword = hmac.digest('ascii');
+    const pepperedPassword = hmac.digest('ascii');
 
-    hashedPassword = await bcrypt.hash(pepperedPassword, 10);
+    const hashedPassword = await bcrypt.hash(pepperedPassword, 10);
     if((await bcrypt.compare(pepperedPassword, hashedPassword)) == false)
         throw new Error('Help, the generated hash doesn\'t match the password');
     await DB.CreateUser(username, hashedPassword);
@@ -78,7 +78,7 @@ export async function CreateSession(res, userID) {
     var sessionID = null;
     do { sessionID = crypto.randomBytes(32).toString('ascii'); }
     while(await DB.DoesSessionIDExist(sessionID.toString('ascii')));
-    sessionCredential = crypto.randomBytes(32).toString('ascii');
+    const sessionCredential = crypto.randomBytes(32).toString('ascii');
 
     await DB.CreateSession(sessionID, sessionCredential, userID);
 
@@ -100,14 +100,14 @@ export async function CheckSession(req, res, repeatRequired = true) {
     if(repeatRequired && req.headers['sessioncredentialrepeat'] == undefined) return RemoveSessionCookies(res);
     if(req.cookies.userID == undefined) return RemoveSessionCookies();
 
-    sessionID = decodeURI(req.cookies.sessionID);
-    sessionCredential = decodeURI(req.cookies.sessionCredential);
+    const sessionID = decodeURI(req.cookies.sessionID);
+    const sessionCredential = decodeURI(req.cookies.sessionCredential);
     if(repeatRequired && sessionCredential != decodeURIComponent(req.headers['sessioncredentialrepeat']))
         return RemoveSessionCookies(res);
     var sessionUserID = decodeURI(req.cookies.userID);
 
     await DB.DeleteInvalidSessions();
-    session = await DB.GetSession(sessionID);
+    var session = await DB.GetSession(sessionID);
 
     if(session == undefined) return RemoveSessionCookies(res);
     if(session.id != sessionID) return RemoveSessionCookies(res);
@@ -133,7 +133,7 @@ export async function RemoveSession(req, res) {
 
 export async function HasUserPermission(req, permissionName) {
     try {
-        userData = await DB.GetUser(GetSessionUserID(req));
+        const userData = await DB.GetUser(GetSessionUserID(req));
         return userData[permissionName];
 
     } catch(exc) {
@@ -155,9 +155,9 @@ export async function UpdatePassword(req, password) {
     const hmac = crypto.createHmac('sha256', hmacSecret);
     hmac.update(Buffer.from(password));
     hmac.update(Buffer.from(pepper));
-    pepperedPassword = hmac.digest('ascii');
+    const pepperedPassword = hmac.digest('ascii');
 
-    hashedPassword = await bcrypt.hash(pepperedPassword, 10);
+    const hashedPassword = await bcrypt.hash(pepperedPassword, 10);
     if((await bcrypt.compare(pepperedPassword, hashedPassword)) == false)
         throw new Error('Help, the generated hash doesn\'t match the password');
     await DB.SetUserPassword(GetSessionUserID(req), hashedPassword);

@@ -14,11 +14,11 @@ router.use(async (req, res, next) => {
     next();
 });
 
-router.get('/Get', (req, res) => {
+router.get('/get', (req, res) => {
     res.send(JSON.stringify(Settings.GetSettings()));
 });
 
-router.put('/Set', async (req, res) => {
+router.put('/set', async (req, res) => {
     var data = req.body;
 
     if(Validator.CheckIntSettings(res, data.acceptNormalVote, 'de hoeveelheid punten die een normaal iemand krijgt voor acceptatie')) return;

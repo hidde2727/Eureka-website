@@ -5,18 +5,18 @@ import * as DB from '../../utils/db.js';
 import * as Login from '../../utils/login.js';
 import * as Validator from '../../utils/validator.js';
 
-router.get('/Permissions', async (req, res) => {
-    userInfo = await DB.GetUser(Login.GetSessionUserID(req));
+router.get('/permissions', async (req, res) => {
+    const userInfo = await DB.GetUser(Login.GetSessionUserID(req));
     res.json(userInfo);
 });
 
-router.post('/LogOut', async (req, res) => {
+router.post('/logout', async (req, res) => {
     await Login.RemoveSession(req, res);
     res.send('Succes');
 });
 
-router.put('/UpdateInfo', async (req, res) => {
-    var data = req.body;
+router.put('/update', async (req, res) => {
+    const data = req.body;
     
     var username = undefined;
     if(data.username == undefined) username = undefined;

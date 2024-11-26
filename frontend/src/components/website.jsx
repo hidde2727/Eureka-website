@@ -14,7 +14,7 @@ const InspirationTypes = Object.freeze({
 
 export default function Website(props) {
     const {data, error, isPending} = useQuery(
-        FetchOptions('api/RetrieveURLInfo/?url=' + encodeURI(props.url), 'GET', null,
+        FetchOptions('api/retrieve/url/?url=' + encodeURI(props.url), 'GET', null,
         {enable: props.url != undefined && props.url != '' && IsValidURL(props.url)}  
     ));
 

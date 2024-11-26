@@ -9,6 +9,7 @@ import { Input, Textarea } from '../components/inputs.jsx';
 import Loading from '../components/loading.jsx';
 import { FormErrorMessage, SetFormErrorMessage } from '../components/form_error_message.jsx';
 import FormSuccesScreen from '../components/form_succes_screen.jsx';
+import Footer from '../components/footer.jsx';
 
 export default function Suggestions({ isActive }) {
     const [url, setURL] = useState();
@@ -27,7 +28,7 @@ export default function Suggestions({ isActive }) {
     return (
         <div className="window" id="suggestions" style={isActive ? {display: 'block'} : {display: 'none'}}>
             <div className="split-window seperator">
-                <form onSubmit={(event) => { OnProjectSubmit(event, { setProjectError, setProjectErrorInput }, setProjectSucces); }}>
+                <form onSubmit={(event) => { OnProjectSubmit(event, { setError: setProjectError, setErrorAtInput: setProjectErrorInput }, setProjectSucces); }}>
                     <h2>Suggereer een project</h2>
                     <p>Wat is het project?</p>
                     
@@ -48,7 +49,7 @@ export default function Suggestions({ isActive }) {
                     <input type="submit" value="Insturen" />
 
                 </form>
-                <form onSubmit={(event) => { OnInspirationSubmit(event, selectedLabels, { setInspirationError, setInspirationErrorInput }, setInspirationSucces); }}>
+                <form onSubmit={(event) => { OnInspirationSubmit(event, selectedLabels, { setError: setInspirationError, setErrorAtInput: setInspirationErrorInput }, setInspirationSucces); }}>
                     <h2>Suggereer inspiratie</h2>
                     <p>Wat is de url?</p>
 
@@ -93,6 +94,7 @@ export default function Suggestions({ isActive }) {
 
                 </form>
             </div>
+            <Footer />
         </div>
     );
 }
@@ -183,7 +185,7 @@ async function OnProjectSubmit(event, errorMessaging, setSuccesMessage) {
     else if(projectSuggestorEmail.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.projectSuggestorEmail);
 
     try {
-        await FetchInfo('/api/SuggestProject/', 'POST', JSON.stringify(
+        await FetchInfo('/api/suggest/project/', 'POST', JSON.stringify(
             {
             'name':projectName,
             'description':projectDescription,
@@ -231,7 +233,7 @@ async function OnInspirationSubmit(event, selectedLabels, errorMessaging, setSuc
       suggestions.push(link2);
     }
     try {
-        await FetchInfo('/api/SuggestInspiration/', 'POST', JSON.stringify(
+        await FetchInfo('/api/suggest/inspiration/', 'POST', JSON.stringify(
             {
                 'url':url,
                 'description':description,

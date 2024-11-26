@@ -16,7 +16,7 @@ router.use(async (req, res, next) => {
     next();
 });
 
-router.put('/Add', async (req, res) => {
+router.put('/add', async (req, res) => {
     var data = req.body;
 
     if(Validator.CheckFilePath(res, data.filepath)) return;
@@ -33,7 +33,7 @@ router.put('/Add', async (req, res) => {
     }
     res.send('Toegevoegd!!!');
 });
-router.put('/RegenIndex', async (req, res) => {
+router.put('/regen', async (req, res) => {
     var allFiles = await fs.readdir('./Data/Tutorials/', {withFileTypes: true, recursive: true});
     var folderDict = {};
     allFiles.forEach((value, index) => {
