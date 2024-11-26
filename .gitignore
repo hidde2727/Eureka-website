@@ -1,8 +1,8 @@
-Data/Private/
+data/private/
 
 node_modules/
 Utils/Config.js
 
-Data/Tutorials
-Data/Labels.json
-Data/Projects.json
+data/tutorials
+data/labels.json
+data/projects.json
