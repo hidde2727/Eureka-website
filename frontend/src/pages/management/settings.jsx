@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-import { FetchInfo, useUserDataSus, useGlobalSettingsSus } from '../utils/data_fetching.jsx';
+import { FetchInfo, useUserDataSus, useGlobalSettingsSus } from '../../utils/data_fetching.jsx';
 
-import Footer from '../components/footer.jsx';
-import { Input } from '../components/inputs.jsx'
-import Restricted from '../components/restricted.jsx';
-import { SetFormErrorMessage, FormErrorMessage } from '../components/form_error_message.jsx';
-import FormSuccesScreen from '../components/form_succes_screen.jsx';
+import Footer from '../../components/footer.jsx';
+import { Input } from '../../components/inputs.jsx'
+import Restricted from '../../components/restricted.jsx';
+import { SetFormErrorMessage, FormErrorMessage } from '../../components/form_error_message.jsx';
+import FormSuccesScreen from '../../components/form_succes_screen.jsx';
 
 export default function Settings({isActive}) {
     const { userData, isFetchingU } = useUserDataSus();

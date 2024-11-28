@@ -1,4 +1,4 @@
-import Footer from '../components/footer.jsx';
+import Footer from '../../components/footer.jsx';
 
 export default function Logs({isActive}) {
     return (
