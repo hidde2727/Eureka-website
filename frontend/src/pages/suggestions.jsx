@@ -1,8 +1,7 @@
 import { useState, Suspense, Fragment } from 'react';
-import { useSuspenseQuery } from '@tanstack/react-query';
 
 import { IsValidURL } from '../utils/utils.jsx';
-import { FetchInfo, FetchOptions } from '../utils/data_fetching.jsx';
+import { useInspirationLabelsSus } from '../utils/data_fetching.jsx';
 
 import Website from '../components/website.jsx';
 import { Input, Textarea } from '../components/inputs.jsx';
@@ -117,12 +116,12 @@ function OnLabelClick(selectedLabels, setSelectedLabels, labelId) {
     }
 }
 function LabelSelector(props) {
-    const { data, error, isFetching } = useSuspenseQuery(FetchOptions('/data/labels.json', 'GET', null));
+    const { labels, hasError, isFetching } = useInspirationLabelsSus();
     if(isFetching) return;
-    if(error) return (<p>Error tijdens het ophalen van de labels</p>);
+    if(hasError) return (<p>Error tijdens het ophalen van de labels</p>);
 
     return (<> {
-        Object.entries(data.labels).map((label) => {
+        Object.entries(labels.labels).map((label) => {
             const [categoryName, values] = label;
             return <Fragment key={categoryName}>
                 <label className="inline">{categoryName}</label>

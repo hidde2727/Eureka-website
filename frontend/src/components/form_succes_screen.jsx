@@ -1,5 +1,5 @@
 export default function FormSuccesScreen({message, error}) {
-    if(message == "") return;
+    if(message == "" || message == undefined || message == null) return;
 
     return (
     <div className="form-succes-screen" onLoad={(ev) => { ev.target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}>

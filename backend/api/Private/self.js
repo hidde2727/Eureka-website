@@ -29,7 +29,8 @@ router.put('/update', async (req, res) => {
     else email = data.email;
     
     var password = undefined;
-    if(Validator.CheckPassword(res, data.password)) return;
+    if(data.password == undefined) password = undefined;
+    else if(Validator.CheckPassword(res, data.password)) return;
     else if(Validator.CheckPassword(res, data.previousPassword)) return;
     else if(!(await Login.ValidatePassword(await Login.GetSessionUsername(req), Buffer.from(data.previousPassword, 'base64')))[0])
         return Validator.ReturnError(res, 'Vorige wachtwoord moet het juiste wachtwoord zijn');
