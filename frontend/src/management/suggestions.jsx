@@ -1,9 +1,9 @@
-import Footer from '../../components/footer.jsx';
+import Footer from '../components/footer.jsx';
 
-export default function Users({isActive}) {
+export default function SuggestionVoting({isActive}) {
     return (
         <div className="window" id="home" style={isActive ? {display: 'block'} : {display: 'none'}}>
-            <p>Users</p>
+            <p>Suggestions</p>
 
             <Footer />
         </div>

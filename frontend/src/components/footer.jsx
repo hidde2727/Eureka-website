@@ -1,6 +1,6 @@
 import { useRef, useContext } from 'react';
 
-import { LoginContext } from '../management/components/login_popover.jsx';
+import { LoginContext } from './login_popover.jsx';
 
 export default function Footer() {
     var clicks = useRef(0);

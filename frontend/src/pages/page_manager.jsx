@@ -6,12 +6,12 @@ import Inspiration from './inspiration.jsx';
 import Files from './files.jsx';
 import Suggestions from './suggestions.jsx';
 
-const ManagementSuggestions = lazy(() => import('../management/pages/suggestions.jsx'));
-const ManagementUsers = lazy(() => import('../management/pages/users.jsx'));
-const ManagementLogs = lazy(() => import('../management/pages/logs.jsx'));
-const ManagementSettings = lazy(() => import('../management/pages/settings.jsx'));
+const ManagementSuggestions = lazy(() => import('../management/suggestions.jsx'));
+const ManagementUsers = lazy(() => import('../management/users.jsx'));
+const ManagementLogs = lazy(() => import('../management/logs.jsx'));
+const ManagementSettings = lazy(() => import('../management/settings.jsx'));
 
-import { LoginContext, LoginPopover } from '../management/components/login_popover.jsx';
+import { LoginContext, LoginPopover } from '../components/login_popover.jsx';
 import Restricted from '../components/restricted.jsx';
 import Loading from '../components/loading.jsx';
 
