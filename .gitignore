@@ -1,4 +1,6 @@
 /backend/data/private/
 /backend/data/
 
+/utils/config.js
+
 node_modules/
