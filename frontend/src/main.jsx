@@ -7,7 +7,7 @@ import { GetWindowParam, PushWindowParam } from './utils/utils.jsx';
 import Sidebar from './sidebar.jsx';
 import PageManager from './pages/page_manager.jsx';
 
-import '../public/index.css';
+import '/public/index.css';
 
 const queryClient = new QueryClient();
 export default function App() {

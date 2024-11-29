@@ -851,7 +851,7 @@ form:has(.form-succes-screen) {
     user-select: none;
 }
 div:has(+.footer) {
-    min-height: calc(100vh - 30px);
+    min-height: calc(100vh - 35px);
 }
 
 

@@ -1,0 +1,40 @@
+#suggestion-voting {
+    margin-right: 15px;
+}
+#suggestion-voting h1 {
+    border: 0px solid rgba(0,0,0,0);
+}
+
+#suggestion-voting .align-names {
+    grid-template-columns: 64px 32px 0.5fr 2fr 32px;
+}
+
+#suggestion-voting .content .suggestion {
+    display: grid;
+    grid-template-columns: 64px 32px 0.5fr 2fr 32px;
+    align-items: center;
+
+    background-color: var(--prominent-background);
+    border-radius: var(--small-border);
+    margin-bottom: 5px;
+    padding: 5px;
+}
+#suggestion-voting .content i:nth-child(1) {
+    margin-left: 12px;
+}
+#suggestion-voting .content i.fa-thumbs-up:nth-child(1) {
+    color: var(--conformation);
+}
+#suggestion-voting .content i.fa-thumbs-down:nth-child(1) {
+    color: var(--denial);
+}
+#suggestion-voting .content i {
+    font-size: 2rem;
+}
+#suggestion-voting .content p {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+
+    padding: 0px 10px;
+}

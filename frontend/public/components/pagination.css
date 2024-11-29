@@ -1,0 +1,35 @@
+.pagination-top {
+    position: relative;
+
+    display: grid;
+    grid-template-columns: 32px 2.5fr 16px 170px 2fr 150px;
+    align-items: center;
+
+    margin-bottom: 5px;
+}
+.pagination-top p, 
+.pagination-top input {
+    margin: 0px;
+}
+.pagination-top .align-names {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    grid-template-columns: 64px 32px 0.5fr 2fr 32px;
+    align-items: center;
+}
+.pagination-top .align-names p {
+    position: relative;
+    left: -15px;
+
+    font-size: 0.85rem;
+    color: var(--prominent-text);
+}
+.pagination-top .align-names p:nth-child(3) {
+    margin-left: 20px;
+}

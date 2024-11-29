@@ -1,12 +1,11 @@
-import { forwardRef, createContext, useState } from 'react';
+import { forwardRef, useState } from 'react';
 
 import { FetchInfo } from '../utils/data_fetching.jsx'
 
-import { Popover } from './popover.jsx';
-import { IconedInput } from './inputs.jsx';
-import { SetFormErrorMessage, FormErrorMessage } from './form_error_message.jsx';
+import { Popover } from '../components/popover.jsx';
+import { IconedInput } from '../components/inputs.jsx';
+import { SetFormErrorMessage, FormErrorMessage } from '../components/form_error_message.jsx';
 
-export const LoginContext = createContext();
 export const LoginPopover = forwardRef(({}, ref) => {
 
     const [error, setError] = useState(undefined);

@@ -11,16 +11,17 @@ const ManagementUsers = lazy(() => import('./management/users.jsx'));
 const ManagementLogs = lazy(() => import('./management/logs.jsx'));
 const ManagementSettings = lazy(() => import('./management/settings.jsx'));
 
-import { LoginContext, LoginPopover } from '../components/login_popover.jsx';
+import LoginPopover from '../popovers/login_popover.jsx';
+import PopoverContext from '../popovers/popover_context.jsx';
 import Restricted from '../components/restricted.jsx';
 import Loading from '../components/loading.jsx';
 
 export default function PageManager(props) {
-    const ref = useRef();
+    const loginRef = useRef();
 
     return (
         <div>
-        <LoginContext.Provider value={ref}>
+        <PopoverContext.Provider value={{ login:loginRef }}>
             <Home isActive={ props.currentWindow == 'home' } />
             <Projects isActive={ props.currentWindow == 'projects' } />
             <Inspiration isActive={ props.currentWindow == 'inspiration' } />
@@ -46,8 +47,8 @@ export default function PageManager(props) {
                 </Suspense>
             </Restricted>
 
-            <LoginPopover ref={ref} />
-        </LoginContext.Provider>
+            <LoginPopover ref={loginRef} />
+        </PopoverContext.Provider>
         </div>
     );
 }
