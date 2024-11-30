@@ -5,9 +5,9 @@ import * as DB from '../../utils/db.js';
 import * as  Validator from '../../utils/validator.js';
 
 router.get('/versions', async (req, res) => {
-    if(Validator.CheckID(res, req.query.projectID)) return false;
+    if(Validator.CheckID(res, req.query.id)) return false;
 
-    var versions = await DB.GetAllProjectVersionsOfID(req.query.projectID);
+    var versions = await DB.GetAllProjectVersionsOfID(req.query.id);
     res.send(JSON.stringify(versions));
 });
 

@@ -1,0 +1,29 @@
+[popover] .middle .bottom.toolbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 5px;
+
+    overflow: visible;
+}
+[popover] .middle .bottom.toolbar i {
+    font-size: 2rem;
+    color: var(--normal-text);
+    padding: 0px 5px;
+
+    transition: color 0.5s;
+
+    box-sizing: content-box;
+}
+[popover] .middle .bottom.toolbar i:hover {
+    color: var(--prominent-text);
+}
+[popover] .middle .bottom.toolbar i.fa-thumbs-up:hover,
+[popover] .middle .bottom.toolbar i.fa-thumbs-up.selected {
+    color: var(--conformation);
+}
+[popover] .middle .bottom.toolbar i.fa-thumbs-down:hover,
+[popover] .middle .bottom.toolbar i.fa-thumbs-down.selected {
+    color: var(--denial);
+}

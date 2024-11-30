@@ -461,7 +461,8 @@ hr {
     position: absolute;
 }
 .tooltip.right {
-    top: calc(50% - 12px);
+    top: 50%;
+    transform: translate(0, -50%);
     left: 100%;
 }
 .tooltip.right:before {
@@ -470,7 +471,8 @@ hr {
 }
 .tooltip.bottom {
     top: 100%;
-    left: calc(50% - 12px);
+    left: 50%;
+    transform: translate(-50%, 0);
 }
 .tooltip.bottom:before {
     top: -4px;
@@ -864,7 +866,7 @@ div:has(+.footer) {
 /* + ======================================================================== +
 /* | Projects window                                                          |
 /* + ========================================================================*/
-#projects {
+#projects>div:first-child {
     column-gap: 20px;
     column-width: 400px;
 

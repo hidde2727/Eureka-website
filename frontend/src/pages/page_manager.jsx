@@ -10,18 +10,21 @@ const ManagementSuggestions = lazy(() => import('./management/suggestions.jsx'))
 const ManagementUsers = lazy(() => import('./management/users.jsx'));
 const ManagementLogs = lazy(() => import('./management/logs.jsx'));
 const ManagementSettings = lazy(() => import('./management/settings.jsx'));
+const ManagementProjectPopover = lazy(() => import('../popovers/management/project.jsx'));
 
-import LoginPopover from '../popovers/login_popover.jsx';
-import PopoverContext from '../popovers/popover_context.jsx';
+import LoginPopover from '../popovers/login.jsx';
+import PopoverContext from '../popovers/context.jsx';
 import Restricted from '../components/restricted.jsx';
 import Loading from '../components/loading.jsx';
+import ProjectPopover from '../popovers/project.jsx';
 
 export default function PageManager(props) {
     const loginRef = useRef();
+    const projectRef = useRef();
 
     return (
         <div>
-        <PopoverContext.Provider value={{ login:loginRef }}>
+        <PopoverContext.Provider value={{ login:loginRef, project:projectRef }}>
             <Home isActive={ props.currentWindow == 'home' } />
             <Projects isActive={ props.currentWindow == 'projects' } />
             <Inspiration isActive={ props.currentWindow == 'inspiration' } />
@@ -48,6 +51,13 @@ export default function PageManager(props) {
             </Restricted>
 
             <LoginPopover ref={loginRef} />
+            <Restricted notLoggedIn={true}>
+                <ProjectPopover ref={projectRef} />
+            </Restricted>
+            <Restricted>
+                <Suspense><ManagementProjectPopover ref={projectRef} /></Suspense>
+            </Restricted>
+            
         </PopoverContext.Provider>
         </div>
     );

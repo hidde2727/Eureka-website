@@ -41,6 +41,14 @@ export const FetchOptions = FetchOptionsInt;
 
 
 
+export function useProjects() {
+    const { data, error, isFetching } = useQuery(FetchOptions('/data/projects.json', 'GET', null));
+    return { projects: data, hasError: error, isFetching: isFetching };
+}
+export function useProjectsSus() {
+    const { data, error, isFetching } = useSuspenseQuery(FetchOptions('/data/projects.json', 'GET', null));
+    return { projects: data, hasError: error, isFetching: isFetching };
+}
 export function useInspirationLabels() {
     const { data, error, isFetching } = useQuery(FetchOptions('/data/labels.json', 'GET', null));
     return { labels: data, hasError: error, isFetching: isFetching };
@@ -61,9 +69,13 @@ export function useUserDataSus() {
 }
 export function useGlobalSettings() {
     const { data, error, isFetching } = useQuery(FetchOptions('/api/private/settings/get', 'GET', null, { includeCredentials: true }));
-    return { settings: data, hasError: error, isFetching: isFetching }
+    return { settings: data, hasError: error, isFetching: isFetching };
 }
 export function useGlobalSettingsSus() {
     const { data, error, isFetching } = useSuspenseQuery(FetchOptions('/api/private/settings/get', 'GET', null, { includeCredentials: true }));
-    return { settings: data, hasError: error, isFetching: isFetching }
+    return { settings: data, hasError: error, isFetching: isFetching };
+}
+export function useProjectVersions(projectId) {
+    const { data, error, isFetching } = useQuery(FetchOptions('/api/private/project/versions?id=' + projectId, 'GET', null, { includeCredentials: true, enable: projectId!=undefined }));
+    return { versions: data, hasError: error, isFetching: isFetching };
 }

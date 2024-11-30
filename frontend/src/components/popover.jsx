@@ -64,9 +64,9 @@ export function MiddleTop({children}) {
         </div>
     );
 }
-export function MiddleBottom({children}) {
+export function MiddleBottom({children, className}) {
     return (
-        <div className="bottom">
+        <div className={`bottom ${className}`}>
             {children}
         </div>
     );

@@ -1,6 +1,6 @@
 import { useRef, useContext } from 'react';
 
-import { PopoverContext } from '../popovers/popover_context.jsx';
+import { PopoverContext } from '../popovers/context.jsx';
 
 export default function Footer() {
     var clicks = useRef(0);

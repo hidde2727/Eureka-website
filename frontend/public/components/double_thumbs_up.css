@@ -1,0 +1,55 @@
+span.double-thumbs {
+    display: inline-block;
+    height: 2rem;
+    line-height: 2rem;
+    position: relative;
+    vertical-align: middle;
+    width: 2.5rem;
+    font-size: 2rem;
+}
+span.double-thumbs :nth-child(1) {
+    top: 0;
+    left: 0;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    z-index: 0;
+}
+span.double-thumbs :nth-child(2) {
+    top: 9px;
+    left: 3px;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    z-index: 100;
+}
+span.double-thumbs :nth-child(3) {
+    top: 8px;
+    left: 2px;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    z-index: 50;
+
+    color: var(--background) !important;
+}
+span.double-thumbs.up:hover i:nth-child(1),
+span.double-thumbs.up:hover i:nth-child(2),
+span.double-thumbs.up.selected i:nth-child(1),
+span.double-thumbs.up.selected i:nth-child(2) {
+    color: var(--conformation)!important;
+}
+span.double-thumbs.down:hover i:nth-child(1),
+span.double-thumbs.down:hover i:nth-child(2),
+span.double-thumbs.down.selected i:nth-child(1),
+span.double-thumbs.down.selected i:nth-child(2) {
+    color: var(--denial)!important;
+}
+span.double-thumbs.up {
+    top: -4px;
+    left: -6px;
+}
+span.double-thumbs.down {
+    top: -4px;
+    left: 2px;
+}
