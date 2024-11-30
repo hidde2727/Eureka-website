@@ -20,8 +20,9 @@ Login.SetupLoginSystem();
 await DB.SetupTables();
 
 // !!!! DELETE IN PRODUCTION !!!!!
-if(process.env.NODE_ENV == "development") {
+if(process.env.NODE_ENV.trim() == 'development') {
   if(await DB.IsTableEmpty('users')) {
+    console.log('Regenerated the admin user')
     // Generate default user (username: admin & password: password)
     await Login.GenerateUser('admin', await crypto.subtle.digest('SHA-256', Buffer.from('password')));
     await Login.GiveUserPermissions((await DB.GetUserByName('admin')).id, true, true, true, true, true, true);
@@ -56,23 +57,5 @@ app.use((err, req, res, next) => {
 var connection = app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
-
-// !!!! DELETE IN PRODUCTION !!!!!
-if(process.env.NODE_ENV == "development") {
-  app.get('/terminate', (req, res) => {
-    connection.close();
-    res.send('Terminated');
-    console.log('Terminated');
-    process.exit(1);
-  });
-  app.get('/restart', async (req, res) => {
-    await connection.close();
-    connection = app.listen(port, () => {
-      console.log(`Server restarted on port ${port}`);
-    });
-    res.send('Restarted')
-  });
-}
-// !!!! DELETE IN PRODUCTION !!!!!
 
 })()

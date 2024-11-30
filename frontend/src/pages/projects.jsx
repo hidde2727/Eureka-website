@@ -26,7 +26,7 @@ function ProjectsSuspense() {
     const popoverContext = useContext(PopoverContext)
 
     if(isFetching) return;
-    if(hasError) return <p>Error tijdens het ophalen van de projecten</p>;
+    if(hasError || projects==undefined) return <p>Error tijdens het ophalen van de projecten</p>;
     return (
         <>
         {

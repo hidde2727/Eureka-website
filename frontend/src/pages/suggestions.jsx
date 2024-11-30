@@ -118,7 +118,7 @@ function OnLabelClick(selectedLabels, setSelectedLabels, labelId) {
 function LabelSelector(props) {
     const { labels, hasError, isFetching } = useInspirationLabelsSus();
     if(isFetching) return;
-    if(hasError) return (<p>Error tijdens het ophalen van de labels</p>);
+    if(hasError || labels==undefined) return (<p>Error tijdens het ophalen van de labels</p>);
 
     return (<> {
         Object.entries(labels.labels).map((label) => {

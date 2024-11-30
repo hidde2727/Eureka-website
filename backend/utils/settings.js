@@ -17,16 +17,16 @@ var settings = {
 };
 
 export function WriteSettingsFile() {
-    fs.writeFileSync('./Data/Private/Settings.json', JSON.stringify(settings));
+    fs.writeFileSync('./data/private/settings.json', JSON.stringify(settings));
 }
 
 export function LoadSettings() {
     // Make sure all the correct folders are here
-    if (!fs.existsSync('./Data/')) fs.mkdirSync('./Data');
-    if (!fs.existsSync('./Data/Private')) fs.mkdirSync('./Data/Private');
+    if (!fs.existsSync('./data/')) fs.mkdirSync('./data');
+    if (!fs.existsSync('./data/private')) fs.mkdirSync('./data/private');
     // Check if Settings.js exists generate if not
-    if (fs.existsSync('./Data/Private/Settings.json')) {
-        settings = JSON.parse(fs.readFileSync('./Data/Private/Settings.json'));
+    if (fs.existsSync('./data/private/settings.json')) {
+        settings = JSON.parse(fs.readFileSync('./data/private/settings.json'));
     } else {
         WriteSettingsFile();
     }
