@@ -1,6 +1,7 @@
+node_modules/
+
 /backend/data/private/
 /backend/data/
-
 /backend/utils/config.js
 
-node_modules/
+/frontend/dist/
