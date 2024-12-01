@@ -43,4 +43,16 @@ router.put('/update', async (req, res) => {
     res.send("Succes");
 });
 
+router.get('/vote', async (req, res) => {
+    var type = req.query.type;
+    if(Validator.CheckSuggestionType(res, type)) return;
+    var uuid = req.query.uuid;
+    if(Validator.CheckUUID(res, uuid)) return;
+
+    var vote = undefined;
+    if(type == 'project') vote = await DB.GetProjectVote(Login.GetSessionUserID(req), uuid);
+    else if(type == 'inspiration') vote = await DB.GetInspirationVote(Login.GetSessionUserID(req), uuid);
+    res.send(JSON.stringify(vote==undefined?{}:vote));
+});
+
 export default router;

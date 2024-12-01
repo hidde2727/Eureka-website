@@ -1,7 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-
+import { useWebsiteInfo } from "../utils/data_fetching.jsx";
 import { IsValidURL } from "../utils/utils.jsx";
-import FetchOptions from "../utils/data_fetching.jsx";
 
 const InspirationTypes = Object.freeze({
     None: -1,
@@ -13,12 +11,9 @@ const InspirationTypes = Object.freeze({
 });
 
 export default function Website({ id, data, url }) {
-    const {fetchedData, error, isPending} = useQuery(
-        FetchOptions('api/retrieve/url/?url=' + encodeURI(url), 'GET', null,
-        {enable: data==undefined && url != undefined && url != '' && IsValidURL(url)}  
-    ));
+    const {fetchedData, hasError, isFetching} = useWebsiteInfo(url, data==undefined && url != undefined && url!=null && url != '' && IsValidURL(url));
     if(data == undefined) data = fetchedData;
-    if(data ==undefined && (isPending || error)) {
+    if(data ==undefined && (isFetching || hasError)) {
         return (
             <div className="website" id={id}>
                 <div className="website-content"></div>

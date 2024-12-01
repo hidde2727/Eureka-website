@@ -71,3 +71,10 @@ export function Prepend(array, value) {
     newArray.unshift(value);
     return newArray;
 }
+
+export function IsObjectEmpty(object) {
+    for (const property in object) {
+        if (Object.hasOwn(object, property)) return false;
+    }
+    return true;
+}

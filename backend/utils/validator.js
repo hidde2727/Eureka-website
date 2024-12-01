@@ -195,7 +195,7 @@ export function CheckPercentageSettings(res, percent, name) {
 /* + ======================================================================== +
 /* | Suggestions                                                              |
 /* + ========================================================================*/
-export function CheckProjectType(res, type) {
+export function CheckSuggestionType(res, type) {
     if(type == undefined) 
         return ReturnError(res, 'Specificeer het type suggestie');
     else if(type != 'project' && type != 'inspiration') 

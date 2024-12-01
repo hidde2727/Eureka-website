@@ -343,6 +343,10 @@ export async function GetInspirationVotes(inspirationUUID) {
     var results = await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE inspiration_id=?', [inspirationUUID]);
     return results.length == 0 ? undefined : results;
 }
+export async function GetInspirationVote(userID, projectUUID) {
+    var results = await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE inspiration_id=? AND user_id=?', [projectUUID, userID]);
+    return results.length == 0 ? undefined : results[0];
+}
 export async function AcceptInspiration(inspirationUUID) {
     await ExecutePreparedStatement('UPDATE inspiration SET voting_result=TRUE WHERE uuid=?', [inspirationUUID]);
     SetInspirationAsActive(inspirationUUID);
@@ -366,6 +370,10 @@ export async function GetProjectVotes(projectUUID) {
     var results = await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE project_id=?', [projectUUID]);
     return results.length == 0 ? undefined : results;
 }
+export async function GetProjectVote(userID, projectUUID) {
+    var results = await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE project_id=? AND user_id=?', [projectUUID, userID]);
+    return results.length == 0 ? undefined : results[0];
+}
 export async function AcceptProject(projectUUID) {
     await ExecutePreparedStatement('UPDATE projects SET voting_result=TRUE WHERE uuid=?', [projectUUID]);
     SetProjectAsActive(projectUUID);
@@ -381,6 +389,7 @@ export async function DenyProject(projectUUID) {
 export async function GetAllSuggestionWithVotes(userID) {
     var results = await ExecutePreparedStatement(`
     SELECT
+        i.original_id AS original_id,
         i.uuid AS uuid,
         i.name AS name,
         i.version_description AS description,
@@ -393,6 +402,7 @@ export async function GetAllSuggestionWithVotes(userID) {
     UNION
 
     SELECT
+        p.original_id AS original_id,
         p.uuid AS uuid,
         p.name AS name,
         p.version_description AS description,

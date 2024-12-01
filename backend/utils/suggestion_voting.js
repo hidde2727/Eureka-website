@@ -13,11 +13,11 @@ Settings.SetCheckSuggestionVoting(async () => {
         else
             throw new Error('invalid suggestion type');
     }));
-})
+});
 
 export async function VoteProject(req, uuid, value, isAdmin) {
-    if(value) await DB.CreateProjectVote(1, isAdmin, Login.GetSessionUserID(req), uuid);
-    else await DB.CreateProjectVote(-1, isAdmin, Login.GetSessionUserID(req), uuid);
+    if(value) await DB.CreateProjectVoteOrUpdate(1, isAdmin, Login.GetSessionUserID(req), uuid);
+    else await DB.CreateProjectVoteOrUpdate(-1, isAdmin, Login.GetSessionUserID(req), uuid);
 
     return await CheckProjectVotes(uuid);
 }

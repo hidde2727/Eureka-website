@@ -8,6 +8,7 @@ import API from './api/api.js';
 import * as DB from './utils/db.js';
 import * as Login from './utils/login.js';
 import * as Settings from './utils/settings.js';
+import { GenerateProjectJSON } from './utils/projects.js';
 
 const app = express();
 const port = 3000; // Change to be port 443 in production ======================================
@@ -18,6 +19,8 @@ Settings.LoadSettings();
 await DB.CreateConnection();
 Login.SetupLoginSystem();
 await DB.SetupTables();
+
+await GenerateProjectJSON();
 
 // !!!! DELETE IN PRODUCTION !!!!!
 if(process.env.NODE_ENV.trim() == 'development') {

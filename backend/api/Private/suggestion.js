@@ -13,7 +13,7 @@ router.get('/get',  async (req, res) => {
 
 router.put('/vote', async (req, res) => {
     var data = req.body;
-    if(Validator.CheckProjectType(res, data.type)) return;
+    if(Validator.CheckSuggestionType(res, data.type)) return;
     if(Validator.CheckUUID(res, data.uuid)) return;
     if(Validator.CheckVoteValue(res, data.voteValue)) return;
     if(Validator.CheckIsAdminVote(res, data.adminVote)) return;

@@ -1,7 +1,8 @@
-import { forwardRef, useImperativeHandle, useRef, useState, useMemo } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
-import { Prepend } from '../../utils/utils.jsx';
-import { useProjectVersions } from '../../utils/data_fetching.jsx';
+import { Prepend, IsObjectEmpty } from '../../utils/utils.jsx';
+import { FetchInfo, setVoteQueryData, refetchProjectVotes, useProjectVersions, useProjectVoteResult, useUserData } from '../../utils/data_fetching.jsx';
 
 import { Popover, Left, Middle, Right, MiddleTop, MiddleBottom } from '../../components/popover.jsx';
 import Project from '../../components/project.jsx';
@@ -41,7 +42,7 @@ export const ProjectPopover = forwardRef(({}, ref) => {
         return versions.filter((version) => version.uuid === selectedVersionUUID )[0];
     }, [selectedVersionUUID, isFetching]);
 
-    if(isFetching || hasError || versionData==undefined) return <Popover ref={internalRef} id="project-popover" />;
+    if(hasError || versionData==undefined) return <Popover ref={internalRef} id="project-popover" />;
 
     return (
         <Popover ref={internalRef} id="project-popover">
@@ -76,6 +77,17 @@ export default ProjectPopover;
 /* | Toolbar                                                                  |
 /* + ========================================================================*/
 function Toolbar({ versionData, setSelectedVersionUUID, conformationPopover }) {
+    const queryClient = useQueryClient();
+    const { vote, isFetching:isFetchingP, hasError:hasErrorP } = useProjectVoteResult(versionData.uuid, versionData.voting_result == null);
+    const { userData, isFetching:isFetchingU, hasError:hasErrorU } = useUserData();
+
+    const [showVotingBar, setShowVotingBar] = useState();
+    useEffect(() => {
+        setShowVotingBar(false);
+    }, [vote, versionData])
+
+    if(isFetchingU || userData == undefined) return;
+
     if(versionData.is_suggestion != undefined) {
         return (
             <>
@@ -84,46 +96,48 @@ function Toolbar({ versionData, setSelectedVersionUUID, conformationPopover }) {
             </>
         );
     } else if(versionData.voting_result == null) {
-        // User hasn't voted
-        if(voteValue != undefined && voteValue.vote_value != null) {
-            var isAdmin = voteValue.admin_vote;
-            var value = voteValue.vote_value;
+        if(isFetchingP) return;
+        // User has voted
+        if(!showVotingBar && !IsObjectEmpty(vote)) {
+            var isAdmin = vote.admin_vote;
+            var value = vote.value;
             if(isAdmin && value == 1) {
                 return (
-                    <span class="double-thumbs up selected" onclick="OnVoteClick(${uuid}, ${originalID})"><i class="fas fa-thumbs-up"></i><i class="fas fa-thumbs-up"></i><i class="fas fa-thumbs-up"></i><p class="tooltip bottom">Admin ja vote</p></span>
+                    <span className="double-thumbs up selected" onClick={() => {setShowVotingBar(true)}}><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><p className="tooltip bottom">Admin ja vote</p></span>
                 );
             }
             else if(value == 1) {
                 return (
-                    <i class="fas fa-thumbs-up fa-fw selected" onclick="OnVoteClick(${uuid}, ${originalID})"><p class="tooltip bottom">Ja</p></i>
+                    <i className="fas fa-thumbs-up fa-fw selected" onClick={() => {setShowVotingBar(true)}}><p className="tooltip bottom">Ja</p></i>
                 );
             }
             else if(isAdmin && value == -1) {
                 return (
-                    <span class="double-thumbs down selected" onclick="OnVoteClick(${uuid}, ${originalID})"><i class="fas fa-thumbs-down"></i><i class="fas fa-thumbs-down"></i><i class="fas fa-thumbs-down"></i><p class="tooltip bottom">Admin nee vote</p></span>
+                    <span className="double-thumbs down selected" onClick={() => {setShowVotingBar(true)}}><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><p className="tooltip bottom">Admin nee vote</p></span>
                 )
             }
             else if(value == -1) {
                 return (
-                    <i class="fas fa-thumbs-down fa-fw selected" onclick="OnVoteClick(${uuid}, ${originalID})"><p class="tooltip bottom">Nee</p></i>
+                    <i className="fas fa-thumbs-down fa-fw selected" onClick={() => {setShowVotingBar(true)}}><p className="tooltip bottom">Nee</p></i>
                 )
             }
             return;
         }
-        // User has voted
-        if(currentUserInfo.admin) {
+        // User hasn't voted / wants to revote
+        if(userData.admin) {
             return (
                 <>
-                <span class="double-thumbs up" onclick="VoteAdminAccept(${uuid}, ${originalID})"><i class="fas fa-thumbs-up"></i><i class="fas fa-thumbs-up"></i><i class="fas fa-thumbs-up"></i><p class="tooltip bottom">Admin ja vote</p></span>
-                <i class="fas fa-thumbs-up fa-fw" onclick="VoteAccept(${uuid}, ${originalID})"><p class="tooltip bottom">Ja</p></i><i class="fas fa-thumbs-down fa-fw" onclick="VoteDeny(${uuid}, ${originalID})"><p class="tooltip bottom">Nee</p></i>
-                <span class="double-thumbs down" onclick="VoteAdminDeny(${uuid}, ${originalID})"><i class="fas fa-thumbs-down"></i><i class="fas fa-thumbs-down"></i><i class="fas fa-thumbs-down"></i><p class="tooltip bottom">Admin nee vote</p></span>
+                <span className="double-thumbs up" onClick={() => { VoteAdminAccept(queryClient, versionData.uuid, versionData.original_id) }}><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><p className="tooltip bottom">Admin ja vote</p></span>
+                <i className="fas fa-thumbs-up fa-fw" onClick={() => { VoteAccept(queryClient, versionData.uuid, versionData.original_id) }}><p className="tooltip bottom">Ja</p></i>
+                <i className="fas fa-thumbs-down fa-fw" onClick={() => { VoteDeny(queryClient, versionData.uuid, versionData.original_id) }}><p className="tooltip bottom">Nee</p></i>
+                <span className="double-thumbs down" onClick={() => { VoteAdminDeny(queryClient, versionData.uuid, versionData.original_id) }}><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><p className="tooltip bottom">Admin nee vote</p></span>
                 </>
             );
         }
         else {
             return (
                 <>
-                    <i class="fas fa-thumbs-up fa-fw" onclick="VoteAccept(${uuid}, ${originalID})"></i><i class="fas fa-thumbs-down fa-fw" onclick="VoteDeny(${uuid}, ${originalID})"></i>
+                    <i className="fas fa-thumbs-up fa-fw" onClick={() => { VoteAccept(queryClient, versionData.uuid, versionData.original_id) }}></i><i className="fas fa-thumbs-down fa-fw" onClick={() => { VoteDeny(queryClient, versionData.uuid, versionData.original_id, setShowVotingBar) }}></i>
                 </>
             )
         }
@@ -137,6 +151,7 @@ function Toolbar({ versionData, setSelectedVersionUUID, conformationPopover }) {
         );
     }
 }
+
 
 /* + ======================================================================== +
 /* | Editing button                                                           |
@@ -166,4 +181,89 @@ function OpenEdit(versionData, setSelectedVersionUUID, conformationPopover, conf
     localStorage.setItem('project-suggestion:' + versionData.original_id, JSON.stringify(editedVersionData));
 
     setSelectedVersionUUID(0);
+}
+
+
+/* + ======================================================================== +
+/* | Voting                                                                   |
+/* + ========================================================================*/
+async function VoteAdminAccept(queryClient, uuid, id) {
+    try {
+        setVoteQueryData(queryClient, uuid, id, {voteValue:1, adminVote:true, voteResult:null});
+        var response = await FetchInfo('/api/private/suggestion/vote', 'PUT', JSON.stringify({
+            type: 'project',
+            uuid: uuid,
+            voteValue: 'accept',
+            adminVote: 1
+        }), {includeCredentials: true});
+
+        var voteResult = null;
+        if(response.result == 'accepted') voteResult = true;
+        else if(response.result == 'denied') voteResult = false;
+        
+        refetchProjectVotes(queryClient, uuid, id, {voteValue:1, adminVote:true, voteResult:voteResult});
+
+    } catch(err) {
+        throw new Error('Failed to vote:\n' + err.message);
+    }
+}
+async function VoteAccept(queryClient, uuid, id) {
+    try {
+        setVoteQueryData(queryClient, uuid, id, {voteValue:1, adminVote:false, voteResult:voteResult});
+        var response = await FetchInfo('/api/private/suggestion/vote', 'PUT', JSON.stringify({
+            type: 'project',
+            uuid: uuid,
+            voteValue: 'accept',
+            adminVote: 0
+        }), {includeCredentials: true});
+        
+        var voteResult = null;
+        if(response.result == 'accepted') voteResult = true;
+        else if(response.result == 'denied') voteResult = false;
+
+        refetchProjectVotes(queryClient, uuid, id, {voteValue:1, adminVote:false, voteResult:voteResult});
+
+    } catch(err) {
+        throw new Error('Failed to vote:\n' + err.message);
+    }
+}
+async function VoteAdminDeny(queryClient, uuid, id) {
+    try {
+        setVoteQueryData(queryClient, uuid, id, {voteValue:-1, adminVote:true, voteResult:voteResult});
+        var response = await FetchInfo('/api/private/suggestion/vote', 'PUT', JSON.stringify({
+            type: 'project',
+            uuid: uuid,
+            voteValue: 'deny',
+            adminVote: 1
+        }), {includeCredentials: true});
+        
+        var voteResult = null;
+        if(response.result == 'accepted') voteResult = true;
+        else if(response.result == 'denied') voteResult = false;
+
+        refetchProjectVotes(queryClient, uuid, id, {voteValue:-1, adminVote:true, voteResult:voteResult});
+
+    } catch(err) {
+        throw new Error('Failed to vote:\n' + err.message);
+    }
+}
+async function VoteDeny(queryClient, uuid, id) {
+    try {
+        setVoteQueryData(queryClient, uuid, id, {voteValue:-1, adminVote:false, voteResult:voteResult});
+        const response = await FetchInfo('/api/private/suggestion/vote', 'PUT', JSON.stringify({
+            type: 'project',
+            uuid: uuid,
+            voteValue: 'deny',
+            adminVote: 0
+        }), {includeCredentials: true});
+        
+        var voteResult = null;
+        if(response.result == 'accepted') voteResult = true;
+        else if(response.result == 'denied') voteResult = false;
+
+        refetchProjectVotes(queryClient, uuid, id, {voteValue:-1, adminVote:false, voteResult:voteResult});
+
+    } catch(err) {
+        throw new Error('Failed to vote:\n' + err.message);
+    }
 }

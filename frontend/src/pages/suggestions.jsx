@@ -1,7 +1,7 @@
 import { useState, Suspense, Fragment } from 'react';
 
 import { IsValidURL } from '../utils/utils.jsx';
-import { useInspirationLabelsSus } from '../utils/data_fetching.jsx';
+import { useInspirationLabelsSus, FetchInfo } from '../utils/data_fetching.jsx';
 
 import Website from '../components/website.jsx';
 import { Input, Textarea } from '../components/inputs.jsx';

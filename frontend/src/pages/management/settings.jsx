@@ -7,8 +7,11 @@ import { Input } from '../../components/inputs.jsx'
 import Restricted from '../../components/restricted.jsx';
 import { SetFormErrorMessage, FormErrorMessage } from '../../components/form_error_message.jsx';
 import FormSuccesScreen from '../../components/form_succes_screen.jsx';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function Settings({isActive}) {
+    const queryClient = useQueryClient();
+
     const { userData, isFetchingU } = useUserDataSus();
     const { settings, isFetchingS } = useGlobalSettingsSus();
     if(isFetchingU || isFetchingS) return;
@@ -41,7 +44,7 @@ export default function Settings({isActive}) {
                     <input type="submit" value="Opslaan" />
 
                 </form>
-                <form id="settings-right" onSubmit={(ev) => { OnGlobalSettingsSubmit(ev, {setError: setGlobalErrorMessage, setErrorAtInput: setGlobalErrorInput}, setGlobalSuccesMessage); }}>
+                <form id="settings-right" onSubmit={(ev) => { OnGlobalSettingsSubmit(ev, {setError: setGlobalErrorMessage, setErrorAtInput: setGlobalErrorInput}, setGlobalSuccesMessage, queryClient); }}>
                 <Restricted to="modify_settings">
 
                     <h2>Globale instellingen</h2>
@@ -138,7 +141,7 @@ function IsFloat(val) {
     }
 }
 
-async function OnGlobalSettingsSubmit(event, errorMessaging, setSuccesMessage) {
+async function OnGlobalSettingsSubmit(event, errorMessaging, setSuccesMessage, queryClient) {
     event.preventDefault();
 
     var acceptNormalVote = event.target.settingsAcceptNormalVotes.value;
@@ -182,5 +185,6 @@ async function OnGlobalSettingsSubmit(event, errorMessaging, setSuccesMessage) {
     } catch(err) {
         return setSuccesMessage('Error: ' + err.message);
     }
-    setSuccesMessage('Instellingen zijn gewijzigd')
+    setSuccesMessage('Instellingen zijn gewijzigd');
+    queryClient.invalidateQueries();
 }
