@@ -1,12 +1,15 @@
 ## The Eureka site 
 #### Made by Hidde Meiburg 
 
+### Server setup
 To run this site you only need a server capabel of running nodejs and a mysql database
 
-To connect this database create a file called 'Config.js' in the Utils folder with this content:
+To use this project in a local enviroment first install nodejs: https://nodejs.org/en/download/prebuilt-installer/current
+
+To connect the database and other API's create a file called 'config.js' in the /backend/utils/ folder with this content:
 
 ```js
-var config = {
+export const Config = {
     db: {
         host:       '127.0.0.1',
         user:       'test',
@@ -17,28 +20,31 @@ var config = {
         apiKey:     'key'
     }
 };
-module.exports = config;
+export default Config;
 ```
 
 Next fill in the database credentials and your youtube API key
 
-To setup a quick database use this command (While of course swapping out the names, note that all the names are the same as in the Config.js)
+Running the command ``` npm run install:all ``` will setup the front and backend for development
+
+### Database setup
+
+To setup a quick database use this command (While of course swapping out the names, note that all the names need to be the same as in the config.js)
 
 ```SQL
 CREATE DATABASE testDatabase;
 CREATE USER 'user'@'127.0.0.1' IDENTIFIED BY 'password';
 GRANT ALL ON testDatabase.* TO 'user'@'127.0.0.1';
 ```
-This statement should be more secured if used in production (replacing the granted priviliges)
+This statement should only be used in a dev environment as this grants all the priviliges to the database user (you need to replace the granted priviliges for production)
 
-To setup the server visit www.domainName.xxx/setup
+To modify the users password run:
+```SQL
+ALTER USER 'test'@'localhost' IDENTIFIED BY 'newPassword'
+```
 
-This will setup the pepper and create an account with username='admin' and password='password'
+### Starting a development server
 
-Just to be on the safe side, if you are not debugging the application delete the Setup.js file and delete the part of server.js that is marked to be deleted
+Run ``` npm start ``` to start the front- and backend server. The server will automaticly setup a pepper and create an account with username='admin' and password='password'
 
-To use this project in a local enviroment first install nodejs: https://nodejs.org/en/download/prebuilt-installer/current
-
-Next up run, from the main directory with the package.json file `npm install`
-
-Then start the server with the `node server.js --watch` command
+When running the production version delete the part of /backend/server.js that is marked to be deleted

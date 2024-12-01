@@ -1,8 +1,7 @@
-Data/Private/
-
 node_modules/
-Utils/Config.js
 
-Data/Tutorials
-Data/Labels.json
-Data/Projects.json
+/backend/data/private/
+/backend/data/
+/backend/utils/config.js
+
+/frontend/dist/
