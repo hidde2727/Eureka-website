@@ -25,6 +25,7 @@
     --popover-background: rgba(0,0,0,0.1);
     --accent: light-dark(#0f4d92, #0f4d92);
 
+    --extra-small-border-radius: 3px;
     --small-border-radius: 5px;
     --big-border-radius: 10px;
 
@@ -38,7 +39,7 @@
         "wdth" 100,
         "GRAD" 0;
 }
-input, textarea {
+input, textarea, button {
     font-family: "Roboto Serif", serif;
     font-optical-sizing: auto;
     font-weight: 600;
@@ -962,6 +963,108 @@ div:has(+.footer) {
 /* + ======================================================================== +
 /* | Files window                                                             |
 /* + ========================================================================*/
+#files p {
+    margin: 0px;
+}
+#files .navigation {
+    border-bottom: var(--border-width) solid var(--seperator);
+    margin: -5px 0px 10px 0px;
+    padding: 5px 0px 5px 30px;
+
+    user-select: none;
+
+    display: flex;
+    align-items: center;
+}
+#files .navigation i {
+    font-size: 1rem;
+    display: block;
+    color: var(--normal-text);
+}
+#files .navigation i:first-child {
+    margin-right: 10px;
+    color: var(--prominent-text);
+
+    cursor: pointer;
+}
+#files .navigation i:not(:first-child) {
+    font-size: 0.75rem;
+    font-weight: normal;
+}
+#files .navigation p {
+    font-size: 0.8rem;
+    display: inline-block;
+    color: var(--prominent-text);
+    margin: 0px 10px 0px 10px;
+
+    cursor: pointer;
+}
+#files .folders,
+#files .files {
+    column-gap: 20px;
+    column-width: 100px;
+
+    margin: 10px 0px;
+}
+#files .files > .file, 
+#files .folders > .folder {
+    border-radius: var(--small-border-radius);
+
+    width: 100%;
+    height: auto;
+
+    user-select: none;
+    cursor: pointer;
+
+    display: grid;
+    grid-template-rows: auto auto;
+    overflow: hidden;
+}
+#files .files > .file i, 
+#files .folders > .folder i {
+    color: var(--normal-text);
+    font-size: 2.5rem;
+    justify-self: center;
+
+    transition: color 0.5s;
+}
+#files .files > .file:hover i, 
+#files .folders > .folder:hover i {
+    color: var(--label);
+}
+#files .files > .file p, 
+#files .folders > .folder p {
+    color: var(--prominent-text);
+    text-align: center;
+    font-size: 0.8rem;
+
+    margin: 5px 0px 2px 0px;
+}
+#files #on-file-drag {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    z-index: 100;
+
+    background-color: light-dark(#eee, #111);
+
+    align-items: center;
+    justify-content: center;
+
+    display: none;
+    opacity: 0;
+
+    transition: opacity 1s;
+}
+#files #on-file-drag.files-hover {
+    opacity: 1;
+}
+#files #on-file-drag * {
+    pointer-events: none;
+}
 
 
 /* + ======================================================================== +

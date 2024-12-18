@@ -1,7 +1,7 @@
 import { useState, Suspense, Fragment } from 'react';
 
 import { IsValidURL } from '../utils/utils.jsx';
-import { useInspirationLabelsSus, FetchInfo } from '../utils/data_fetching.jsx';
+import { useInspirationLabelsSus, suggestProject, suggestInspiration } from '../utils/data_fetching.jsx';
 
 import Website from '../components/website.jsx';
 import { Input, Textarea } from '../components/inputs.jsx';
@@ -184,16 +184,13 @@ async function OnProjectSubmit(event, errorMessaging, setSuccesMessage) {
     else if(projectSuggestorEmail.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.projectSuggestorEmail);
 
     try {
-        await FetchInfo('/api/suggest/project/', 'POST', JSON.stringify(
-            {
-            'name':projectName,
-            'description':projectDescription,
-            'links':urls,
-            'suggestorName':projectSuggestorName,
-            'suggestorEmail':projectSuggestorEmail
-            }
-        ), {jsonResponse:false});
-        
+        await suggestProject({
+            name: projectName, 
+            description: projectDescription, 
+            links: urls, 
+            suggestorName: projectSuggestorName, 
+            suggestorEmail: projectSuggestorEmail 
+        });        
         event.target.reset();
         setSuccesMessage('We proberen in een week bij je terug te komen!');
     } catch(err) {
@@ -232,14 +229,12 @@ async function OnInspirationSubmit(event, selectedLabels, errorMessaging, setSuc
       suggestions.push(link2);
     }
     try {
-        await FetchInfo('/api/suggest/inspiration/', 'POST', JSON.stringify(
-            {
-                'url':url,
-                'description':description,
-                'recommendations':suggestions,
-                'labels': Array.from(Object.keys(selectedLabels))
-            }
-        ), {jsonResponse:false});
+        await suggestInspiration({
+            url: url, 
+            description: description, 
+            recommendations: suggestions, 
+            labels: Array.from(Object.keys(selectedLabels)) 
+        });
 
         event.target.reset();
         setSuccesMessage('We proberen het binnen een week op de website te hebben staan!'); 

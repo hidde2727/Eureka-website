@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS files (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    parent_id INT UNSIGNED DEFAULT NULL,
+    name TINYTEXT NOT NULL,
+    uploadthing_id TINYTEXT DEFAULT NULL,
+
+    -- Used to force uniqueness
+    u_parent_id INT UNSIGNED GENERATED ALWAYS AS (COALESCE(parent_id, 0)) STORED,
+    UNIQUE INDEX (u_parent_id, name),
+
+    FOREIGN KEY (parent_id) REFERENCES files(id) ON DELETE CASCADE,
+    INDEX(parent_id),
+    INDEX(name)
+);

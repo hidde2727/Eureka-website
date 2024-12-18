@@ -1,0 +1,14 @@
+#files .navigation-right {
+    margin-left: auto;
+    margin-right: 30px;
+    display: flex;
+}
+#files .navigation-right i {
+    font-size: 1.5rem;
+}
+
+#files *[contenteditable=true]:focus {
+    outline: none;
+    border-bottom: 2px solid var(--seperator);
+    margin-bottom: 0px!important;
+}

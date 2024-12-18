@@ -2,7 +2,7 @@ import { forwardRef, useImperativeHandle, useRef, useState, useMemo, useEffect }
 import { useQueryClient } from '@tanstack/react-query';
 
 import { Prepend, IsObjectEmpty } from '../../utils/utils.jsx';
-import { FetchInfo, setVoteQueryData, refetchProjectVotes, useProjectVersions, useProjectVoteResult, useUserData } from '../../utils/data_fetching.jsx';
+import { setProjectVote, useProjectVersions, useProjectVoteResult, useUserData } from '../../utils/data_fetching.jsx';
 
 import { Popover, Left, Middle, Right, MiddleTop, MiddleBottom } from '../../components/popover.jsx';
 import Project from '../../components/project.jsx';
@@ -91,8 +91,8 @@ function Toolbar({ versionData, setSelectedVersionUUID, conformationPopover }) {
     if(versionData.is_suggestion != undefined) {
         return (
             <>
-                 <i class="fas fa-x fa-fw"><p class="tooltip bottom">Annuleer</p></i>
-                 <i class="fas fa-save fa-fw"><p class="tooltip bottom">Stel voor</p></i>
+                 <i className="fas fa-x fa-fw"><p className="tooltip bottom">Annuleer</p></i>
+                 <i className="fas fa-save fa-fw"><p className="tooltip bottom">Stel voor</p></i>
             </>
         );
     } else if(versionData.voting_result == null) {
@@ -188,82 +188,14 @@ function OpenEdit(versionData, setSelectedVersionUUID, conformationPopover, conf
 /* | Voting                                                                   |
 /* + ========================================================================*/
 async function VoteAdminAccept(queryClient, uuid, id) {
-    try {
-        setVoteQueryData(queryClient, uuid, id, {voteValue:1, adminVote:true, voteResult:null});
-        var response = await FetchInfo('/api/private/suggestion/vote', 'PUT', JSON.stringify({
-            type: 'project',
-            uuid: uuid,
-            voteValue: 'accept',
-            adminVote: 1
-        }), {includeCredentials: true});
-
-        var voteResult = null;
-        if(response.result == 'accepted') voteResult = true;
-        else if(response.result == 'denied') voteResult = false;
-        
-        refetchProjectVotes(queryClient, uuid, id, {voteValue:1, adminVote:true, voteResult:voteResult});
-
-    } catch(err) {
-        throw new Error('Failed to vote:\n' + err.message);
-    }
+    setProjectVote(queryClient, uuid, id, {voteValue:1, adminVote:true})
 }
 async function VoteAccept(queryClient, uuid, id) {
-    try {
-        setVoteQueryData(queryClient, uuid, id, {voteValue:1, adminVote:false, voteResult:voteResult});
-        var response = await FetchInfo('/api/private/suggestion/vote', 'PUT', JSON.stringify({
-            type: 'project',
-            uuid: uuid,
-            voteValue: 'accept',
-            adminVote: 0
-        }), {includeCredentials: true});
-        
-        var voteResult = null;
-        if(response.result == 'accepted') voteResult = true;
-        else if(response.result == 'denied') voteResult = false;
-
-        refetchProjectVotes(queryClient, uuid, id, {voteValue:1, adminVote:false, voteResult:voteResult});
-
-    } catch(err) {
-        throw new Error('Failed to vote:\n' + err.message);
-    }
+    setProjectVote(queryClient, uuid, id, {voteValue:1, adminVote:false})
 }
 async function VoteAdminDeny(queryClient, uuid, id) {
-    try {
-        setVoteQueryData(queryClient, uuid, id, {voteValue:-1, adminVote:true, voteResult:voteResult});
-        var response = await FetchInfo('/api/private/suggestion/vote', 'PUT', JSON.stringify({
-            type: 'project',
-            uuid: uuid,
-            voteValue: 'deny',
-            adminVote: 1
-        }), {includeCredentials: true});
-        
-        var voteResult = null;
-        if(response.result == 'accepted') voteResult = true;
-        else if(response.result == 'denied') voteResult = false;
-
-        refetchProjectVotes(queryClient, uuid, id, {voteValue:-1, adminVote:true, voteResult:voteResult});
-
-    } catch(err) {
-        throw new Error('Failed to vote:\n' + err.message);
-    }
+    setProjectVote(queryClient, uuid, id, {voteValue:-1, adminVote:true})
 }
 async function VoteDeny(queryClient, uuid, id) {
-    try {
-        setVoteQueryData(queryClient, uuid, id, {voteValue:-1, adminVote:false, voteResult:voteResult});
-        const response = await FetchInfo('/api/private/suggestion/vote', 'PUT', JSON.stringify({
-            type: 'project',
-            uuid: uuid,
-            voteValue: 'deny',
-            adminVote: 0
-        }), {includeCredentials: true});
-        
-        var voteResult = null;
-        if(response.result == 'accepted') voteResult = true;
-        else if(response.result == 'denied') voteResult = false;
-
-        refetchProjectVotes(queryClient, uuid, id, {voteValue:-1, adminVote:false, voteResult:voteResult});
-
-    } catch(err) {
-        throw new Error('Failed to vote:\n' + err.message);
-    }
+    setProjectVote(queryClient, uuid, id, {voteValue:-1, adminVote:false})
 }

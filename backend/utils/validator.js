@@ -31,6 +31,14 @@ export function CheckLink(res, link) {
 
     return false;
 }
+export function CheckBoolean(res, boolean) {
+    if(boolean == undefined)
+        return ReturnError(res, 'Specificeer boolean');
+    else if(boolean !== 'false' && boolean !== 'true' && boolean !== true && boolean !== false)
+        return ReturnError(res, 'Boolean moet true of false zijn');
+
+    return false;
+}
 
 
 /* + ======================================================================== +
@@ -123,6 +131,18 @@ export function CheckLabelID(res, labelID) {
 /* + ======================================================================== +
 /* | Files                                                                    |
 /* + ========================================================================*/
+export function CheckFilename(res, filename) {
+    if(filename == undefined) 
+        return ReturnError(res, 'Specificeer een file naam');
+    else if(filename == 'folderID')
+        return ReturnError(res, 'Naam kan niet folderID zijn');
+    else if(filename.indexOf('/') > -1)
+        return ReturnError(res, 'File naam kan niet / bevatten');
+    else if(filename.length > 255)
+        return ReturnError(res, 'File naam kan niet langer dan 255 karakters zijn');
+
+    return false;
+}
 export function CheckFilePath(res, filepath) {
     if (filepath == undefined)
         return ReturnError(res, 'Specificeer een file pad');
@@ -150,19 +170,24 @@ export function CheckBlob(res, blob, maxSize=1333333) {
 /* + ======================================================================== +
 /* | ID's                                                                     |
 /* + ========================================================================*/
-export function CheckID(res, projectID) {
-    if (projectID == undefined)
-        return ReturnError(res, 'Specificeer een project ID');
-    else if(typeof(uuid) == 'number') return false;
+export function CheckID(res, projectID, canBeNull=false) {
+    if (projectID === undefined)
+        return ReturnError(res, 'Specificeer een ID');
+    else if(canBeNull && projectID == null) return false;
+    else if(typeof projectID == 'number') return false;
+    else if(!(typeof projectID === 'string') && !(projectID instanceof String))
+        return ReturnError(res, 'ID moet een string of number zijn');
     else if(!validator.isInt(projectID)) 
-        return ReturnError(res, 'Specifier valide project ID');
+        return ReturnError(res, 'Specifier valide ID');
 
     return false;
 }
 export function CheckUUID(res, uuid) {
-    if (uuid == undefined)
+    if (uuid === undefined)
         return ReturnError(res, 'Specificeer een uuid');
-    else if(typeof(uuid) == 'number') return false;
+    else if(typeof uuid == 'number') return false;
+    else if(!(typeof uuid === 'string') && !(uuid instanceof String))
+        return ReturnError(res, 'ID moet een string of number zijn');
     else if(!validator.isInt(uuid)) 
         return ReturnError(res, 'Specifier valide uuid');
 
