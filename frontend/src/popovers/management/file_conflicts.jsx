@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useId, useState } from "react";
+import { forwardRef, useId, useImperativeHandle, useRef, useState } from "react";
 
 import { Popover } from "../../components/popover.jsx";
 import { Checkbox } from "../../components/inputs.jsx";
@@ -6,10 +6,18 @@ import { Checkbox } from "../../components/inputs.jsx";
 import '/public/popovers/file_conflicts.css';
 
 export const FileConflictPopover = forwardRef(({parentFolder, conflictingFiles, setConflictingFiles, onResolved, nameProperty='name'}, ref) => {
+    const internalPopoverRef = useRef();
     const [currentFile, setCurrentFile] = useState(0);
-    useEffect(() => {
-        setCurrentFile(0);
-    }, [onResolved, nameProperty, parentFolder]);
+
+    useImperativeHandle(ref, () => ({
+        open: () => {
+            internalPopoverRef.current.open();
+            setCurrentFile(0);
+        },
+        close: () => {
+            internalPopoverRef.current.close();
+        }
+    }));
 
     function replaceFrontErroringFile() {
         if (document.getElementById(checkboxID).checked) {
@@ -61,7 +69,7 @@ export const FileConflictPopover = forwardRef(({parentFolder, conflictingFiles, 
     const checkboxID = useId();
 
     return (
-        <Popover className="file-conflicts-popover" ref={ref}>
+        <Popover className="file-conflicts-popover" ref={internalPopoverRef}>
             { (()=>{
                 if(conflictingFiles == undefined || conflictingFiles.length == 0) return;
                 return (

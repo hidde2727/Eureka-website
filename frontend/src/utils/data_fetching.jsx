@@ -217,7 +217,9 @@ export async function changeFileName(queryClient, parentFolder, id, oldName, new
             let newData = structuredClone(oldData);
             let selectData = newData;
             for(let i = 1; i < parentFolder.length; i++) selectData = selectData[folder.name];
-            selectData[oldName].name = newName;
+
+            selectData = { ...selectData, [oldName]: undefined, [newName]: selectData[oldName] };
+
             return newData;
         });
         // Request the folder renaming

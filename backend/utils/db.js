@@ -469,6 +469,7 @@ export async function CreateFileReturnId(parentID, uploadThingID) {
 }
 export async function RenameFile(id, newName) {
     const currentFileInfo = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
+    if(currentFileInfo[0] == undefined) return;
     if(currentFileInfo[0].uploadthing_id == null) {
         // It is a folder
         const children = await GetChildrenOfFileID(currentFileInfo[0].id);
@@ -503,7 +504,7 @@ export async function CheckFileRenamingConflicts(id, newName) {
             return sharedChildren;
         } else {
             // It is a file
-            return { path: mergingFile.name, id: mergingFile.id };
+            return [{ path: mergingFile[0].name, id: mergingFile[0].id, uploadthing_id: mergingFile[0].uploadthing_id, conflictWithId: existingID[0].id, conflictWithUTId: existingID[0].uploadthing_id }];
         }
     }
     return false;

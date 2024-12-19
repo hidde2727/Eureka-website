@@ -37,8 +37,8 @@ export default function Files() {
         folders.current = [];
         files.current = [];
         for(let [folderName, data] of Object.entries(currentFolderData)) {
-            if(typeof data === 'string' || data instanceof String) files.current.push({"name":folderName, "id":data});
-            else if(folderName != 'folderID') folders.current.push({"name":folderName, "folderID":data.folderID});
+            if(data.utid != undefined) files.current.push({ name: folderName, utid: data.utid, id: data.id });
+            else if(folderName != 'folderID') folders.current.push({ name: folderName, folderID: data.folderID});
         }
         setForceUpdate(!forceUpdate);
     }, [currentFolder, fileData]);
@@ -52,6 +52,49 @@ export default function Files() {
     const renamingConflictsPopoverRef = useRef();
 
     if(hasError || fileData==undefined) return <p>Error tijdens het ophalen van de files</p>;
+
+    const CreateFile = ({ name, id, isFolder }) => {
+        return (
+            <>
+                { isFolder ? <i className="file-type fas fa-folder"/> : <IconByExtension extension={ name.split('.').pop() } /> }
+                <p
+                    suppressContentEditableWarning={true}
+                    contentEditable={true}
+                    onKeyDown={(ev) => {
+                        ev.target.isChanged = true;
+                        if (ev.keyCode == 13) {
+                            //ev.target.innerText = ev.target.innerText.slice(0, -1);
+                            ev.preventDefault();
+                            ev.target.blur();
+                        }
+                    }}
+                    onBlur={async (ev) => {
+                        if (!ev.target.isChanged) return;
+                        ev.target.isChanged = false;
+                        if (ev.target.innerText == 'folderID')
+                            ev.target.innerText = 'folderid';
+                        ev.target.innerText = ev.target.innerText.replace('/', '\\');
+                        const { hasConflicts, conflicts } = await changeFileName(queryClient, currentFolder, id, name, ev.target.innerText);
+                        if (hasConflicts) {
+                            setRenamingConflicts(conflicts);
+                            setRenamedFile(ev.target.innerText);
+                            onRenamingConflictResolved.current = (resolvedConflicts) => {
+                                renamingConflictsPopoverRef.current.close();
+
+                                var conflictMap = {};
+                                resolvedConflicts.forEach((conflict) => {
+                                    conflictMap[conflict.id] = conflict.decision;
+                                });
+                                changeFileName(queryClient, currentFolder, id, name, ev.target.innerText, conflictMap);
+                                ev.target.innerText = name;
+                            };
+                            renamingConflictsPopoverRef.current.open();
+                        }
+                    }}
+                >{name}</p>
+            </>
+        );
+    };
 
     return (
         <>
@@ -92,42 +135,7 @@ export default function Files() {
                                 className="folder" key={name} 
                                 onDoubleClick={() => { addToCurrentFolder({name: name, id: folderID}); }}
                             >
-                                <i className="file-type fas fa-folder"></i>
-                                <p
-                                    suppressContentEditableWarning={true}
-                                    contentEditable={true}
-                                    onKeyDown={ (ev) => {
-                                        ev.target.isChanged = true;
-                                        if(ev.keyCode == 13) {
-                                            //ev.target.innerText = ev.target.innerText.slice(0, -1);
-                                            ev.preventDefault();
-                                            ev.target.blur();
-                                        }
-                                    }}
-                                    onBlur={async (ev) => {
-                                        if(!ev.target.isChanged) return;
-                                        ev.target.isChanged = false;
-                                        if(ev.target.innerText == 'folderID') 
-                                            ev.target.innerText = 'folderid'; 
-                                        ev.target.innerText = ev.target.innerText.replace('/', '\\');
-                                        const { hasConflicts, conflicts } = await changeFileName(queryClient, currentFolder, folderID, name, ev.target.innerText);
-                                        if(hasConflicts) {
-                                            setRenamingConflicts(conflicts);
-                                            setRenamedFile(ev.target.innerText);
-                                            onRenamingConflictResolved.current = (resolvedConflicts) => {
-                                                renamingConflictsPopoverRef.current.close();
-
-                                                var conflictMap = {};
-                                                resolvedConflicts.forEach((conflict) => {
-                                                    conflictMap[conflict.id] = conflict.decision;
-                                                });
-                                                changeFileName(queryClient, currentFolder, folderID, name, ev.target.innerText, conflictMap);
-                                                ev.target.innerText = name;
-                                            };
-                                            renamingConflictsPopoverRef.current.open();
-                                        }
-                                    }}
-                                >{name}</p>
+                                <CreateFile name={name} id={folderID} isFolder={true} />
                             </div>
                             );
                         })
@@ -136,11 +144,17 @@ export default function Files() {
                 <p>Files:</p>
                 <div className="files">
                     {
-                        files.current.map(({name, id}) => {
+                        files.current.map(({name, utid, id}) => {
                             return (
-                            <div className="file" key={id}>
-                                <IconByExtension extension={ name.split('.').pop() } />
-                                <p>{name}</p>
+                            <div className="file" key={id} onDoubleClick={() => {
+                                var link = document.createElement('a');
+                                link.href = 'https://utfs.io/f/' + utid;
+                                link.download = name;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                            }}>
+                                <CreateFile name={name} id={id} isFolder={false} />
                             </div>
                             );
                         })
@@ -159,8 +173,4 @@ export default function Files() {
             </div>
         </>
     );
-}
-
-function OnFolderNameChange(parentID, newName) {
-
 }

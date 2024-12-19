@@ -1015,6 +1015,7 @@ div:has(+.footer) {
 
     user-select: none;
     cursor: pointer;
+    text-decoration: none;
 
     display: grid;
     grid-template-rows: auto auto;

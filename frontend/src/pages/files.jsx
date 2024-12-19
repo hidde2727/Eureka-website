@@ -2,10 +2,11 @@ import { Fragment, lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 import { useFilesSus } from '../utils/data_fetching.jsx'
 
-var ManagementFilesSuspense = lazy(() => import('./management/files'))
+var ManagementFilesSuspense = lazy(() => import('./management/files'));
 import Restricted from '../components/restricted.jsx';
 import Loading from '../components/loading.jsx';
 import Footer from '../components/footer.jsx';
+import { IconByExtension } from '../utils/utils.jsx';
 
 export default function Files({isActive}) {
     return (
@@ -45,8 +46,8 @@ function FilesSuspense() {
         folders.current = [];
         files.current = [];
         for(let [folderName, data] of Object.entries(currentFolderData)) {
-            if(typeof data === 'string' || data instanceof String) files.current.push({"name":folderName, "id":data});
-            else if(folderName != 'folderID') folders.current.push({"name":folderName});
+            if(data.utid != undefined) files.current.push({ name: folderName, utid: data.utid });
+            else if(folderName != 'folderID') folders.current.push({ name: folderName });
         }
         setForceUpdate(!forceUpdate);
     }, [currentFolder, fileData]);
@@ -89,23 +90,12 @@ function FilesSuspense() {
                 <p>Files:</p>
                 <div className="files">
                     {
-                        files.current.map(({name, id}) => {
+                        files.current.map(({name, utid}) => {
                             return (
-                            <div className="file" key={id}>
-                                {
-                                    (() => {
-                                        var extension = name.split('.').pop();
-                                        if(extension == "txt") return <i className="file-type fas fa-file-alt"/>;
-                                        else if(extension == "jpeg") return <i className="file-type fas fa-file-image"/>;
-                                        else if(extension == "png") return <i className="file-type fas fa-file-image"/>;
-                                        else if(extension == "pdf") return <i className="file-type fas fa-file-pdf"/>;
-                                        else if(extension == "docx") return <i className="file-type fas fa-file-word"/>;
-                                        else if(extension == "mp4") return <i className="file-type fas fa-file-video"/>;
-                                        else return <i className="file-type fas fa-file-alt"/>;
-                                    })()
-                                }
+                            <a className="file" key={utid} href={'https://utfs.io/f/' + utid} download={name}>
+                                <IconByExtension extension={ name.split('.').pop() } />
                                 <p>{name}</p>
-                            </div>
+                            </a>
                             );
                         })
                     }
