@@ -11,7 +11,7 @@ export async function RegenFileIndices() {
                 r[name] = {};
                 if(arr.length == index + 1) {
                     // Is it a folder:
-                    if(path.uploadthing_id === null) r[name] = { folderID: path.id };
+                    if(path.uploadthing_id === null) r[name] = { id: path.id };
                     // Is it a file:
                     else { r[name] = { utid: path.uploadthing_id, id: path.id } }
                 }

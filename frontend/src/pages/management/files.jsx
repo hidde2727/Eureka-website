@@ -38,7 +38,7 @@ export default function Files() {
         files.current = [];
         for(let [folderName, data] of Object.entries(currentFolderData)) {
             if(data.utid != undefined) files.current.push({ name: folderName, utid: data.utid, id: data.id });
-            else if(folderName != 'folderID') folders.current.push({ name: folderName, folderID: data.folderID});
+            else if(folderName != 'folderID') folders.current.push({ name: folderName, folderID: data.id});
         }
         setForceUpdate(!forceUpdate);
     }, [currentFolder, fileData]);
@@ -71,8 +71,10 @@ export default function Files() {
                     onBlur={async (ev) => {
                         if (!ev.target.isChanged) return;
                         ev.target.isChanged = false;
-                        if (ev.target.innerText == 'folderID')
-                            ev.target.innerText = 'folderid';
+                        if (ev.target.innerText == 'id')
+                            ev.target.innerText = 'ID';
+                        else if(ev.target.innerText == 'utid')
+                            ev.target.innerText = 'utID';
                         ev.target.innerText = ev.target.innerText.replace('/', '\\');
                         const { hasConflicts, conflicts } = await changeFileName(queryClient, currentFolder, id, name, ev.target.innerText);
                         if (hasConflicts) {
