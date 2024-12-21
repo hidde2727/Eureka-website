@@ -202,7 +202,7 @@ export async function createFolder(queryClient, parentID) {
         }), {includeCredentials: true});
 
         // Force a refresh (just in case anything went wrong updating optimistically)
-        queryClient.invalidateQueries({ queryKey:[`/data/files.json`, undefined, 'GET', null]});
+        // queryClient.invalidateQueries({ queryKey:[`/data/files.json`, undefined, 'GET', null]});
 
         return { name: response.name, id: response.id };
     } catch(err) {

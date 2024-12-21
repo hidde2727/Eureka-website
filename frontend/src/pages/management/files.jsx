@@ -25,22 +25,22 @@ export default function Files() {
         return currentFolder[currentFolder.length - 1];
     }
 
-    const folders = useRef([]);
-    const files = useRef([]);
-    const [forceUpdate, setForceUpdate] = useState(false);
+    const [folders, setFolders] = useState([]);
+    const [files, setFiles] = useState([]);
     useEffect(() => {
         if(fileData == undefined) return;
 
         let currentFolderData = fileData;
         for(let i = 1; i < currentFolder.length; i++) currentFolderData = currentFolderData[currentFolder[i].name];
 
-        folders.current = [];
-        files.current = [];
+        let newFolders = [];
+        let newFiles = [];
         for(let [folderName, data] of Object.entries(currentFolderData)) {
-            if(data.utid != undefined) files.current.push({ name: folderName, utid: data.utid, id: data.id });
-            else if(folderName != 'id') folders.current.push({ name: folderName, id: data.id});
+            if(data.utid != undefined) newFiles.push({ name: folderName, utid: data.utid, id: data.id });
+            else if(folderName != 'id') newFolders.push({ name: folderName, id: data.id});
         }
-        setForceUpdate(!forceUpdate);
+        setFolders(newFolders);
+        setFiles(newFiles);
     }, [currentFolder, fileData]);
 
     const [uploadingFiles, setUploadingFiles] = useState([]);
@@ -54,10 +54,23 @@ export default function Files() {
     if(hasError || fileData==undefined) return <p>Error tijdens het ophalen van de files</p>;
 
     const CreateFile = ({ name, id, isFolder, onDoubleClick  }) => {
+        const ref = useRef();
+        useEffect(() => {
+            if(id == 'noid') { 
+                ref.current.focus();
+                
+                var range = document.createRange();
+                range.selectNodeContents(ref.current);
+                var currentSelection = window.getSelection();
+                currentSelection.removeAllRanges();
+                currentSelection.addRange(range);
+            }
+        });
         return (
-            <div className={isFolder?'folder':'file'} onDoubleClick={onDoubleClick}>
+            <div className={isFolder?'folder':'file'} onDoubleClick={id=='noid'?undefined:onDoubleClick}>
                 { isFolder ? <i className="file-type fas fa-folder"/> : <IconByExtension extension={ name.split('.').pop() } /> }
-                <p
+                <p  
+                    ref={ref}
                     suppressContentEditableWarning={true}
                     contentEditable={true}
                     onKeyDown={(ev) => {
@@ -75,8 +88,16 @@ export default function Files() {
                             ev.target.innerText = 'ID';
                         else if(ev.target.innerText == 'utid')
                             ev.target.innerText = 'utID';
+                        else if(ev.target.innerText == 'placeholder')
+                            ev.target.innerText = 'Placeholder';
                         ev.target.innerText = ev.target.innerText.replace('/', '\\');
-                        const { hasConflicts, conflicts } = await changeFileName(queryClient, currentFolder, id, name, ev.target.innerText);
+                        let newName = ev.target.innerText;
+                        if(id == 'noid') {
+                            const {id:assignedID, name: assignedName} = await createFolder(queryClient, getCurrentFolder().id);
+                            id = assignedID;
+                            name = assignedName;
+                        }
+                        const { hasConflicts, conflicts } = await changeFileName(queryClient, currentFolder, id, name, newName);
                         if (hasConflicts) {
                             setRenamingConflicts(conflicts);
                             setRenamedFile(ev.target.innerText);
@@ -114,7 +135,11 @@ export default function Files() {
                 }
                 <div className="navigation-right">
                     <i className="fas fa-folder-plus" onClick={()=>{
-                        (async () => { var {id} = await createFolder(queryClient, getCurrentFolder().id); })(); 
+                        (async () => { 
+                            let newFolders = [...folders]; 
+                            newFolders.push({ name: 'newFolder', id:'noid' }); 
+                            setFolders(newFolders); 
+                        })(); 
                     }}/>
                     {
                     // <!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. -->
@@ -130,7 +155,7 @@ export default function Files() {
                 <p>Folders:</p>
                 <div className="folders">
                     {
-                        folders.current.map(({name, id}) =>
+                        folders.map(({name, id}) =>
                             <CreateFile 
                                 key={id} name={name} id={id} isFolder={true} 
                                 onDoubleClick={() => { addToCurrentFolder({name: name, id: id}); }}
@@ -141,7 +166,7 @@ export default function Files() {
                 <p>Files:</p>
                 <div className="files">
                     {
-                        files.current.map(({name, utid, id}) => 
+                        files.map(({name, utid, id}) => 
                             <CreateFile 
                                 key={id} name={name} id={id} isFolder={false} 
                                 onDoubleClick={() => {

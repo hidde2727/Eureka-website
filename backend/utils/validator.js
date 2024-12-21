@@ -138,6 +138,8 @@ export function CheckFilename(res, filename) {
         return ReturnError(res, 'Naam kan niet id zijn');
     else if(filename == 'utid')
         return ReturnError(res, 'Naam kan niet utid zijn');
+    else if(filename == 'placeholder')
+        return ReturnError(res, 'Naam kan niet placeholder zijn');
     else if(filename.indexOf('/') > -1)
         return ReturnError(res, 'File naam kan niet / bevatten');
     else if(filename.length > 255)

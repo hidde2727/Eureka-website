@@ -447,13 +447,10 @@ export async function CreateFileAtPath(parentID, path, uploadThingID, allowOverr
             return await CreateFile(intParentID, folder, uploadThingID, allowOverrides);
         }
         let folderID = await GetFolderId(folder, intParentID);
-        console.log('Getting folder with name ' + folder + ' id: ' + parentID);
-        console.log('Returned: ' + folderID);
         if(folderID == undefined) {
             folderID = await ExecutePreparedStatement('INSERT INTO files (parent_id, name) VALUES(?,?) RETURNING id', [intParentID, folder]);
             if(folderID.length == 0) throw new Error('Failed to use INSERT RETURNING');
             folderID = folderID[0]['id'];
-            console.log('folderID: ' + folderID);
         }
         intParentID = folderID;
         index++;
@@ -473,12 +470,12 @@ export async function RenameFile(id, newName) {
     if(currentFileInfo[0].uploadthing_id == null) {
         // It is a folder
         const children = await GetChildrenOfFileID(currentFileInfo[0].id);
-        let promises = [];
-        children.forEach((child) => {
-            promises.push(CreateFileAtPath(currentFileInfo[0].parent_id, newName + '/' + child.path, child.uploadthing_id));
-        });
-        promises.push(DeleteFile(id));
-        await Promise.all(promises);
+        for(let i = 0; i < children.length; i++) {
+            await CreateFileAtPath(currentFileInfo[0].parent_id, newName + '/' + children[i].path, children[i].uploadthing_id);
+        }
+        await DeleteFile(id);
+        // Make sure an empty folder doesn't get removed:
+        await CreateFile(currentFileInfo[0].parent_id, newName, undefined);
         return;
     }
     // It is a file
