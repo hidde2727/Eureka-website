@@ -7,7 +7,7 @@ import Config from '../../utils/config.js';
 router.use("/uploadthing", createRouteHandler({
     router: uploadRouter,
     config: { 
-        token: Config.uploadthing.apiKey,
+        token: Config.uploadthing.apiToken,
         isDev: process.env.NODE_ENV.trim() == 'development'
     }
 }));

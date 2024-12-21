@@ -194,6 +194,10 @@ export async function setProjectVote(queryClient, projectUUID, projectID, {voteV
 }
 
 
+export function useFileStorageUsage() {
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/files/usage', undefined, 'GET', null, { includeCredentials: true }));
+    return { storageUsage: data, hasError: error, isFetching: isFetching };
+}
 export async function createFolder(queryClient, parentID) {
     try {
         // Request the folder creation
@@ -216,7 +220,7 @@ export async function changeFileName(queryClient, parentFolder, id, oldName, new
             if(oldData == undefined) return undefined;
             let newData = structuredClone(oldData);
             let selectData = newData;
-            for(let i = 1; i < parentFolder.length; i++) selectData = selectData[folder.name];
+            for(let i = 1; i < parentFolder.length; i++) selectData = selectData[parentFolder[i].name];
 
             selectData = { ...selectData, [oldName]: undefined, [newName]: selectData[oldName] };
 
@@ -230,7 +234,8 @@ export async function changeFileName(queryClient, parentFolder, id, oldName, new
         }), { includeCredentials: true, jsonResponse: false });
 
         // Force a refresh (just in case anything went wrong updating optimistically)
-        queryClient.invalidateQueries({ queryKey:[`/data/files.json`, undefined, 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/data/files.json', undefined, 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/files/usage', undefined, 'GET', null]});
 
         try {
             response = JSON.parse(response);
@@ -254,7 +259,8 @@ export async function changeFileParent(queryClient, currentParentId, newParentId
         }), { includeCredentials: true, jsonResponse: false });
 
         // Force a refresh (just in case anything went wrong updating optimistically)
-        queryClient.invalidateQueries({ queryKey:[`/data/files.json`, undefined, 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/data/files.json', undefined, 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/files/usage', undefined, 'GET', null]});
 
         try {
             response = JSON.parse(response);
@@ -266,8 +272,36 @@ export async function changeFileParent(queryClient, currentParentId, newParentId
         throw new Error('Failed to change folder name:\n' + err.message);
     }
 }
+export async function deleteFile(queryClient, parentFolder, id) {
+    try {
+        // Optimistic update
+        queryClient.setQueryData([`/data/files.json`, undefined, 'GET', null], (oldData) => {
+            if(oldData == undefined) return undefined;
+
+            let newData = structuredClone(oldData);
+            let selectData = newData;
+            for(let i = 1; i < parentFolder.length; i++) selectData = selectData[parentFolder[i].name];
+            
+            selectData = Object.entries(selectData).filter(([fileName, file]) => file.id!==id).reduce( (res, [fileName, file]) => Object.assign(res, { [fileName]: file }), {} );
+
+            return newData;
+        });
+
+        // Request the folder renaming
+        await fetchInfo('/api/private/files/delete', 'PUT', JSON.stringify({
+            id: id
+        }), { includeCredentials: true, jsonResponse: false });
+
+        // Force a refresh (just in case anything went wrong updating optimistically)
+        queryClient.invalidateQueries({ queryKey:['/data/files.json', undefined, 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/files/usage', undefined, 'GET', null]});
+    } catch(err) {
+        throw new Error('Failed to delete file:\n' + err.message);
+    }
+}
 export function invalidateFiles(queryClient) {
-    queryClient.invalidateQueries({ queryKey:[`/data/files.json`, undefined, 'GET', null]});
+    queryClient.invalidateQueries({ queryKey:['/data/files.json', undefined, 'GET', null]});
+    queryClient.invalidateQueries({ queryKey:['/api/private/files/usage', undefined, 'GET', null]});
 }
 
 

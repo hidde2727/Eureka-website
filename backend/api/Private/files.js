@@ -6,6 +6,8 @@ import * as Login from '../../utils/login.js';
 import * as Validator from '../../utils/validator.js';
 import * as DB from '../../utils/db.js';
 import { utapi } from './uploadthing_router.js';
+import Config from '../../utils/config.js';
+import SendRequest from '../../utils/https_request.js';
 
 router.use(async (req, res, next) => {
     if(!(await Login.HasUserPermission(req, 'modify_files'))) {
@@ -16,6 +18,17 @@ router.use(async (req, res, next) => {
     next();
 });
 
+router.get('/usage', async (req, res) => {
+    const { totalBytes, appTotalBytes, filesUploaded, limitBytes } = await SendRequest({
+        host:'api.uploadthing.com',
+        path:'/v6/getUsageInfo',
+        method:'POST',
+        headers: {
+            'X-Uploadthing-Api-Key': Config.uploadthing.apiKey
+        }
+    });
+    res.send(JSON.stringify({totalBytes, appTotalBytes, filesUploaded, limitBytes}));
+});
 router.put('/add', async (req, res) => {
     // Only used to add folders, files need to be created using the uploadthing_router.js
     let data = req.body;
@@ -159,6 +172,27 @@ router.put('/move', async (req, res) => {
 
     await Files.RegenFileIndices();
     res.send('succes!');
+});
+router.put('/delete', async (req, res) => {
+    let data = req.body;
+    if(Validator.CheckID(res, data.id)) return;
+
+    const utid = await DB.GetUploadthingID(data.id);
+
+    if(utid == undefined) {
+        const children = await DB.GetChildrenOfFileID(data.id);
+        const toBeRemoved = children.map((child) => child.uploadthing_id);
+        const { success, deletedCount } = await utapi.deleteFiles(toBeRemoved, { keyType:'fileKey' });
+        if(!success) return Validator.ReturnError(res, 'Server error');
+    } else {
+        const { success, deletedCount } = await utapi.deleteFiles([utid], { keyType:'fileKey' });
+        if(!success) return Validator.ReturnError(res, 'Server error');
+    }
+
+    await DB.DeleteFile(data.id);
+
+    await Files.RegenFileIndices();
+    res.send('Succes!');
 });
 
 export default router;

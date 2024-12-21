@@ -553,7 +553,11 @@ export async function GetFileParentId(id) {
     const results = await ExecutePreparedStatement('SELECT parent_id FROM files WHERE id=?', [id]);
     return results.length == 0 ? undefined : results[0]['parent_id'];
 }
-export async function GetUploadthingID(parentID, path) {
+export async function GetUploadthingID(id) {
+    const results = await ExecutePreparedStatement('SELECT uploadthing_id FROM files WHERE id=?', [id]);
+    return results.length == 0 ? undefined : results[0]['uploadthing_id'];
+}
+export async function GetUploadthingIDFromPath(parentID, path) {
     const results = await ExecutePreparedStatement(`
         WITH RECURSIVE file_path (id, uploadthing_id, name, path_index) AS
         (

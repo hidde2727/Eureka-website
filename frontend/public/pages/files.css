@@ -6,9 +6,56 @@
 #files .navigation-right i {
     font-size: 1.5rem;
 }
+#files .navigation-right .storage-usage {
+    align-self: center;
+    position: relative;
+
+    overflow: visible;
+}
+#files .navigation-right .storage-usage .first {
+    display: none;
+    position: absolute;
+    top: 1px;
+    left: 0;
+}
+#files .navigation-right .storage-usage.clicked .first {
+    display: block;
+}
+#files .navigation-right .storage-usage.clicked .second {
+    visibility: hidden;
+}
 
 #files *[contenteditable=true]:focus {
     outline: none;
     border-bottom: 2px solid var(--seperator);
     margin-bottom: 0px!important;
+}
+
+#files .delete {
+    background-color: var(--denial);
+    padding: 10px;
+    border-radius: 10px 10px 0px 0px;
+    position: fixed;
+    bottom: -52px;
+    left: 65px;
+    width: calc(100% - 85px);
+    display: flex;
+
+    transition: bottom 0.5s;
+}
+#files .delete.active {
+    bottom: 0px;
+}
+#files .delete i {
+    color: #eee;
+    font-size: 2rem;
+    display: block;
+    margin-left: auto;
+}
+#files .delete p {
+    font-size: 0.85rem;
+    color: #eee;
+    margin-right: auto;
+    align-self: center;
+    margin-left: 10px;
 }

@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useFilesSus, createFolder, changeFileName, changeFileParent } from '../../utils/data_fetching.jsx';
+import { useFilesSus, useFileStorageUsage, createFolder, changeFileName, changeFileParent, deleteFile } from '../../utils/data_fetching.jsx';
 import { IconByExtension } from '../../utils/utils.jsx';
 
 import FileDropzone from '../../components/file_dropzone.jsx';
@@ -10,10 +10,19 @@ import FilePopover from '../../popovers/management/files.jsx';
 import '/public/pages/files.css';
 import { FileConflictPopover } from '../../popovers/management/file_conflicts.jsx';
 
-var draggedFile = undefined;
 export default function Files() {
+    useEffect(() => {
+        let timeout = undefined;
+        document.addEventListener('drag', () => {
+            if(timeout != undefined) clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                deleteWindow.current.classList.remove('active');
+            }, 500);
+        });
+    }, []);
     const queryClient = useQueryClient();
 
+    const { storageUsage, isFetching: isFetchingUsage, hasError: hasErrorUsage } = useFileStorageUsage();
     const { files: fileData, isFetching, hasError } = useFilesSus();
     const [currentFolder, setCurrentFolder] = useState([{name: 'root', id: null}]);
     function addToCurrentFolder({name, id}) {
@@ -52,13 +61,17 @@ export default function Files() {
     const onRenamingConflictResolved = useRef();
     const fileConflictPopoverRef = useRef();
 
-    if(hasError || fileData==undefined) return <p>Error tijdens het ophalen van de files</p>;
+    const draggedFile = useRef();
+    const deleteWindow = useRef();
+
+    if(hasError || hasErrorUsage || fileData==undefined) return <p>Error tijdens het ophalen van de files</p>;
 
     async function handleFileDrop(ev, toId, toName) {
-        if(draggedFile?.name == undefined || draggedFile?.name == toName || draggedFile?.id == undefined) return;
+        if(draggedFile.current?.name == undefined || draggedFile.current?.name == toName || draggedFile.current?.id == undefined) return;
+        deleteWindow.current.classList.remove('active');
 
-        const fileInfo = draggedFile;
-        draggedFile = undefined;
+        const fileInfo = draggedFile.current;
+        draggedFile.current = undefined;
         const { hasConflicts, conflicts } = await changeFileParent(queryClient, getCurrentFolder().id, toId, fileInfo.id);
         if (hasConflicts) {
             setFileConflicts(conflicts);
@@ -93,16 +106,17 @@ export default function Files() {
             className={isFolder?'folder':'file'} onDoubleClick={id=='noid'?undefined:onDoubleClick}
             draggable="true"
             onDragStart={(ev) => {
-                draggedFile = { name: name, id: id };
+                deleteWindow.current.classList.add('active');
+                draggedFile.current = { name: name, id: id, isFolder: isFolder };
                 ev.dataTransfer.dropEffect = "move";
             }}
             onDrop={!isFolder? undefined : ((ev) => { handleFileDrop(ev, id, name); })}
             onDragEnter={!isFolder? undefined : ((ev) => {
-                if(draggedFile?.name == undefined || draggedFile?.name == name) return;
+                if(draggedFile.current?.name == undefined || draggedFile.current?.name == name) return;
                 ev.preventDefault();
             })}
             onDragOver={!isFolder? undefined : ((ev) => { 
-                if(draggedFile?.name == undefined || draggedFile?.name == name) return;
+                if(draggedFile.current?.name == undefined || draggedFile.current?.name == name) return;
                 ev.preventDefault();
             })}
             >
@@ -174,8 +188,8 @@ export default function Files() {
                                 <i className="fas fa-home" 
                                 onClick={()=>{ setCurrentFolderToIndex(0); }}
                                 onDrop={(ev) => { handleFileDrop(ev, null, undefined); }}
-                                onDragEnter={(ev) => { if(draggedFile?.name == undefined) { return; } ev.preventDefault(); }}
-                                onDragOver={(ev) => { if(draggedFile?.name == undefined) { return; } ev.preventDefault(); }}
+                                onDragEnter={(ev) => { if(draggedFile.current?.name == undefined) { return; } ev.preventDefault(); }}
+                                onDragOver={(ev) => { if(draggedFile.current?.name == undefined) { return; } ev.preventDefault(); }}
                                 ></i>
                                 <i className="fas fa-greater-than"/>
                             </Fragment>
@@ -186,8 +200,8 @@ export default function Files() {
                             <p 
                             onClick={()=>{ setCurrentFolderToIndex(index); }}
                             onDrop={(ev) => { handleFileDrop(ev, folder.id, undefined); }}
-                            onDragEnter={(ev) => { if(draggedFile?.name == undefined) { return; } ev.preventDefault(); }}
-                            onDragOver={(ev) => { if(draggedFile?.name == undefined) { return; } ev.preventDefault(); }}
+                            onDragEnter={(ev) => { if(draggedFile.current?.name == undefined) { return; } ev.preventDefault(); }}
+                            onDragOver={(ev) => { if(draggedFile.current?.name == undefined) { return; } ev.preventDefault(); }}
                             >{folder.name}</p>
                             <i className="fas fa-greater-than"/>
                         </Fragment>
@@ -210,6 +224,12 @@ export default function Files() {
                         uploadPopoverRef.current.open();
                     }}                 
                     ><path fill="#EEE" d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-102.1-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31L216 408z"/></svg>
+
+                    <p className="storage-usage" onClick={(ev) => { ev.target.parentNode.classList.toggle('clicked'); }}> 
+                        <a className="first">{(Math.ceil(storageUsage?.appTotalBytes / 100000000) / 10) + 'GB / 2GB'}</a>
+                        <a className="second">{(Math.round(storageUsage?.appTotalBytes / 100000) / 10) + 'MB / 2000MB'}</a>
+                    </p>
+                
                 </div>
             </div>
             <div className="files-folders">
@@ -249,6 +269,19 @@ export default function Files() {
                 onResolved={onRenamingConflictResolved.current} 
                 nameProperty="path"                
                 />
+            </div>
+            <div 
+            className="delete" ref={deleteWindow}
+            onDrop={() => {
+                deleteFile(queryClient, currentFolder, draggedFile.current.id);
+                draggedFile.current = undefined;
+                deleteWindow.current.classList.remove('active');
+            }}
+            onDragEnter={(ev) => { ev.preventDefault(); }}
+            onDragOver={(ev) => { ev.preventDefault(); }}
+            >
+                <i className="far fa-trash-alt" />
+                <p>Delete de file</p>
             </div>
         </>
     );

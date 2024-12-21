@@ -9,7 +9,7 @@ import { RegenFileIndices } from "../../utils/files.js";
 const f = createUploadthing();
 
 export const utapi = new UTApi({
-    token: Config.uploadthing.apiKey,
+    token: Config.uploadthing.apiToken,
     defaultKeyType: 'filekey'
 });
 
@@ -39,7 +39,7 @@ export const uploadRouter = {
         const fileOverrides = files.map((file, index) => {
             const folderLocation = req.body.input.directories[index];
             console.log('parentID: ' + parentID + ' location: ' + folderLocation);
-            checkOverridingPromises.push(DB.GetUploadthingID(parentID, folderLocation));
+            checkOverridingPromises.push(DB.GetUploadthingIDFromPath(parentID, folderLocation));
             return { ...file, name: folderLocation };
         });
         const existingFiles = (await Promise.all(checkOverridingPromises)).sort();
