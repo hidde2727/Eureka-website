@@ -98,7 +98,7 @@
     grid-area: load;
     align-self: end;
 
-    background-color: #444;
+    background-color: var(--seperator);
     border-radius: var(--small-border-radius);
     height: 6px;
 }
@@ -106,7 +106,7 @@
     to {background-position:left;}
 }
 .file-popover div.selected-files .file .progress.animate {
-    background: linear-gradient(90deg,#444 40%,#666 ,#444 60%) right/300% 100%;
+    background: linear-gradient(90deg,var(--seperator) 40%,var(--input-border) ,var(--seperator) 60%) right/300% 100%;
     animation: loading 2s linear infinite;
 }
 .file-popover div.selected-files .file .progress .inner-progress {

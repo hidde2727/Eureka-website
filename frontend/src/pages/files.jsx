@@ -73,7 +73,6 @@ function FilesSuspense() {
                 }
             </div>
             <div className="files-folders">
-                <p>Folders:</p>
                 <div className="folders">
                     {
                         folders.current.map(({name}) => {
@@ -86,7 +85,6 @@ function FilesSuspense() {
                         })
                     }
                 </div>
-                <p>Files:</p>
                 <div className="files">
                     {
                         files.current.map(({name, utid}) => {

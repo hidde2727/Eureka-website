@@ -83,7 +83,6 @@ router.put('/rename', async (req, res) => {
 
     // Replace the files that needed to be kept:
     if(toBeKept.length > 0) {
-        console.log('parentid: ' + parentID);
         for(let i = 0; i < toBeKept.length; i++) {
             await DB.CreateFileAtPath(parentID, toBeKept[i].path, toBeKept[i].uploadthing_id);
         }
@@ -153,7 +152,6 @@ router.put('/move', async (req, res) => {
 
     // Replace the files that needed to be kept:
     if(toBeKept.length > 0) {
-        console.log('parentid: ' + parentID);
         for(let i = 0; i < toBeKept.length; i++) {
             await DB.CreateFileAtPath(parentID, toBeKept[i].path, toBeKept[i].uploadthing_id);
         }

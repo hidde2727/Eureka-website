@@ -94,6 +94,7 @@ export default function Files() {
             draggable="true"
             onDragStart={(ev) => {
                 draggedFile = { name: name, id: id };
+                ev.dataTransfer.dropEffect = "move";
             }}
             onDrop={!isFolder? undefined : ((ev) => { handleFileDrop(ev, id, name); })}
             onDragEnter={!isFolder? undefined : ((ev) => {
@@ -212,7 +213,6 @@ export default function Files() {
                 </div>
             </div>
             <div className="files-folders">
-                <p>Folders:</p>
                 <div className="folders">
                     {
                         folders.map(({name, id}) =>
@@ -223,7 +223,6 @@ export default function Files() {
                         )
                     }
                 </div>
-                <p>Files:</p>
                 <div className="files">
                     {
                         files.map(({name, utid, id}) => 
