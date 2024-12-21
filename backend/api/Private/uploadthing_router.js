@@ -28,6 +28,12 @@ export const uploadRouter = {
         const parentID = req.body.input.parentID=='null'?null:req.body.input.parentID;
         if(req.body.input.override == undefined) throw new UploadThingError(JSON.stringify({ error: 'Specificeer of al bestaande bestaande overschreven moeten worden'}));
         const override = req.body.input.override;
+
+        const containsDuplicates = files
+                                    .map((file, index) => req.body.input.directories[index])
+                                    .sort()
+                                    .some((item, i, items) => item === items[i + 1]);
+        if(containsDuplicates) throw new UploadThingError(JSON.stringify({ error:'Kan geen duplicaten namen uploaden'}));
         // Add the relative directory to the file info and check if any of the files already exist
         const checkOverridingPromises = [];
         const fileOverrides = files.map((file, index) => {

@@ -44,7 +44,12 @@
     margin-top: 20px!important;
 }
 .file-popover div.selected-files {
-    margin-right: 20px;
+    margin-right: 10px;
+    max-height: calc(53px * 6);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+    scrollbar-width: thin;
 }
 .file-popover div.selected-files .file {
     width: 100%;

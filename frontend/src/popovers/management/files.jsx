@@ -47,8 +47,8 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
             invalidateFiles(queryClient);
         },
         onUploadError: (err) => {
+            setUploadstate('Upload');
             if(err?._tag == 'UploadThingError' && !(err?.code == 'INTERNAL_SERVER_ERROR' && err?.message[0] == '{')) {
-                setUploadstate('Upload');
                 alert(err.message);
                 return;
             }
@@ -58,7 +58,6 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
             // Some files already exist
             setErroringFiles(json.existingFiles);
             errorPopover.current.open();
-            setUploadstate('Upload');
         },
         onUploadBegin: (fileName) => {
             setUploadstate('Uploading');
@@ -142,11 +141,16 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
                 <i className="fas fa-cloud-arrow-up" />
                 <label className="file" htmlFor={fileInputID}>Kies files om te uploaden</label>
                 <input type="file" id={fileInputID} multiple={true} onChange={(ev)=>{
-                    var newFileArray = [...files];
+                    let newFileArray = [...files];
+                    let giveError = false;
                     for(const file of ev.target.files) {
+                        const doesExist = newFileArray.findIndex((file2) => file2.name == file.name);
+                        if(doesExist != -1) { giveError = true; continue; }
                         newFileArray.push(file);
                     }
                     setFiles(newFileArray);
+                    if(giveError)
+                        alert('Een deel van de files is niet toegevoegd aangezien de naam overeen kwam met een andere file/folder');
                 }} />
                 {
                     // Make sure to only display an extra input for folders if the browser supports it
@@ -155,19 +159,24 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
                             <label className="folder" htmlFor={folderInputID}>Of kies een folder...</label>
                             <input type="file" id={folderInputID} multiple={true} webkitdirectory="true"  
                             onChange={(ev)=>{
-                                var newFileArray = [...files];
+                                let newFileArray = [...files];
 
-                                var folders = {};
+                                let folders = {};
                                 for(const file of ev.target.files) {
                                     const folderName = file.webkitRelativePath.split('/')[0];
                                     if(!folders[folderName]) folders[folderName] = [];
                                     folders[folderName].push(file);
                                 }
+                                let giveError = false;
                                 for(const [folderName, files] of Object.entries(folders)) {
+                                    const doesExist = newFileArray.findIndex((file2) => file2.name == folderName);
+                                    if(doesExist != -1) { giveError = true; continue; }
                                     newFileArray.push({isFolder: true, name: folderName, files: files});
                                 }
 
                                 setFiles(newFileArray);
+                                if(giveError)
+                                    alert('Een deel van de folders is niet toegevoegd aangezien de naam overeen kwam met een andere file/folder');
                             }} />
                         </>
                     )
