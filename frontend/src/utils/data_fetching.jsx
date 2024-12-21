@@ -242,6 +242,30 @@ export async function changeFileName(queryClient, parentFolder, id, oldName, new
         throw new Error('Failed to change folder name:\n' + err.message);
     }
 }
+export async function changeFileParent(queryClient, currentParentId, newParentId, id, override=false) {
+    try {
+        // Optimistic update
+        
+        // Request the folder renaming
+        var response = await fetchInfo('/api/private/files/move', 'PUT', JSON.stringify({
+            id: id,
+            newParentId: newParentId,
+            override: override
+        }), { includeCredentials: true, jsonResponse: false });
+
+        // Force a refresh (just in case anything went wrong updating optimistically)
+        queryClient.invalidateQueries({ queryKey:[`/data/files.json`, undefined, 'GET', null]});
+
+        try {
+            response = JSON.parse(response);
+            return { hasConflicts: true, conflicts: response.conflicts };
+        } catch(err) {
+            return { hasConflicts: false };
+        }
+    } catch(err) {
+        throw new Error('Failed to change folder name:\n' + err.message);
+    }
+}
 export function invalidateFiles(queryClient) {
     queryClient.invalidateQueries({ queryKey:[`/data/files.json`, undefined, 'GET', null]});
 }

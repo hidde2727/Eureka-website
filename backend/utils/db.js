@@ -481,11 +481,50 @@ export async function RenameFile(id, newName) {
     // It is a file
     await ExecutePreparedStatement('UPDATE files SET name=? WHERE id=?', [newName, id]);
 }
+export async function MoveFile(id, newParentId) {
+    const currentFileInfo = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
+    if(currentFileInfo[0] == undefined) return;
+    if(currentFileInfo[0].uploadthing_id == null) {
+        // It is a folder
+        const children = await GetChildrenOfFileID(currentFileInfo[0].id);
+        for(let i = 0; i < children.length; i++) {
+            await CreateFileAtPath(newParentId, currentFileInfo[0].name + '/' + children[i].path, children[i].uploadthing_id);
+        }
+        await DeleteFile(id);
+        // Make sure an empty folder doesn't get removed:
+        await CreateFile(newParentId, currentFileInfo[0].name, undefined);
+        return;
+    }
+    // It is a file
+    await ExecutePreparedStatement('UPDATE files SET parent_id=? WHERE id=?', [newParentId, id]);
+}
 export async function DeleteFile(fileID) {
     await ExecutePreparedStatement('DELETE FROM files WHERE id=?', [fileID]);
 }
 export async function CheckFileRenamingConflicts(id, newName) {
     const existingID = await ExecutePreparedStatement('SELECT * FROM files WHERE name=? AND parent_id <=> (SELECT parent_id FROM files WHERE id=? LIMIT 1)', [newName, id]);
+    if(existingID.length > 0) {
+        const mergingFile = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
+        if(mergingFile[0].uploadthing_id == null) {
+            // It is a folder -> compare all the children
+            const existingChildren = await GetChildrenOfFileID(existingID[0].id);
+            const mergingChildren = await GetChildrenOfFileID(mergingFile[0].id);
+            let sharedChildren = [];
+            mergingChildren.forEach((merging) => {
+                if(merging.uploadthing_id == null) return;
+                const conflictIndex = existingChildren.findIndex((existing) => existing.path == merging.path );
+                if(conflictIndex != -1) sharedChildren.push({ path: mergingFile[0].name + '/' + merging.path, id: merging.id, uploadthing_id: merging.uploadthing_id, conflictWithId: existingChildren[conflictIndex].id, conflictWithUTId: existingChildren[conflictIndex].uploadthing_id });
+            });
+            return sharedChildren;
+        } else {
+            // It is a file
+            return [{ path: mergingFile[0].name, id: mergingFile[0].id, uploadthing_id: mergingFile[0].uploadthing_id, conflictWithId: existingID[0].id, conflictWithUTId: existingID[0].uploadthing_id }];
+        }
+    }
+    return false;
+}
+export async function CheckFileMovingConflicts(id, newParentId) {
+    const existingID = await ExecutePreparedStatement('SELECT * FROM files WHERE parent_id=? AND name=(SELECT name FROM files WHERE id=? LIMIT 1)', [newParentId, id]);
     if(existingID.length > 0) {
         const mergingFile = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
         if(mergingFile[0].uploadthing_id == null) {

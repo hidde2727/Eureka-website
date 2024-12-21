@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useFilesSus, createFolder, changeFileName } from '../../utils/data_fetching.jsx';
+import { useFilesSus, createFolder, changeFileName, changeFileParent } from '../../utils/data_fetching.jsx';
 import { IconByExtension } from '../../utils/utils.jsx';
 
 import FileDropzone from '../../components/file_dropzone.jsx';
@@ -10,6 +10,7 @@ import FilePopover from '../../popovers/management/files.jsx';
 import '/public/pages/files.css';
 import { FileConflictPopover } from '../../popovers/management/file_conflicts.jsx';
 
+var draggedFile = undefined;
 export default function Files() {
     const queryClient = useQueryClient();
 
@@ -46,19 +47,40 @@ export default function Files() {
     const [uploadingFiles, setUploadingFiles] = useState([]);
     const uploadPopoverRef = useRef();
 
-    const [renamingConflicts, setRenamingConflicts] = useState();
-    const [renamedFile, setRenamedFile] = useState();
+    const [fileConflicts, setFileConflicts] = useState();
+    const [conflictParentName, setConflictParentName] = useState();
     const onRenamingConflictResolved = useRef();
-    const renamingConflictsPopoverRef = useRef();
+    const fileConflictPopoverRef = useRef();
 
     if(hasError || fileData==undefined) return <p>Error tijdens het ophalen van de files</p>;
 
-    const CreateFile = ({ name, id, isFolder, onDoubleClick  }) => {
+    async function handleFileDrop(ev, toId, toName) {
+        if(draggedFile?.name == undefined || draggedFile?.name == toName || draggedFile?.id == undefined) return;
+
+        const fileInfo = draggedFile;
+        draggedFile = undefined;
+        const { hasConflicts, conflicts } = await changeFileParent(queryClient, getCurrentFolder().id, toId, fileInfo.id);
+        if (hasConflicts) {
+            setFileConflicts(conflicts);
+            setConflictParentName(ev.target.innerText);
+            onRenamingConflictResolved.current = (resolvedConflicts) => {
+                fileConflictPopoverRef.current.close();
+
+                var conflictMap = {};
+                resolvedConflicts.forEach((conflict) => {
+                    conflictMap[conflict.id] = conflict.decision;
+                });
+                changeFileParent(queryClient, getCurrentFolder().id, toId, fileInfo.id, conflictMap);
+            };
+            fileConflictPopoverRef.current.open();
+        }
+    }
+    function CreateFile({ name, id, isFolder, onDoubleClick  }) {
         const ref = useRef();
         useEffect(() => {
             if(id == 'noid') { 
                 ref.current.focus();
-                
+
                 var range = document.createRange();
                 range.selectNodeContents(ref.current);
                 var currentSelection = window.getSelection();
@@ -67,21 +89,43 @@ export default function Files() {
             }
         });
         return (
-            <div className={isFolder?'folder':'file'} onDoubleClick={id=='noid'?undefined:onDoubleClick}>
+            <div 
+            className={isFolder?'folder':'file'} onDoubleClick={id=='noid'?undefined:onDoubleClick}
+            draggable="true"
+            onDragStart={(ev) => {
+                draggedFile = { name: name, id: id };
+            }}
+            onDrop={!isFolder? undefined : ((ev) => { handleFileDrop(ev, id, name); })}
+            onDragEnter={!isFolder? undefined : ((ev) => {
+                if(draggedFile?.name == undefined || draggedFile?.name == name) return;
+                ev.preventDefault();
+            })}
+            onDragOver={!isFolder? undefined : ((ev) => { 
+                if(draggedFile?.name == undefined || draggedFile?.name == name) return;
+                ev.preventDefault();
+            })}
+            >
                 { isFolder ? <i className="file-type fas fa-folder"/> : <IconByExtension extension={ name.split('.').pop() } /> }
                 <p  
                     ref={ref}
                     suppressContentEditableWarning={true}
                     contentEditable={true}
+                    onPointerDown={(e)=>{
+                        e.stopPropagation();
+                    }}
                     onKeyDown={(ev) => {
+                        ev.stopPropagation();
                         ev.target.isChanged = true;
-                        if (ev.keyCode == 13) {
-                            //ev.target.innerText = ev.target.innerText.slice(0, -1);
+                        if (ev.key === 'Enter') {
                             ev.preventDefault();
                             ev.target.blur();
                         }
                     }}
+                    onFocus={(ev) => {
+                        ev.target.parentNode.draggable = false;
+                    }}
                     onBlur={async (ev) => {
+                        ev.target.parentNode.draggable = true;
                         if (!ev.target.isChanged) return;
                         ev.target.isChanged = false;
                         if (ev.target.innerText == 'id')
@@ -99,10 +143,10 @@ export default function Files() {
                         }
                         const { hasConflicts, conflicts } = await changeFileName(queryClient, currentFolder, id, name, newName);
                         if (hasConflicts) {
-                            setRenamingConflicts(conflicts);
-                            setRenamedFile(ev.target.innerText);
+                            setFileConflicts(conflicts);
+                            setConflictParentName(ev.target.innerText);
                             onRenamingConflictResolved.current = (resolvedConflicts) => {
-                                renamingConflictsPopoverRef.current.close();
+                                fileConflictPopoverRef.current.close();
 
                                 var conflictMap = {};
                                 resolvedConflicts.forEach((conflict) => {
@@ -111,23 +155,39 @@ export default function Files() {
                                 changeFileName(queryClient, currentFolder, id, name, ev.target.innerText, conflictMap);
                                 ev.target.innerText = name;
                             };
-                            renamingConflictsPopoverRef.current.open();
+                            fileConflictPopoverRef.current.open();
                         }
                     }}
                 >{name}</p>
             </div>
         );
-    };
+    }
 
     return (
         <>
             <div className="navigation">
                 {
                     currentFolder.map((folder, index) => {
-                        if(index == 0) return <Fragment key={index}><i className="fas fa-home" onClick={()=>{ setCurrentFolderToIndex(0); }}></i><i className="fas fa-greater-than"/></Fragment>;
+                        if(index == 0) { return (
+                            <Fragment key={index}>
+                                <i className="fas fa-home" 
+                                onClick={()=>{ setCurrentFolderToIndex(0); }}
+                                onDrop={(ev) => { handleFileDrop(ev, null, undefined); }}
+                                onDragEnter={(ev) => { if(draggedFile?.name == undefined) { return; } ev.preventDefault(); }}
+                                onDragOver={(ev) => { if(draggedFile?.name == undefined) { return; } ev.preventDefault(); }}
+                                ></i>
+                                <i className="fas fa-greater-than"/>
+                            </Fragment>
+                            ); 
+                        }
                         return (
-                        <Fragment key={index}>
-                            <p onClick={()=>{ setCurrentFolderToIndex(index); }}>{folder.name}</p>
+                        <Fragment key={index} >
+                            <p 
+                            onClick={()=>{ setCurrentFolderToIndex(index); }}
+                            onDrop={(ev) => { handleFileDrop(ev, folder.id, undefined); }}
+                            onDragEnter={(ev) => { if(draggedFile?.name == undefined) { return; } ev.preventDefault(); }}
+                            onDragOver={(ev) => { if(draggedFile?.name == undefined) { return; } ev.preventDefault(); }}
+                            >{folder.name}</p>
                             <i className="fas fa-greater-than"/>
                         </Fragment>
                         );
@@ -183,10 +243,10 @@ export default function Files() {
                 <FileDropzone />
                 <FilePopover parentFolder={getCurrentFolder()} files={uploadingFiles} setFiles={setUploadingFiles} ref={uploadPopoverRef} />
                 <FileConflictPopover 
-                ref={renamingConflictsPopoverRef} 
-                parentFolder={renamedFile} 
-                conflictingFiles={renamingConflicts} 
-                setConflictingFiles={setRenamingConflicts} 
+                ref={fileConflictPopoverRef} 
+                parentFolder={conflictParentName} 
+                conflictingFiles={fileConflicts} 
+                setConflictingFiles={setFileConflicts} 
                 onResolved={onRenamingConflictResolved.current} 
                 nameProperty="path"                
                 />
