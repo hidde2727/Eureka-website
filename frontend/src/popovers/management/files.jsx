@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useId, useRef, useState } from 'react';
+import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { Popover } from '../../components/popover.jsx';
@@ -11,6 +11,19 @@ import { invalidateFiles } from '../../utils/data_fetching.jsx';
 import '/public/popovers/files.css';
 
 export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => {
+    const selfRef = useRef();
+    useImperativeHandle(ref, () => ({
+        open: () => {
+            const fileCopy = [...files];
+            setFiles(fileCopy.filter((file) => {
+                return file.progress==undefined || file?.progress<100;
+            }));
+            selfRef.current.open();
+        },
+        close: () => {
+            selfRef.current.close();
+        }
+    }));
     const queryClient = useQueryClient();
 
     const errorPopover = useRef();
@@ -27,15 +40,21 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
     const folderInputID = useId();
 
     const [uploadState, setUploadstate] = useState('Upload');
-    const { startUpload, routeConfig } = useUploadThing("defaultRouter", {
+    const { startUpload } = useUploadThing('/api/private/uploadthing', 'defaultRouter', {
         onClientUploadComplete: () => {
-            alert("uploaded successfully!");
+            //alert("uploaded successfully!");
             setUploadstate('Upload');
             invalidateFiles(queryClient);
         },
         onUploadError: (err) => {
+            if(err?._tag == 'UploadThingError' && !(err?.code == 'INTERNAL_SERVER_ERROR' && err?.message[0] == '{')) {
+                setUploadstate('Upload');
+                alert(err.message);
+                return;
+            }
+
             const json = JSON.parse(err.message);
-            if(json.error != undefined) { alert(json.error); errorPopover.current.close(); return; }
+            if(json?.error != undefined) { alert(json.error); errorPopover.current.close(); return; }
             // Some files already exist
             setErroringFiles(json.existingFiles);
             errorPopover.current.open();
@@ -45,8 +64,23 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
             setUploadstate('Uploading');
             console.log("upload has begun for ", fileName);
         },
-        onUploadProgress: (progress) => {
-            console.log('file: ' + ' & progress: ' + progress);
+        onUploadProgress: (file, progress, delta) => {
+            if(file.name == undefined) return;
+            const path = file?.webkitRelativePath!='' ? file.webkitRelativePath : file.name;
+            console.log('file: ' + path + ' & progress: ' + progress + ' & delta: ' + delta);
+
+            const locationInArray = files.findIndex((file) => {
+                if (file.isFolder) return file.files.findIndex((file2) => file2.webkitRelativePath == path) != -1;
+                return file.name == path;
+            });
+            if (locationInArray == -1) throw new Error('Cant find the file in the files array to update the progress');
+            if(delta == 0) return;
+            setFiles((previousFiles) => {
+                let fileCopy = [...previousFiles];
+                if(previousFiles[locationInArray].isFolder) fileCopy[locationInArray].progress = Math.min((previousFiles[locationInArray].progress ?? 0) + delta/previousFiles[locationInArray].files.length, 100);
+                else fileCopy[locationInArray].progress = Math.min(progress, 100);
+                return fileCopy;
+            })
         },
         headers: { sessionCredentialRepeat: decodeURI(GetCookie("sessionCredential")) }
     });
@@ -58,6 +92,7 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
         let transformedFiles = [];
         let directories = [];
         for(const file of files) {
+            if(file.progress >= 100) continue;
             if(file.isFolder) {
                 for(const file2 of file.files) {
                     transformedFiles.push(file2);
@@ -68,6 +103,7 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
                 directories.push(file.name);
             }
         }
+        if(directories.length == 0 || transformedFiles.length == 0) { setUploadstate('Upload'); return; }
         startUpload(transformedFiles, {directories: directories, parentID: '' + parentFolder.id, override: override});
         setUploadstate('Getting file info');
     }
@@ -101,7 +137,7 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
     }
     
     return (
-        <Popover ref={ref} className="file-popover">
+        <Popover ref={selfRef} className="file-popover">
             <label className="file-chooser" htmlFor={fileInputID}>
                 <i className="fas fa-cloud-arrow-up" />
                 <label className="file" htmlFor={fileInputID}>Kies files om te uploaden</label>
@@ -149,9 +185,17 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
                                 <i className="file-type fas fa-folder fa-fw"/>
                                 <p className="file-name">{file.name}</p>
                                 <span className="dot" />
-                                <p className="state">ready</p>
-                                <i className="cancel fas fa-x fa-fw" onClick={() => { setFiles([...files].filter((file2) => file2.name!=file.name )); }} />
-                                <div className="progres" />
+                                <p className="state">{(() => {
+                                    if(file.progress == undefined) return 'ready';
+                                    else if(file.progress < 100) return 'uploading';
+                                    else return 'uploaded';
+                                })()}</p>
+                                { (() => {
+                                    if(file.progress == undefined && uploadState != 'Upload') return;
+                                    else if(file.progress >= 100) return <i className='reupload fas fa-sync-alt' onClick={() => { const newFiles = [...files]; newFiles[index].progress = undefined; setFiles(newFiles); }} />;
+                                    else return <i className="cancel fas fa-x fa-fw" onClick={() => { setFiles([...files].filter((file2) => file2.name!=file.name )); }} />;
+                                })() }
+                                <div className={'progress' + (file.progress!=undefined?' animate':'')}><div className="inner-progress" style={{ width: (file.progress ?? 0) + '%' }} /></div>
                             </div>
                         );
                     }
@@ -160,9 +204,17 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
                             <IconByExtension extension={ file.name.split('.').pop() } fw={true} />
                             <p className="file-name">{file.name}</p>
                             <span className="dot" />
-                            <p className="state">ready</p>
-                            <i className="cancel fas fa-x fa-fw" onClick={() => { setFiles([...files].filter((file2) => file2.name!=file.name )); }} />
-                            <div className="progres" />
+                            <p className="state">{(() => {
+                                if(file.progress == undefined) return 'ready';
+                                else if(file.progress < 100) return 'uploading';
+                                else return 'uploaded';
+                            })()}</p>
+                            { (() => {
+                                if(file.progress == undefined && uploadState != 'Upload') return;
+                                else if(file.progress >= 100) return <i className='reupload fas fa-sync-alt' onClick={() => { const newFiles = [...files]; newFiles[index].progress = undefined; setFiles(newFiles); }} />;
+                                else return <i className="cancel fas fa-x fa-fw" onClick={() => { setFiles([...files].filter((file2) => file2.name!=file.name )); }} />;
+                            })() }
+                            <div className={'progress' + (file.progress!=undefined?' animate':'')}><div className="inner-progress" style={{ width: (file.progress ?? 0) + '%' }} /></div>
                         </div>
                     );
                 })

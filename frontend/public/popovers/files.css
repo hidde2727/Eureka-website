@@ -84,17 +84,33 @@
     grid-area: stat;
 
 }
-.file-popover div.selected-files .file .cancel {
+.file-popover div.selected-files .file .cancel,
+.file-popover div.selected-files .file .reupload {
     grid-area: butt;
     color: var(--normal-text);
 }
-.file-popover div.selected-files .file .progres {
+.file-popover div.selected-files .file .progress {
     grid-area: load;
     align-self: end;
 
     background-color: #444;
     border-radius: var(--small-border-radius);
     height: 6px;
+}
+@keyframes loading {
+    to {background-position:left;}
+}
+.file-popover div.selected-files .file .progress.animate {
+    background: linear-gradient(90deg,#444 40%,#666 ,#444 60%) right/300% 100%;
+    animation: loading 2s linear infinite;
+}
+.file-popover div.selected-files .file .progress .inner-progress {
+    background-color: var(--accent);
+    width: 0%;
+    height: 100%;
+    border-radius: var(--small-border-radius);
+
+    transition: width 0.3s;
 }
 
 .file-popover button,

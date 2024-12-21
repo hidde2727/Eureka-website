@@ -47,7 +47,7 @@ function FilesSuspense() {
         files.current = [];
         for(let [folderName, data] of Object.entries(currentFolderData)) {
             if(data.utid != undefined) files.current.push({ name: folderName, utid: data.utid });
-            else if(folderName != 'folderID') folders.current.push({ name: folderName });
+            else if(folderName != 'id') folders.current.push({ name: folderName });
         }
         setForceUpdate(!forceUpdate);
     }, [currentFolder, fileData]);
@@ -77,7 +77,6 @@ function FilesSuspense() {
                 <div className="folders">
                     {
                         folders.current.map(({name}) => {
-                            if(name == 'folderID') return;
                             return (
                             <div className="folder" key={name} onClick={() => {setCurrentFolder(currentFolder + '/' + name)}}>
                                 <i className="file-type fas fa-folder"></i>

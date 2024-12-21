@@ -38,7 +38,7 @@ export default function Files() {
         files.current = [];
         for(let [folderName, data] of Object.entries(currentFolderData)) {
             if(data.utid != undefined) files.current.push({ name: folderName, utid: data.utid, id: data.id });
-            else if(folderName != 'folderID') folders.current.push({ name: folderName, folderID: data.id});
+            else if(folderName != 'id') folders.current.push({ name: folderName, id: data.id});
         }
         setForceUpdate(!forceUpdate);
     }, [currentFolder, fileData]);
@@ -53,9 +53,9 @@ export default function Files() {
 
     if(hasError || fileData==undefined) return <p>Error tijdens het ophalen van de files</p>;
 
-    const CreateFile = ({ name, id, isFolder }) => {
+    const CreateFile = ({ name, id, isFolder, onDoubleClick  }) => {
         return (
-            <>
+            <div className={isFolder?'folder':'file'} onDoubleClick={onDoubleClick}>
                 { isFolder ? <i className="file-type fas fa-folder"/> : <IconByExtension extension={ name.split('.').pop() } /> }
                 <p
                     suppressContentEditableWarning={true}
@@ -94,7 +94,7 @@ export default function Files() {
                         }
                     }}
                 >{name}</p>
-            </>
+            </div>
         );
     };
 
@@ -130,36 +130,29 @@ export default function Files() {
                 <p>Folders:</p>
                 <div className="folders">
                     {
-                        folders.current.map(({name, folderID}) => {
-                            if(name == 'folderID') return;
-                            return (
-                            <div 
-                                className="folder" key={name} 
-                                onDoubleClick={() => { addToCurrentFolder({name: name, id: folderID}); }}
-                            >
-                                <CreateFile name={name} id={folderID} isFolder={true} />
-                            </div>
-                            );
-                        })
+                        folders.current.map(({name, id}) =>
+                            <CreateFile 
+                                key={id} name={name} id={id} isFolder={true} 
+                                onDoubleClick={() => { addToCurrentFolder({name: name, id: id}); }}
+                            />    
+                        )
                     }
                 </div>
                 <p>Files:</p>
                 <div className="files">
                     {
-                        files.current.map(({name, utid, id}) => {
-                            return (
-                            <div className="file" key={id} onDoubleClick={() => {
+                        files.current.map(({name, utid, id}) => 
+                            <CreateFile 
+                                key={id} name={name} id={id} isFolder={false} 
+                                onDoubleClick={() => {
                                 var link = document.createElement('a');
                                 link.href = 'https://utfs.io/f/' + utid;
                                 link.download = name;
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
-                            }}>
-                                <CreateFile name={name} id={id} isFolder={false} />
-                            </div>
-                            );
-                        })
+                            }} />
+                        )
                     }
                 </div>
                 <FileDropzone />
