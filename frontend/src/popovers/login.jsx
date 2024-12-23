@@ -1,6 +1,6 @@
 import { forwardRef, useState } from 'react';
 
-import { FetchInfo } from '../utils/data_fetching.jsx'
+import { attemptLogin } from '../utils/data_fetching.jsx'
 
 import { Popover } from '../components/popover.jsx';
 import { IconedInput } from '../components/inputs.jsx';
@@ -40,10 +40,7 @@ async function OnLoginAttempt(event, errorMessaging) {
     var base64 = btoa(String.fromCharCode.apply(null, encodedPassword));
     
     try {
-        var response = await FetchInfo('api/login/', 'POST', JSON.stringify({
-        'username':username,
-        'password':base64
-        }), {jsonResponse: false});
+        await attemptLogin({ username: username, password: base64 });
     } catch(err) {
         return SetFormErrorMessage(errorMessaging, 'Fout wachtwoord of gebruikersnaam', event.target.loginUsername);
     }

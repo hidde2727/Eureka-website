@@ -78,3 +78,19 @@ export function IsObjectEmpty(object) {
     }
     return true;
 }
+
+// https://css-tricks.com/snippets/javascript/test-if-element-supports-attribute/
+export function DoesElementSupportProperty(element, attribute) {
+    return !!(attribute in document.createElement(element));
+}
+
+export function IconByExtension({ extension, fw=false }) {
+    const additive = fw?' fa-fw':'';
+    if(extension == "txt") return <i className={"file-type fas fa-file-alt"+additive}/>;
+    else if(extension == "jpeg") return <i className={"file-type fas fa-file-image"+additive}/>;
+    else if(extension == "png") return <i className={"file-type fas fa-file-image"+additive}/>;
+    else if(extension == "pdf") return <i className={"file-type fas fa-file-pdf"+additive}/>;
+    else if(extension == "docx") return <i className={"file-type fas fa-file-word"+additive}/>;
+    else if(extension == "mp4") return <i className={"file-type fas fa-file-video"+additive}/>;
+    else return <i className={"file-type fas fa-file-alt"+additive}/>;
+}

@@ -1,6 +1,6 @@
 import { startTransition } from "react";
 
-import { FetchInfo } from './utils/data_fetching.jsx';
+import { signOut } from './utils/data_fetching.jsx';
 
 import Restricted from "./components/restricted.jsx";
 
@@ -42,6 +42,6 @@ export default function Sidebar(props) {
 }
 
 async function SignOut() {
-    var result = await FetchInfo('/api/private/self/logout/', 'POST', null, { includeCredentials:true, jsonResponse:false });
+    await signOut();
     window.location.reload();
 }

@@ -16,6 +16,9 @@ export const Config = {
         password:   'password',
         database:   'testDatabase'
     },
+    uploadthing: {
+        apiKey: 'key'
+    },
     google: {
         apiKey:     'key'
     }
@@ -41,6 +44,14 @@ This statement should only be used in a dev environment as this grants all the p
 To modify the users password run:
 ```SQL
 ALTER USER 'test'@'localhost' IDENTIFIED BY 'newPassword'
+```
+
+All the commands to use the general mysql log:
+```SQL
+    SET GLOBAL general_log = 'ON';
+    SET GLOBAL log_output = 'table';
+    SELECT * FROM mysql.general_log;
+    TRUNCATE table mysql.general_log;
 ```
 
 ### Starting a development server

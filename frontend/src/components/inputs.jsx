@@ -7,7 +7,7 @@ export function Input({ inline, id=undefined, type, label, placeholder, value, n
     var onKeyDown = undefined;
     if(type == "text") {
         onKeyDown = (event) => {
-            if(event.keyCode == 13) {
+            if(event.key === 'Enter') {
                 event.preventDefault();
                 event.target.blur();
             }
@@ -28,7 +28,7 @@ export function IconedInput({ iconClass, id, type, placeholder, value, name, onC
     var onKeyDown = undefined;
     if(type == "text") {
         onKeyDown = (event) => {
-            if(event.keyCode == 13) {
+            if(event.key === 'Enter') {
                 event.preventDefault();
                 event.target.blur();
             }

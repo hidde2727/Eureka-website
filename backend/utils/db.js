@@ -22,6 +22,7 @@ export async function SetupTables() {
     await ExecuteStatement(fs.readFileSync('./utils/schemas/labels_to_inspiration.schema', { encoding:'ascii' }));
     await ExecuteStatement(fs.readFileSync('./utils/schemas/suggestion_votes.schema', { encoding:'ascii' }));
     await ExecuteStatement(fs.readFileSync('./utils/schemas/logs.schema', { encoding:'ascii' }));
+    await ExecuteStatement(fs.readFileSync('./utils/schemas/files.schema', { encoding:'ascii' }));    
 }
 export async function ExecuteStatement(statement) {
     return new Promise((resolve, reject)=>{
@@ -38,7 +39,7 @@ export async function ExecutePreparedStatement(statement, values) {
     return new Promise((resolve, reject)=>{
         connection.query(statement, values, (err, results) => {
             if (err) {
-                console.error(statement + '\n\n' + err + + '\n\nValues:\n\n' + JSON.stringify(values));
+                console.error(statement + '\n\n' + err + '\n\nValues:\n\n' + JSON.stringify(values));
                 reject('MySQL error');
             }
             return resolve(results);
@@ -208,16 +209,13 @@ export async function GetAllActiveInspirationWithLabels(labels, limit, offset) {
         statement += ' l' + i.toString() + '.label_id=' + labels[i] + ' ';
     }
     statement += ' LIMIT ? OFFSET ?)';
-    var results = await ExecutePreparedStatement(statement, labels.concat([limit, offset]));
-    return results.length == 0 ? undefined : results;
+    return await ExecutePreparedStatement(statement, labels.concat([limit, offset]));
 }
 export async function GetAllActiveInspiration(limit, offset) {
-    var results = await ExecutePreparedStatement('SELECT * FROM inspiration WHERE active_version=TRUE LIMIT ? OFFSET ?', [limit, offset]);
-    return results.length == 0 ? undefined : results;
+    return await ExecutePreparedStatement('SELECT * FROM inspiration WHERE active_version=TRUE LIMIT ? OFFSET ?', [limit, offset]);
 }
 export async function GetAllInspirationVersionsOfID(inspirationID) {
-    var results = await ExecutePreparedStatement('SELECT * FROM inspiration WHERE original_id=? ORDER BY created_at ASC', [inspirationID]);
-    return results.length == 0 ? undefined : results;
+    return await ExecutePreparedStatement('SELECT * FROM inspiration WHERE original_id=? ORDER BY created_at ASC', [inspirationID]);
 }
 
 
@@ -245,16 +243,15 @@ export async function DeleteLabelFromInspiration(labelID, inspirationUUID) {
     await ExecutePreparedStatement('DELETE FROM labels WHERE label_id=? AND inspiration_id=?', [labelID, inspirationUUID]);
 }
 export async function DeleteCategory(category) {
-    await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id IN (SELECT id FROM labels WHERE category=)', [category]);
-    await ExecutePreparedStatement('DELETE FROM labels WHERE category=', [category]);
+    await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id IN (SELECT id FROM labels WHERE category=?)', [category]);
+    await ExecutePreparedStatement('DELETE FROM labels WHERE category=?', [category]);
 }
 export async function DeleteLabel(labelID) {
     await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id=?', [labelID]);
     await ExecutePreparedStatement('DELETE FROM labels WHERE id=?', [labelID]);
 }
 export async function GetAllLabels() {
-    results = await ExecuteStatement('SELECT * FROM labels');
-    return results.length == 0 ? undefined : results;
+    return await ExecuteStatement('SELECT * FROM labels');
 }
 
 
@@ -313,12 +310,10 @@ export async function GetProject(uuid) {
     return result.length == 0 ? undefined : result[0];
 }
 export async function GetAllActiveProjects() {
-    var results = await ExecuteStatement('SELECT * FROM projects WHERE active_version=TRUE');
-    return results.length == 0 ? undefined : results;
+    return await ExecuteStatement('SELECT * FROM projects WHERE active_version=TRUE');
 }
 export async function GetAllProjectVersionsOfID(projectID) {
-    var results = await ExecutePreparedStatement('SELECT * FROM projects WHERE original_id=? ORDER BY created_at DESC', [projectID]);
-    return results.length == 0 ? undefined : results;
+    return await ExecutePreparedStatement('SELECT * FROM projects WHERE original_id=? ORDER BY created_at DESC', [projectID]);
 }
 export async function IsValidProject(uuid) {
     var results = await ExecutePreparedStatement(
@@ -340,8 +335,7 @@ export async function CreateInspirationVoteOrUpdate(value, adminVote, userID, in
     );
 }
 export async function GetInspirationVotes(inspirationUUID) {
-    var results = await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE inspiration_id=?', [inspirationUUID]);
-    return results.length == 0 ? undefined : results;
+    return await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE inspiration_id=?', [inspirationUUID]);
 }
 export async function GetInspirationVote(userID, projectUUID) {
     var results = await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE inspiration_id=? AND user_id=?', [projectUUID, userID]);
@@ -367,8 +361,7 @@ export async function CreateProjectVoteOrUpdate(value, adminVote, userID, projec
     );
 }
 export async function GetProjectVotes(projectUUID) {
-    var results = await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE project_id=?', [projectUUID]);
-    return results.length == 0 ? undefined : results;
+    return await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE project_id=?', [projectUUID]);
 }
 export async function GetProjectVote(userID, projectUUID) {
     var results = await ExecutePreparedStatement('SELECT * FROM suggestion_votes WHERE project_id=? AND user_id=?', [projectUUID, userID]);
@@ -387,7 +380,7 @@ export async function DenyProject(projectUUID) {
 // | Combined suggestions                                                     |
 // + ======================================================================== +
 export async function GetAllSuggestionWithVotes(userID) {
-    var results = await ExecutePreparedStatement(`
+    return await ExecutePreparedStatement(`
     SELECT
         i.original_id AS original_id,
         i.uuid AS uuid,
@@ -412,10 +405,9 @@ export async function GetAllSuggestionWithVotes(userID) {
     LEFT JOIN (SELECT project_id, value FROM suggestion_votes WHERE user_id=?) AS sv ON p.uuid = sv.project_id
     WHERE p.voting_result IS NULL
     `, [userID, userID]);
-    return results.length == 0 ? undefined : results;
 }
 export async function GetAllOpenSuggestions() {
-    var results = await ExecuteStatement(`
+    return await ExecuteStatement(`
     SELECT
         i.uuid AS uuid,
         'inspiration' AS type
@@ -430,7 +422,194 @@ export async function GetAllOpenSuggestions() {
     FROM inspiration p
     WHERE p.voting_result IS NULL
     `);
-    return results.length == 0 ? undefined : results;
+}
+
+
+// + ======================================================================== +
+// | Files                                                                    |
+// + ======================================================================== +
+export async function CreateFile(parentID, name, uploadThingID) {
+    const uploadthing_id = await ExecutePreparedStatement('SELECT uploadthing_id FROM files WHERE parent_id<=>? AND name=?', [parentID, name]);
+    if(uploadthing_id.length > 0) return false;
+
+    await ExecutePreparedStatement(
+        'INSERT INTO files (parent_id, name, uploadthing_id) VALUES(?,?,?)', 
+        [parentID, name, uploadThingID]
+    );
+    return true;
+}
+export async function CreateFileAtPath(parentID, path, uploadThingID) {
+    var intParentID = parentID;
+    const explodedPath = path.split('/');
+    var index = 0;
+    for(const folder of explodedPath) {
+        if(index+1 >= explodedPath.length) {
+            return await CreateFile(intParentID, folder, uploadThingID);
+        }
+        let folderID = await GetFolderId(folder, intParentID);
+        if(folderID == undefined) {
+            folderID = await ExecutePreparedStatement('INSERT INTO files (parent_id, name) VALUES(?,?) RETURNING id', [intParentID, folder]);
+            if(folderID.length == 0) throw new Error('Failed to use INSERT RETURNING');
+            folderID = folderID[0]['id'];
+        }
+        intParentID = folderID;
+        index++;
+    }
+    return false;
+}
+export async function CreateFileReturnId(parentID, uploadThingID) {
+    const result = await ExecutePreparedStatement(
+        'INSERT INTO files (parent_id, name, uploadthing_id) VALUES(?,"placeholder",?) RETURNING id', 
+        [parentID, uploadThingID]
+    );
+    const insertedID = result[0]['id'];
+    if(insertedID == undefined) throw new Error('Failed to use INSERT RETURNING');
+    await ExecutePreparedStatement('UPDATE files SET name=? WHERE id=?', ['newFile' + insertedID, insertedID]);
+    return insertedID;
+}
+export async function RenameFile(id, newName) {
+    const currentFileInfo = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
+    if(currentFileInfo[0] == undefined) return [];
+    if(currentFileInfo[0].uploadthing_id == null) {
+        // It is a folder
+        const children = await GetChildrenOfFileID(currentFileInfo[0].id);
+        let failedUTIDs = [];
+        for(let i = 0; i < children.length; i++) {
+            if(!(await CreateFileAtPath(currentFileInfo[0].parent_id, newName + '/' + children[i].path, children[i].uploadthing_id)))
+                failedUTIDs.push(children[i].uploadthing_id);
+        }
+        await DeleteFile(id);
+        // Make sure an empty folder doesn't get removed:
+        await CreateFile(currentFileInfo[0].parent_id, newName, undefined);
+        return failedUTIDs;
+    }
+    // It is a file
+    await ExecutePreparedStatement('UPDATE files SET name=? WHERE id=?', [newName, id]);
+    return [];
+}
+export async function MoveFile(id, newParentId) {
+    const currentFileInfo = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
+    if(currentFileInfo[0] == undefined) return [];
+    if(currentFileInfo[0].uploadthing_id == null) {
+        // It is a folder
+        const children = await GetChildrenOfFileID(currentFileInfo[0].id);
+        let failedUTIDs = [];
+        for(let i = 0; i < children.length; i++) {
+            if(!(await CreateFileAtPath(newParentId, currentFileInfo[0].name + '/' + children[i].path, children[i].uploadthing_id)))
+                failedUTIDs.push(children[i].uploadthing_id);
+        }
+        await DeleteFile(id);
+        // Make sure an empty folder doesn't get removed:
+        await CreateFile(newParentId, currentFileInfo[0].name, undefined);
+        return failedUTIDs;
+    }
+    // It is a file
+    await ExecutePreparedStatement('UPDATE files SET parent_id=? WHERE id=?', [newParentId, id]);
+    return [];
+}
+export async function DeleteFile(fileID) {
+    await ExecutePreparedStatement('DELETE FROM files WHERE id=?', [fileID]);
+}
+export async function CheckFileRenamingConflicts(id, newName) {
+    const existingID = await ExecutePreparedStatement('SELECT * FROM files WHERE name=? AND parent_id <=> (SELECT parent_id FROM files WHERE id=? LIMIT 1)', [newName, id]);
+    if(existingID.length > 0) {
+        const mergingFile = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
+        if(mergingFile[0].uploadthing_id == null) {
+            // It is a folder -> compare all the children
+            const existingChildren = await GetChildrenOfFileID(existingID[0].id);
+            const mergingChildren = await GetChildrenOfFileID(mergingFile[0].id);
+            let sharedChildren = [];
+            mergingChildren.forEach((merging) => {
+                if(merging.uploadthing_id == null) return;
+                const conflictIndex = existingChildren.findIndex((existing) => existing.path == merging.path );
+                if(conflictIndex != -1) sharedChildren.push({ path: mergingFile[0].name + '/' + merging.path, id: merging.id, uploadthing_id: merging.uploadthing_id, conflictWithId: existingChildren[conflictIndex].id, conflictWithUTId: existingChildren[conflictIndex].uploadthing_id });
+            });
+            return sharedChildren;
+        } else {
+            // It is a file
+            return [{ path: mergingFile[0].name, id: mergingFile[0].id, uploadthing_id: mergingFile[0].uploadthing_id, conflictWithId: existingID[0].id, conflictWithUTId: existingID[0].uploadthing_id }];
+        }
+    }
+    return false;
+}
+export async function CheckFileMovingConflicts(id, newParentId) {
+    const existingID = await ExecutePreparedStatement('SELECT * FROM files WHERE parent_id<=>? AND name=(SELECT name FROM files WHERE id=? LIMIT 1)', [newParentId, id]);
+    if(existingID.length > 0) {
+        const mergingFile = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
+        if(mergingFile[0].uploadthing_id == null) {
+            // It is a folder -> compare all the children
+            const existingChildren = await GetChildrenOfFileID(existingID[0].id);
+            const mergingChildren = await GetChildrenOfFileID(mergingFile[0].id);
+            let sharedChildren = [];
+            mergingChildren.forEach((merging) => {
+                if(merging.uploadthing_id == null) return;
+                const conflictIndex = existingChildren.findIndex((existing) => existing.path == merging.path );
+                if(conflictIndex != -1) sharedChildren.push({ path: mergingFile[0].name + '/' + merging.path, id: merging.id, uploadthing_id: merging.uploadthing_id, conflictWithId: existingChildren[conflictIndex].id, conflictWithUTId: existingChildren[conflictIndex].uploadthing_id });
+            });
+            return sharedChildren;
+        } else {
+            // It is a file
+            return [{ path: mergingFile[0].name, id: mergingFile[0].id, uploadthing_id: mergingFile[0].uploadthing_id, conflictWithId: existingID[0].id, conflictWithUTId: existingID[0].uploadthing_id }];
+        }
+    }
+    return false;
+}
+export async function GetFolderId(name, parent_id) {
+    const results = await ExecutePreparedStatement('SELECT id FROM files WHERE name=? AND parent_id<=>?', [name, parent_id]);
+    return results.length == 0 ? undefined : results[0]['id'];
+}
+export async function GetFileParentId(id) {
+    const results = await ExecutePreparedStatement('SELECT parent_id FROM files WHERE id=?', [id]);
+    return results.length == 0 ? undefined : results[0]['parent_id'];
+}
+export async function GetFileName(id) {
+    const results = await ExecutePreparedStatement('SELECT name FROM files WHERE id=?', [id]);
+    return results.length == 0 ? undefined : results[0]['name'];
+}
+export async function GetUploadthingID(id) {
+    const results = await ExecutePreparedStatement('SELECT uploadthing_id FROM files WHERE id=?', [id]);
+    return results.length == 0 ? undefined : results[0]['uploadthing_id'];
+}
+export async function GetUploadthingIDFromPath(parentID, path) {
+    const results = await ExecutePreparedStatement(`
+        WITH RECURSIVE file_path (id, uploadthing_id, name, path_index) AS
+        (
+            SELECT id, uploadthing_id, name, 2
+                FROM files
+                WHERE parent_id<=>?
+                    AND name=SUBSTRING_INDEX(SUBSTRING_INDEX(?, '/', 1), '/', -1)
+            UNION ALL
+            SELECT f.id, f.uploadthing_id, f.name, fp.path_index+1
+                FROM file_path AS fp
+                JOIN files AS f
+                    ON f.parent_id = fp.id
+                    AND f.name = SUBSTRING_INDEX(SUBSTRING_INDEX(?, '/', fp.path_index), '/', -1)
+                WHERE fp.path_index <= (LENGTH(?) - LENGTH(REPLACE(?, '/', '')) + 2)
+        )
+        SELECT id,uploadthing_id,name FROM file_path
+            WHERE path_index=(LENGTH(?) - LENGTH(REPLACE(?, '/', '')) + 2)
+    `, [parentID, path, path, path, path, path, path]);
+    return results.length == 0 ? undefined : { ...results[0], path: path };
+}
+export async function GetChildrenOfFileID(id) {
+    return await ExecutePreparedStatement(`
+        WITH RECURSIVE file_path (id, name, uploadthing_id, path) AS
+        (
+        SELECT id, name, uploadthing_id, name as path
+            FROM files
+            WHERE parent_id <=> ?
+        UNION ALL
+        SELECT f.id, f.name, f.uploadthing_id, CONCAT(fp.path, '/', f.name)
+            FROM file_path AS fp
+            JOIN files AS f
+                ON fp.id = f.parent_id
+        )
+        SELECT * FROM file_path
+        ORDER BY path;
+    `, [id]);
+}
+export async function GetAllFullFilePaths() {
+    return await GetChildrenOfFileID(null);
 }
 
 
@@ -441,12 +620,10 @@ export async function CreateLog(urgency, type, message) {
     await ExecutePreparedStatement('INSERT INTO logs (urgency, type, message) VALUES(?,?,?)', [urgency, type, message]);
 }
 export async function GetAllLogs(limit, offset) {
-    var results = await ExecutePreparedStatement('SELECT * FROM logs LIMIT ? OFFSET ?', [limit, offset]);
-    return results.length == 0 ? undefined : results;
+    return await ExecutePreparedStatement('SELECT * FROM logs LIMIT ? OFFSET ?', [limit, offset]);
 }
 export async function GetFilteredLogs(includedString, limit, offset) {
-    var results = await ExecutePreparedStatement('SELECT * FROM logs WHERE MATCH (message) AGAINST (? IN NATURAL LANGUAGE MODE) LIMIT ? OFFSET ?', [includedString, limit, offset]);
-    return results.length == 0 ? undefined : results;
+    return await ExecutePreparedStatement('SELECT * FROM logs WHERE MATCH (message) AGAINST (? IN NATURAL LANGUAGE MODE) LIMIT ? OFFSET ?', [includedString, limit, offset]);
 }
 
 export const InspirationTypes = Object.freeze({

@@ -1,6 +1,17 @@
 import { Router } from 'express';
 const router = Router();
 
+import { createRouteHandler } from "uploadthing/express";
+import uploadRouter from './uploadthing_router.js';
+import Config from '../../utils/config.js';
+router.use('/uploadthing', createRouteHandler({
+    router: uploadRouter,
+    config: { 
+        token: Config.uploadthing.apiToken,
+        isDev: process.env.NODE_ENV.trim() == 'development'
+    }
+}));
+
 // Make sure the API user is logged in
 import * as Login from '../../utils/login.js';
 router.use(async (req, res, next) => {

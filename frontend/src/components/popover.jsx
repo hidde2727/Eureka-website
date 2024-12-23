@@ -1,6 +1,6 @@
 import { useRef, forwardRef, useImperativeHandle } from 'react';
 
-export const Popover = forwardRef(({children, id=undefined, form, onSubmit}, ref) => {
+export const Popover = forwardRef(({children, id, className, form, onSubmit}, ref) => {
     const internalRef = useRef(null);
     const eventHandler = useRef((event) => {
         // If the event targets the popover !and not the content! close the popover
@@ -21,7 +21,7 @@ export const Popover = forwardRef(({children, id=undefined, form, onSubmit}, ref
     if(form) {
         return (
             <div popover="true" id={id} ref={internalRef}>
-                <form className="content" onSubmit={onSubmit}>
+                <form className={ "content " + className } onSubmit={onSubmit}>
                     {children}
                 </form>
             </div>
@@ -30,7 +30,7 @@ export const Popover = forwardRef(({children, id=undefined, form, onSubmit}, ref
 
     return (
         <div popover="true" id={id} ref={internalRef}>
-            <div className="content">
+            <div className={ "content " + className }>
                 {children}
             </div>
         </div>

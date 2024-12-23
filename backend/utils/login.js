@@ -88,6 +88,7 @@ export async function CreateSession(res, userID) {
 }
 
 function RemoveSessionCookies(res) {
+    if(res == undefined) return false;
     res.clearCookie('sessionID');
     res.clearCookie('sessionCredential');
     res.clearCookie('userID');
@@ -123,6 +124,7 @@ export async function GetSessionUsername(req) {
     return req.username;
 }
 export function GetSessionUserID(req) {
+    if(req.user_ID == undefined) throw new Error('Not logged in, cant retrieve session user id');
     return req.user_ID;
 }
 export async function RemoveSession(req, res) {
@@ -135,8 +137,8 @@ export async function HasUserPermission(req, permissionName) {
     try {
         const userData = await DB.GetUser(GetSessionUserID(req));
         return userData[permissionName];
-
-    } catch(exc) {
+    } catch(err) {
+        console.error(err);
         return false;
     }
 }

@@ -1,0 +1,57 @@
+
+.file-conflicts-popover {
+    padding: 10px 25px !important;
+}
+.file-conflicts-popover .existing-files :nth-child(1),
+.file-conflicts-popover .existing-files :nth-child(3) {
+    color: var(--prominent-text);
+    font-size: 1rem;
+}
+.file-conflicts-popover .amount-same {
+    margin: 0px 0px 20px 20px!important;
+}
+.file-conflicts-popover .amount-same :nth-child(2) {
+    color: var(--prominent-text);
+}
+.file-conflicts-popover .replace-button,
+.file-conflicts-popover .skip-button {
+    background-color: var(--checkbox);
+    border-radius: var(--small-border-radius);
+    padding: 5px;
+
+    display: grid;
+    grid-template-columns: 3rem auto;
+
+    margin-bottom: 5px;
+
+    user-select: none;
+    cursor: pointer;
+    margin-left: 5px;
+    padding-right: 20px;
+
+    transition: background-color 0.5s;
+}
+.file-conflicts-popover .replace-button:hover,
+.file-conflicts-popover .skip-button:hover {
+    background-color: var(--extra-prominent-background);
+}
+.file-conflicts-popover .replace-button i,
+.file-conflicts-popover .skip-button i {
+    font-size: 1.75rem;
+    align-self: center;
+    justify-self: center;
+
+    color: var(--normal-text);
+}
+.file-conflicts-popover .replace-button a,
+.file-conflicts-popover .skip-button a {
+    align-self: center;
+    font-size: 0.85rem;
+}
+.file-conflicts-popover span:has(> input[type="checkbox"]) {
+    left: 10px;
+    top: 2px;
+}
+.file-conflicts-popover span:has(> input[type="checkbox"]) + label {
+    margin-left: 20px;
+}

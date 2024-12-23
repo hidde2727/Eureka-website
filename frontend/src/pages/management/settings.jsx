@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { FetchInfo, useUserDataSus, useGlobalSettingsSus } from '../../utils/data_fetching.jsx';
+import { useUserDataSus, useGlobalSettingsSus, updatePersonalSettings, updateGlobalSettings } from '../../utils/data_fetching.jsx';
 
 import Footer from '../../components/footer.jsx';
 import { Input } from '../../components/inputs.jsx'
@@ -96,28 +96,32 @@ async function OnUserSettingsSubmit(event, userData, errorMessaging, setSuccesMe
     else if(!previousPassword) return SetFormErrorMessage(errorMessaging, 'Geef je oude wachtwoord', event.target.settingsPasswordPrevious);
     else if(previousPassword.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte is 255', event.target.settingsPasswordPrevious);
 
-    var json = {};
-    if(newUsername != undefined) json.username = newUsername;
-    if(newEmail != undefined) json.email = newEmail;
+    var base64Password = undefined;
+    var base64PreviousPassword = undefined;
     if(newPassword != undefined) {
         {
             var encoder = new TextEncoder();
             var encodedPassword = new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(newPassword)));
             var base64 = btoa(String.fromCharCode.apply(null, encodedPassword));
-            json.password = base64;
+            base64Password = base64;
         }
         {
             var encoder = new TextEncoder();
             var encodedPassword = new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(previousPassword)));
             var base64 = btoa(String.fromCharCode.apply(null, encodedPassword));
-            json.previousPassword = base64;
+            base64PreviousPassword = base64;
         }
     }
 
-    if(json.username == undefined && json.email == undefined && json.password == undefined) return;
+    if(newUsername == undefined && newEmail == undefined && newPassword == undefined) return;
 
     try {
-    var response = await FetchInfo('/api/private/self/update', 'PUT', JSON.stringify(json), {includeCredentials:true, jsonResponse:false});
+        await updatePersonalSettings({ 
+            username: newUsername, 
+            email: newEmail, 
+            password: base64Password, 
+            previousPassword: base64PreviousPassword 
+        });
     } catch(err) {
         return setSuccesMessage('Error: ' + err.message);
     }
@@ -173,15 +177,15 @@ async function OnGlobalSettingsSubmit(event, errorMessaging, setSuccesMessage, q
         return SetFormErrorMessage(errorMessaging, 'Moet getal/percentage zijn', event.target.settingsAccept);
 
     try {
-        var response = await FetchInfo('/api/private/settings/set', 'PUT', JSON.stringify( {
-            "acceptNormalVote": acceptNormalVote,
-            "acceptAdminVote": acceptAdminVote,
-            "acceptAmount": acceptAmount,
+        await updateGlobalSettings({
+            acceptNormalVote,
+            acceptAdminVote,
+            acceptAmount,
 
-            "denyNormalVote": denyNormalVote,
-            "denyAdminVote": denyAdminVote,
-            "denyAmount": denyAmount
-        }), {includeCredentials: true, jsonResponse: false});
+            denyNormalVote,
+            denyAdminVote,
+            denyAmount
+        })
     } catch(err) {
         return setSuccesMessage('Error: ' + err.message);
     }

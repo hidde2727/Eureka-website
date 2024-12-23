@@ -1,0 +1,134 @@
+.file-popover {
+    padding: 15px!important;
+    min-width: 250px;
+}
+
+.file-chooser {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 7rem auto;
+    grid-template-rows: auto;
+    grid-template-areas:
+    "cl file" 
+    "cl folder";
+    padding: 20px;
+    border: var(--seperator) dashed 2px;
+    border-radius: var(--small-border-radius);
+}
+.file-chooser .fa-cloud-arrow-up {
+    grid-area: cl;
+    font-size: 5rem;
+    color: var(--normal-text);
+}
+.file-chooser .file {
+    grid-area: file;
+    margin: 0;
+    font-size: 1rem;
+    color: var(--prominent-text);
+    align-self: end;
+}
+.file-chooser .folder {
+    grid-area: folder;
+    margin: 0;
+    font-size: 0.8rem;
+    text-decoration: underline var(--normal-text);
+    color: var(--normal-text);
+    align-self: start;
+}
+.file-chooser input {
+    display: none;
+}
+
+.file-popover p.selected-files {
+    color: var(--prominent-text);
+    margin-top: 20px!important;
+}
+.file-popover div.selected-files {
+    margin-right: 10px;
+    max-height: calc(53px * 6);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+    scrollbar-width: thin;
+}
+.file-popover div.selected-files .file {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 3rem auto 15px 1fr 2rem;
+    grid-template-areas:
+    "i text dott stat butt" 
+    "i load load load load";
+
+    background-color: var(--prominent-background);
+    border-radius: var(--small-border-radius);
+    margin: 5px 0px 0px 10px;
+    padding: 10px;
+}
+.file-popover div.selected-files .file .file-type {
+    font-size: 1.75rem;
+    grid-area: i;
+    color: var(--normal-text);
+}
+.file-popover div.selected-files .file .file-name {
+    grid-area: text;
+    color: var(--prominent-text);
+}
+.file-popover div.selected-files .file .dot {
+    grid-area: dott;
+    align-self: start;
+    justify-self: center;
+    margin-top: 6px;
+
+    background-color: var(--prominent-text);
+    width: 4px;
+    height: 4px;
+    border-radius: 100%;
+}
+.file-popover div.selected-files .file .state {
+    grid-area: stat;
+
+}
+.file-popover div.selected-files .file .cancel,
+.file-popover div.selected-files .file .reupload {
+    grid-area: butt;
+    color: var(--normal-text);
+}
+.file-popover div.selected-files .file .progress {
+    grid-area: load;
+    align-self: end;
+
+    background-color: var(--seperator);
+    border-radius: var(--small-border-radius);
+    height: 6px;
+}
+@keyframes loading {
+    to {background-position:left;}
+}
+.file-popover div.selected-files .file .progress.animate {
+    background: linear-gradient(90deg,var(--seperator) 40%,var(--input-border) ,var(--seperator) 60%) right/300% 100%;
+    animation: loading 2s linear infinite;
+}
+.file-popover div.selected-files .file .progress .inner-progress {
+    background-color: var(--accent);
+    width: 0%;
+    height: 100%;
+    border-radius: var(--small-border-radius);
+
+    transition: width 0.3s;
+}
+
+.file-popover button,
+.file-popover button:focus,
+.file-popover button:focus:hover {
+    margin: 15px 0px 0px 0px;
+    width: 100%;
+
+    color: var(--prominent-text);
+    background-color: var(--extra-prominent-background);
+    border: none;
+    border-radius: var(--small-border-radius);
+
+    padding: 12px 20px;
+    text-align: center;
+}
