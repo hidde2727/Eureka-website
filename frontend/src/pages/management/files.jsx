@@ -26,6 +26,7 @@ export default function Files() {
 
     const { storageUsage, isFetching: isFetchingUsage, hasError: hasErrorUsage } = useFileStorageUsage();
     const { files: fileData, isFetching, hasError } = useFilesSus();
+    
     const [currentFolder, setCurrentFolder] = useState([{name: 'root', id: null}]);
     function addToCurrentFolder({name, id}) {
         setCurrentFolder([...currentFolder, {name: name, id: id}]);
@@ -43,7 +44,13 @@ export default function Files() {
         if(fileData == undefined) return;
 
         let currentFolderData = fileData;
-        for(let i = 1; i < currentFolder.length; i++) currentFolderData = currentFolderData[currentFolder[i].name];
+        for(let i = 1; i < currentFolder.length; i++) {
+            if(currentFolderData[currentFolder[i].name] == undefined) {
+                setCurrentFolder(currentFolder.splice(0, i));
+                break;
+            }
+            currentFolderData = currentFolderData[currentFolder[i].name];
+        }
 
         let newFolders = [];
         let newFiles = [];
@@ -241,7 +248,10 @@ export default function Files() {
                         folders.map(({name, id}) =>
                             <CreateFile 
                                 key={id} name={name} id={id} isFolder={true} 
-                                onDoubleClick={() => { addToCurrentFolder({name: name, id: id}); }}
+                                onDoubleClick={() => { 
+                                    if(id == 'noid') return;
+                                    addToCurrentFolder({name: name, id: id}); 
+                                }}
                             />    
                         )
                     }
@@ -252,12 +262,12 @@ export default function Files() {
                             <CreateFile 
                                 key={id} name={name} id={id} isFolder={false} 
                                 onDoubleClick={() => {
-                                var link = document.createElement('a');
-                                link.href = 'https://utfs.io/f/' + utid;
-                                link.download = name;
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
+                                    var link = document.createElement('a');
+                                    link.href = 'https://utfs.io/f/' + utid;
+                                    link.download = name;
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
                             }} />
                         )
                     }

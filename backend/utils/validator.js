@@ -147,28 +147,6 @@ export function CheckFilename(res, filename) {
 
     return false;
 }
-export function CheckFilePath(res, filepath) {
-    if (filepath == undefined)
-        return ReturnError(res, 'Specificeer een file pad');
-    else if (filepath.length > 255)
-        return ReturnError(res, 'File pad kan niet langer dan 255 karakters zijn');
-    else if(filepath.indexOf('../') > -1)
-        return ReturnError(res, 'File pad kan niet ../ erin hebben');
-    else if(filepath.indexOf('..\\') > -1)
-        return ReturnError(res, 'File pad kan niet ..\\ erin hebben');
-
-    return false;
-}
-export function CheckBlob(res, blob, maxSize=1333333) {
-    if (blob == undefined)
-        return ReturnError(res, 'Specificeer een blob');
-    else if (blob.length > maxSize)
-        return ReturnError(res, 'Blob mag niet groter dan 1Mb zijn');
-    else if (!validator.isBase64(blob))
-        return ReturnError(res, 'Blob moet base64 encoded zijn');
-
-    return false;
-}
 
 
 /* + ======================================================================== +

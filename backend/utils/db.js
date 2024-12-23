@@ -458,12 +458,14 @@ export async function CreateFileAtPath(parentID, path, uploadThingID) {
     return false;
 }
 export async function CreateFileReturnId(parentID, uploadThingID) {
-    await ExecutePreparedStatement(
-        'INSERT INTO files (parent_id, name, uploadthing_id) VALUES(?,"placeholder",?)', 
+    const result = await ExecutePreparedStatement(
+        'INSERT INTO files (parent_id, name, uploadthing_id) VALUES(?,"placeholder",?) RETURNING id', 
         [parentID, uploadThingID]
     );
-    await ExecuteStatement('UPDATE files SET name=CONCAT("newFile",LAST_INSERT_ID()) WHERE id=LAST_INSERT_ID()');
-    return (await ExecuteStatement('SELECT LAST_INSERT_ID() AS result'))[0]['result'];
+    const insertedID = result[0]['id'];
+    if(insertedID == undefined) throw new Error('Failed to use INSERT RETURNING');
+    await ExecutePreparedStatement('UPDATE files SET name=? WHERE id=?', ['newFile' + insertedID, insertedID]);
+    return insertedID;
 }
 export async function RenameFile(id, newName) {
     const currentFileInfo = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
