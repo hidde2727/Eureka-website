@@ -8,7 +8,7 @@ router.use('/uploadthing', createRouteHandler({
     router: uploadRouter,
     config: { 
         token: Config.uploadthing.apiToken,
-        isDev: process.env.NODE_ENV.trim() == 'development'
+        isDev: Config.isDev
     }
 }));
 

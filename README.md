@@ -6,33 +6,31 @@ To run this site you only need a server capabel of running nodejs and a mysql da
 
 To use this project in a local enviroment first install nodejs: https://nodejs.org/en/download/prebuilt-installer/current
 
-To connect the database and other API's create a file called 'config.js' in the /backend/utils/ folder with this content:
+To connect the database and other API's create a file called '.env' in the /backend/ folder with this content:
 
-```js
-export const Config = {
-    db: {
-        host:       '127.0.0.1',
-        user:       'test',
-        password:   'password',
-        database:   'testDatabase'
-    },
-    uploadthing: {
-        apiKey: 'key'
-    },
-    google: {
-        apiKey:     'key'
-    }
-};
-export default Config;
+```
+NODE_ENV='production/development'
+
+DB_HOST='127.0.0.1'
+DB_USER='test'
+DB_PASSWORD='insert-password'
+DB_DATABASE='test'
+
+UPLOADTHING_TOKEN='insert-token'
+UPLOADTHING_KEY='insert-key'
+
+GOOGLE_KEY='insert-key'
 ```
 
-Next fill in the database credentials and your youtube API key
+Next fill in the database credentials, your uploadthing token+key and your youtube api key.
 
-Running the command ``` npm run install:all ``` will setup the front and backend for development
+Set NODE_ENV to either production or development. Production will lock down all the development extras from running.
+
+Running the command ``` npm run install:all ``` will setup the front and backend for development (production will need ``` npm run build ``` to also be run)
 
 ### Database setup
 
-To setup a quick database use this command (While of course swapping out the names, note that all the names need to be the same as in the config.js)
+To setup a quick database use this command (While of course swapping out the names, note that all the names need to be the same as in the .env)
 
 ```SQL
 CREATE DATABASE testDatabase;
@@ -56,6 +54,6 @@ All the commands to use the general mysql log:
 
 ### Starting a development server
 
-Run ``` npm start ``` to start the front- and backend server. The server will automaticly setup a pepper and create an account with username='admin' and password='password'
+Run ``` npm start ``` to start the front- and backend server for development. The server will automaticly setup a pepper and create an account with username='admin' and password='password'
 
 When running the production version delete the part of /backend/server.js that is marked to be deleted

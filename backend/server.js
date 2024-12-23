@@ -10,6 +10,7 @@ import * as Login from './utils/login.js';
 import * as Settings from './utils/settings.js';
 import { GenerateProjectJSON } from './utils/projects.js';
 import { RegenFileIndices } from './utils/files.js';
+import Config from './utils/config.js';
 
 const app = express();
 const port = 3000; // Change to be port 443 in production ======================================
@@ -25,7 +26,7 @@ await GenerateProjectJSON();
 await RegenFileIndices();
 
 // !!!! DELETE IN PRODUCTION !!!!!
-if(process.env.NODE_ENV.trim() == 'development') {
+if(Config.isDev) {
     console.log('In development mode!')
     if(await DB.IsTableEmpty('users')) {
         console.log('Regenerated the admin user')
