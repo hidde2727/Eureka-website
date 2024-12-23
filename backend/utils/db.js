@@ -428,23 +428,23 @@ export async function GetAllOpenSuggestions() {
 // + ======================================================================== +
 // | Files                                                                    |
 // + ======================================================================== +
-export async function CreateFile(parentID, name, uploadThingID, allowOverrides=false) {
+export async function CreateFile(parentID, name, uploadThingID) {
     const uploadthing_id = await ExecutePreparedStatement('SELECT uploadthing_id FROM files WHERE parent_id<=>? AND name=?', [parentID, name]);
-    if(!allowOverrides && uploadthing_id.length > 0) return uploadthing_id[0]['uploadthing_id'];
+    if(uploadthing_id.length > 0) return false;
 
     await ExecutePreparedStatement(
-        'INSERT INTO files (parent_id, name, uploadthing_id) VALUES(?,?,?) ON DUPLICATE KEY UPDATE uploadthing_id=?', 
-        [parentID, name, uploadThingID, uploadThingID]
+        'INSERT INTO files (parent_id, name, uploadthing_id) VALUES(?,?,?)', 
+        [parentID, name, uploadThingID]
     );
-    return uploadthing_id.length>0 ? uploadthing_id[0]['uploadthing_id'] : undefined;
+    return true;
 }
-export async function CreateFileAtPath(parentID, path, uploadThingID, allowOverrides=false) {
+export async function CreateFileAtPath(parentID, path, uploadThingID) {
     var intParentID = parentID;
     const explodedPath = path.split('/');
     var index = 0;
     for(const folder of explodedPath) {
         if(index+1 >= explodedPath.length) {
-            return await CreateFile(intParentID, folder, uploadThingID, allowOverrides);
+            return await CreateFile(intParentID, folder, uploadThingID);
         }
         let folderID = await GetFolderId(folder, intParentID);
         if(folderID == undefined) {
@@ -455,6 +455,7 @@ export async function CreateFileAtPath(parentID, path, uploadThingID, allowOverr
         intParentID = folderID;
         index++;
     }
+    return false;
 }
 export async function CreateFileReturnId(parentID, uploadThingID) {
     await ExecutePreparedStatement(
@@ -466,37 +467,43 @@ export async function CreateFileReturnId(parentID, uploadThingID) {
 }
 export async function RenameFile(id, newName) {
     const currentFileInfo = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
-    if(currentFileInfo[0] == undefined) return;
+    if(currentFileInfo[0] == undefined) return [];
     if(currentFileInfo[0].uploadthing_id == null) {
         // It is a folder
         const children = await GetChildrenOfFileID(currentFileInfo[0].id);
+        let failedUTIDs = [];
         for(let i = 0; i < children.length; i++) {
-            await CreateFileAtPath(currentFileInfo[0].parent_id, newName + '/' + children[i].path, children[i].uploadthing_id);
+            if(!(await CreateFileAtPath(currentFileInfo[0].parent_id, newName + '/' + children[i].path, children[i].uploadthing_id)))
+                failedUTIDs.push(children[i].uploadthing_id);
         }
         await DeleteFile(id);
         // Make sure an empty folder doesn't get removed:
         await CreateFile(currentFileInfo[0].parent_id, newName, undefined);
-        return;
+        return failedUTIDs;
     }
     // It is a file
     await ExecutePreparedStatement('UPDATE files SET name=? WHERE id=?', [newName, id]);
+    return [];
 }
 export async function MoveFile(id, newParentId) {
     const currentFileInfo = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
-    if(currentFileInfo[0] == undefined) return;
+    if(currentFileInfo[0] == undefined) return [];
     if(currentFileInfo[0].uploadthing_id == null) {
         // It is a folder
         const children = await GetChildrenOfFileID(currentFileInfo[0].id);
+        let failedUTIDs = [];
         for(let i = 0; i < children.length; i++) {
-            await CreateFileAtPath(newParentId, currentFileInfo[0].name + '/' + children[i].path, children[i].uploadthing_id);
+            if(!(await CreateFileAtPath(newParentId, currentFileInfo[0].name + '/' + children[i].path, children[i].uploadthing_id)))
+                failedUTIDs.push(children[i].uploadthing_id);
         }
         await DeleteFile(id);
         // Make sure an empty folder doesn't get removed:
         await CreateFile(newParentId, currentFileInfo[0].name, undefined);
-        return;
+        return failedUTIDs;
     }
     // It is a file
     await ExecutePreparedStatement('UPDATE files SET parent_id=? WHERE id=?', [newParentId, id]);
+    return [];
 }
 export async function DeleteFile(fileID) {
     await ExecutePreparedStatement('DELETE FROM files WHERE id=?', [fileID]);
@@ -524,7 +531,7 @@ export async function CheckFileRenamingConflicts(id, newName) {
     return false;
 }
 export async function CheckFileMovingConflicts(id, newParentId) {
-    const existingID = await ExecutePreparedStatement('SELECT * FROM files WHERE parent_id=? AND name=(SELECT name FROM files WHERE id=? LIMIT 1)', [newParentId, id]);
+    const existingID = await ExecutePreparedStatement('SELECT * FROM files WHERE parent_id<=>? AND name=(SELECT name FROM files WHERE id=? LIMIT 1)', [newParentId, id]);
     if(existingID.length > 0) {
         const mergingFile = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
         if(mergingFile[0].uploadthing_id == null) {
@@ -552,6 +559,10 @@ export async function GetFolderId(name, parent_id) {
 export async function GetFileParentId(id) {
     const results = await ExecutePreparedStatement('SELECT parent_id FROM files WHERE id=?', [id]);
     return results.length == 0 ? undefined : results[0]['parent_id'];
+}
+export async function GetFileName(id) {
+    const results = await ExecutePreparedStatement('SELECT name FROM files WHERE id=?', [id]);
+    return results.length == 0 ? undefined : results[0]['name'];
 }
 export async function GetUploadthingID(id) {
     const results = await ExecutePreparedStatement('SELECT uploadthing_id FROM files WHERE id=?', [id]);

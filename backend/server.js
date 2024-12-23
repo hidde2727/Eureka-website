@@ -26,6 +26,7 @@ await RegenFileIndices();
 
 // !!!! DELETE IN PRODUCTION !!!!!
 if(process.env.NODE_ENV.trim() == 'development') {
+    console.log('In development mode!')
     if(await DB.IsTableEmpty('users')) {
         console.log('Regenerated the admin user')
         // Generate default user (username: admin & password: password)

@@ -10,6 +10,7 @@
   "author": "Hidde Meiburg",
   "license": "MIT",
   "dependencies": {
+    "async-mutex": "^0.5.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "eureka-website": "file:..",

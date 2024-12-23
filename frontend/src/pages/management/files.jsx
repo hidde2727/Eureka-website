@@ -6,9 +6,11 @@ import { IconByExtension } from '../../utils/utils.jsx';
 
 import FileDropzone from '../../components/file_dropzone.jsx';
 import FilePopover from '../../popovers/management/files.jsx';
+import { FileConflictPopover } from '../../popovers/management/file_conflicts.jsx';
+import ConformationPopover from '../../popovers/conformation_popover.jsx';
 
 import '/public/pages/files.css';
-import { FileConflictPopover } from '../../popovers/management/file_conflicts.jsx';
+
 
 export default function Files() {
     useEffect(() => {
@@ -63,6 +65,7 @@ export default function Files() {
 
     const draggedFile = useRef();
     const deleteWindow = useRef();
+    const deleteConformationPopover = useRef();
 
     if(hasError || hasErrorUsage || fileData==undefined) return <p>Error tijdens het ophalen van de files</p>;
 
@@ -269,10 +272,22 @@ export default function Files() {
                 onResolved={onRenamingConflictResolved.current} 
                 nameProperty="path"                
                 />
+                <ConformationPopover ref={deleteConformationPopover} />
             </div>
             <div 
             className="delete" ref={deleteWindow}
             onDrop={() => {
+                if(draggedFile.current.isFolder) {
+                    deleteConformationPopover.current.open(
+                        'Deze actie zal de volledige folder verwijderen en dit kan niet ongedaan worden',
+                        () => {
+                            deleteFile(queryClient, currentFolder, draggedFile.current.id);
+                            draggedFile.current = undefined;
+                            deleteWindow.current.classList.remove('active');
+                        }
+                    );
+                    return;
+                }
                 deleteFile(queryClient, currentFolder, draggedFile.current.id);
                 draggedFile.current = undefined;
                 deleteWindow.current.classList.remove('active');

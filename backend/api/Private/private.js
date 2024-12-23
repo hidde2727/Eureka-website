@@ -4,7 +4,7 @@ const router = Router();
 import { createRouteHandler } from "uploadthing/express";
 import uploadRouter from './uploadthing_router.js';
 import Config from '../../utils/config.js';
-router.use("/uploadthing", createRouteHandler({
+router.use('/uploadthing', createRouteHandler({
     router: uploadRouter,
     config: { 
         token: Config.uploadthing.apiToken,
