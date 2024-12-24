@@ -13,7 +13,7 @@ import { RegenFileIndices } from './utils/files.js';
 import Config from './utils/config.js';
 
 const app = express();
-const port = 3000; // Change to be port 443 in production ======================================
+const port = Config.isDev ? 3000 : process.env.PORT; // Change to be port 443 in production ======================================
 
 (async () => {
 
