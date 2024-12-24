@@ -20,6 +20,7 @@ jobs:
       - name: Generate project files
         run: |
           npm run install:all
+          npm install @rollup/rollup-linux-x64-gnu
           npm run prod
           ls
           cp -a /frontend/dist/. /backend/frontend
