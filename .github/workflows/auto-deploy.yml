@@ -19,7 +19,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cloudlinux-selector --interpreter nodejs --app-root ${{ secrets.FOLDER_NAME }} --json stop
-            cd ./Eureka-website/
+            cd ./${{ secrets.FOLDER_NAME }}/
             git pull
             cd ../
             ${{ secrets.VIRTUAL_ENVIRONMENT_COMMAND }}
