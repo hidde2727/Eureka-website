@@ -40,7 +40,8 @@ if(Config.isDev) {
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 // Static content
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+if(Config.isDev) app.use(express.static(path.join(__dirname, '../frontend/dist')));
+else app.use(express.static('/frontend/dist/'));
 app.use('/data/files.json', express.static('data/files.json'));
 app.use('/data/labels.json', express.static('data/labels.json'));
 app.use('/data/projects.json', express.static('data/projects.json'));
@@ -50,7 +51,8 @@ app.use('/data/tutorials', express.static('data/tutorials'));
 app.use(express.json());
 app.use(cookieParser());
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    if(Config.isDev) res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    else res.sendFile('/frontend/index.html');
 });
 app.use('/api', API);
 
