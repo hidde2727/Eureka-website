@@ -27,7 +27,7 @@ jobs:
           echo "frontend: "
           ls
           cd ../
-          cp -a /frontend/dist/. /backend/frontend
+          cp -a ./frontend/dist/. ./backend/frontend/
           ls
       
       - name: Deploy to server
