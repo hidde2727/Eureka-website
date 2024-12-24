@@ -6,7 +6,8 @@
   "main": "index.jsx",
   "scripts": {
     "start": "vite dev --port 5000",
-    "build": "vite build --watch && vite preview"
+    "build": "vite build --watch && vite preview",
+    "prod": "vite build"
   },
   "author": "Hidde Meiburg",
   "license": "MIT",
