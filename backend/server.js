@@ -13,7 +13,7 @@ import { RegenFileIndices } from './utils/files.js';
 import Config from './utils/config.js';
 
 const app = express();
-const port = Config.isDev ? 3000 : process.env.PORT; // Change to be port 443 in production ======================================
+const port = Config.isDev ? 3000 : process.env.PORT;
 
 (async () => {
 
@@ -38,14 +38,21 @@ if(Config.isDev) {
 // !!!! DELETE IN PRODUCTION !!!!!
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
 // Static content
-if(Config.isDev) app.use(express.static(path.join(__dirname, '../frontend/dist')));
-else app.use(express.static('/frontend/dist/'));
-app.use('/data/files.json', express.static('data/files.json'));
-app.use('/data/labels.json', express.static('data/labels.json'));
-app.use('/data/projects.json', express.static('data/projects.json'));
-app.use('/data/tutorials', express.static('data/tutorials'));
+if(Config.isDev) { 
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+    app.use('/data/files.json', express.static('data/files.json'));
+    app.use('/data/labels.json', express.static('data/labels.json'));
+    app.use('/data/projects.json', express.static('data/projects.json'));
+    app.use('/data/tutorials', express.static('data/tutorials'));
+}
+else { 
+    app.use(express.static(path.join(__dirname, '/frontend/')));
+    app.use('/data/files.json', express.static(path.join(__dirname, '/data/files.json')));
+    app.use('/data/labels.json', express.static(path.join(__dirname, '/data/labels.json')));
+    app.use('/data/projects.json', express.static(path.join(__dirname, '/data/projects.json')));
+    app.use('/data/tutorials', express.static(path.join(__dirname, '/data/tutorials')));
+}
 
 // Routing
 app.use(express.json());

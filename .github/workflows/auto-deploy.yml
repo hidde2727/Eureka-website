@@ -41,4 +41,6 @@ jobs:
             cloudlinux-selector --interpreter nodejs --app-root ${{ secrets.FOLDER_NAME }} --json stop
           SCRIPT_AFTER: |
             cloudlinux-selector --interpreter nodejs --app-root ${{ secrets.FOLDER_NAME }} --json install-modules
+            cd ${{ secrets.FOLDER_NAME }}
+            cp server.js server.mjs
             cloudlinux-selector --interpreter nodejs --app-root ${{ secrets.FOLDER_NAME }} --json start
