@@ -22,13 +22,9 @@ jobs:
           npm run install:all
           npm install @rollup/rollup-linux-x64-gnu
           npm run prod
-          ls
-          cd frontend
-          echo "frontend: "
-          ls
-          cd ../
           cp -a ./frontend/dist/. ./backend/frontend/
-          ls
+          cp ./LICENSE.md ./backend/
+          cp ./README.md ./backend/
       
       - name: Deploy to server
         uses: easingthemes/ssh-deploy@main
