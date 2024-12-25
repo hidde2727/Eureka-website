@@ -1,8 +1,8 @@
 import validator from 'validator';
 import * as DB from './db.js';
 
-export function ReturnError(res, error) {
-    res.status(400);
+export function ReturnError(res, error, errorCode=400) {
+    res.status(errorCode);
     res.send(error);
 
     return true;

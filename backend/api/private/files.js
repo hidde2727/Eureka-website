@@ -19,6 +19,7 @@ router.use(async (req, res, next) => {
 });
 
 router.get('/usage', async (req, res) => {
+    if(Config.uploadthing.apiKey == undefined) return Validator.ReturnError(res, 'Uploadthing API key is undefined', 500);
     const { totalBytes, appTotalBytes, filesUploaded, limitBytes } = await SendRequest({
         host:'api.uploadthing.com',
         path:'/v6/getUsageInfo',
@@ -41,7 +42,7 @@ router.put('/add', async (req, res) => {
         res.send(JSON.stringify({name: 'newFile' + newId, id: newId}));
     }).catch((err) => {
         console.error('Error while adding folders: ' + err.message);
-        return Validator.ReturnError(res, 'Server error');
+        return Validator.ReturnError(res, 'Server error', 500);
     });
 });
 // When modifying the /move path also needs to be modified most of the time
@@ -67,23 +68,15 @@ router.put('/rename', async (req, res) => {
             // Go through all the conflicts and look at their respective matches in the override array
             let toBeRemovedUT = [];
             conflicts.forEach((conflict) => {
-                if(data.override[conflict.id] == undefined) {
-                    res.status(400);
-                    res.send('incorrect override array');
-                    return;
-                }
+                if(data.override[conflict.id] == undefined) { return Validator.ReturnError(res, 'Incorrect override array'); }
                 if(data.override[conflict.id] === 'replace') {
                     toBeRemovedUT.push(conflict.conflictWithUTId);
                 } else if(data.override[conflict.id] === 'ignore') { } 
-                else {
-                    res.status(400);
-                    res.send('incorrect override array');
-                    return;
-                }
+                else { return Validator.ReturnError(res, 'Incorrect override array'); }
             });
             const { success, deletedCount } = await utapi.deleteFiles(toBeRemovedUT, { keyType: 'fileKey' });
-            if(!success) { res.status(500); res.send('Server error'); return; }
-            if(deletedCount != toBeRemovedUT.length) { res.status(500); res.send('Server error'); return console.error('Deleted and to be deleted counts do not match'); }
+            if(!success) { return Validator.ReturnError(res, 'Server error', 500); }
+            if(deletedCount != toBeRemovedUT.length) { console.error('Deleted and to be deleted counts do not match'); return Validator.ReturnError(res, 'Server error', 500);  }
 
             let toBeRemoved = [];
             conflicts.forEach((conflict) => {
@@ -124,7 +117,7 @@ router.put('/rename', async (req, res) => {
         res.send('succes!');
     }).catch((err) => {
         console.error('Error while renaming files: ' + err.message);
-        return Validator.ReturnError(res, 'Server error');
+        return Validator.ReturnError(res, 'Server error', 500);
     });
 });
 // When modifying the /rename path also needs to be modified most of the time
@@ -151,19 +144,15 @@ router.put('/move', async (req, res) => {
             // Go through all the conflicts and look at their respective matches in the override array
             let toBeRemovedUT = [];
             conflicts.forEach((conflict) => {
-                if(data.override[conflict.id] == undefined) {
-                    res.status(400);
-                    res.send('Incorrect override array');
-                    return;
-                }
+                if(data.override[conflict.id] == undefined) { return Validator.ReturnError(res, 'Incorrect override array'); }
                 if(data.override[conflict.id] === 'replace') {
                     toBeRemovedUT.push(conflict.conflictWithUTId);
                 } else if(data.override[conflict.id] === 'ignore') { }
                 else { return Validator.ReturnError(res, 'Incorrect override array') }
             });
             const { success, deletedCount } = await utapi.deleteFiles(toBeRemovedUT, { keyType: 'fileKey' });
-            if(!success) { res.status(500); res.send('Server error'); return; }
-            if(deletedCount != toBeRemovedUT.length) { res.status(500); res.send('Server error'); return console.error('Deleted and to be deleted counts do not match'); }
+            if(!success) {  return Validator.ReturnError(res, 'Server error', 500); }
+            if(deletedCount != toBeRemovedUT.length) { console.error('Deleted and to be deleted counts do not match'); return Validator.ReturnError(res, 'Server error', 500); }
 
             let toBeRemoved = [];
             conflicts.forEach((conflict) => {
@@ -201,7 +190,7 @@ router.put('/move', async (req, res) => {
         res.send('succes!');
     }).catch((err) => {
         console.error('Error while moving files: ' + err.message);
-        return Validator.ReturnError(res, 'Server error');
+        return Validator.ReturnError(res, 'Server error', 500);
     });;
 });
 router.put('/delete', async (req, res) => {
@@ -215,12 +204,12 @@ router.put('/delete', async (req, res) => {
             const children = await DB.GetChildrenOfFileID(data.id);
             const toBeRemoved = children.map((child) => child.uploadthing_id).filter((child) => child != null && child != undefined);
             const { success, deletedCount } = await utapi.deleteFiles(toBeRemoved, { keyType:'fileKey' });
-            if(!success) { res.status(500); res.send('Server error'); return }
-            if(deletedCount != toBeRemoved.length) { res.status(500); res.send('Server error'); return console.error('Deleted and to be deleted counts do not match'); }
+            if(!success) {  return Validator.ReturnError(res, 'Server error', 500); }
+            if(deletedCount != toBeRemoved.length) { console.error('Deleted and to be deleted counts do not match'); return Validator.ReturnError(res, 'Server error', 500); }
         } else {
             const { success, deletedCount } = await utapi.deleteFiles([utid], { keyType:'fileKey' });
-            if(!success) { res.status(500); res.send('Server error'); return }
-            if(deletedCount != 1) { res.status(500); res.send('Server error'); return console.error('Deleted and to be deleted counts do not match'); }
+            if(!success) { return Validator.ReturnError(res, 'Server error', 500); }
+            if(deletedCount != 1) { console.error('Deleted and to be deleted counts do not match'); return Validator.ReturnError(res, 'Server error', 500); }
         }
 
         await DB.DeleteFile(data.id);
@@ -229,7 +218,7 @@ router.put('/delete', async (req, res) => {
         res.send('Succes!');
     }).catch((err) => {
         console.error('Error while deleting files: ' + err.message);
-        return Validator.ReturnError(res, 'Server error');
+        return Validator.ReturnError(res, 'Server error', 500);
     });;
 });
 

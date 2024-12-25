@@ -34,9 +34,9 @@ export default function Settings({isActive}) {
                     <Input type="text" placeholder="Pietje" value={userData.username} label="Gebruikersnaam" inline={true} name="settingsUsername" />
                     <Input type="text" placeholder="pietje.jan@gmail.com" value={userData.email} label="Email" inline={true} name="settingsEmail" />
 
-                    <Input type="password" placeholder="Wachtwoord" value="1234" label="Wachtwoord" inline={true} name="settingsPassword" />
-                    <Input type="password" placeholder="Herhaal wachtwoord" value="" label="" inline={true} name="settingsPasswordRepeat" />
-                    <Input type="password" placeholder="Vorige wachtwoord" value="" label="" inline={true} name="settingsPasswordPrevious" />
+                    <Input type="password" placeholder="Vorige wachtwoord" value="1234" label="Wachtwoord" inline={true} name="settingsPasswordPrevious" />
+                    <Input type="password" placeholder="Nieuwe wachtwoord" value="" label="" inline={true} name="settingsPassword" />
+                    <Input type="password" placeholder="Herhaal wachtwoord" value="" label="" inline={true} name="settingsPasswordPrevious" />
 
                     <FormErrorMessage message={userErorMessage} atInput={userErrorInput} />
                     <FormSuccesScreen message={userSuccesMessage} error={userSuccesMessage.includes('Error')} />
