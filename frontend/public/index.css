@@ -382,6 +382,61 @@ span:has(>input[type="checkbox"]) + label {
 
 
 /* + ======================================================================== +
+/* | Slider toggle                                                            |
+/* + ========================================================================*/
+.slider-toggle {
+    --width: 45px;
+    --height: 24px;
+
+    position: relative;
+    display: inline-block;
+    width: calc(var(--width) + 4px);
+    height: calc(var(--height) + 4px);
+
+    background-color: var(--extra-prominent-background);
+
+    border-radius: calc(var(--height) / 2);
+
+    transition: border 0.4s, margin 0.4s, background-color .4s;
+
+    top: calc(var(--height) / -2 + 8px);
+    margin-right: 10px;
+}
+.slider-toggle:has(input:checked) {
+    background-color: var(--conformation);
+}
+.slider-toggle input {
+    width: 0px;
+    height: 0px;
+    opacity: 0;
+    vertical-align: middle;
+}
+.slider-toggle .internal-slider {
+    display: inline-block;
+    width: var(--height);
+    height: var(--height);
+    background-color: var(--background);
+    border-radius: 100%;
+
+    position: absolute;
+    top: 2px;
+    left: 4px;
+
+    transition: left .4s, width .4s, height .4s, top .4s, left .4s;
+}
+.slider-toggle:has(input:active) .internal-slider {
+    width: calc(var(--height) - 2px);
+    height: calc(var(--height) - 2px);
+
+    top: 3.5px;
+    left: 5px;
+}
+.slider-toggle input:checked + .internal-slider {
+    left: calc(var(--width) - var(--height));
+}
+
+
+/* + ======================================================================== +
 /* | Split window and seperators                                              |
 /* + ========================================================================*/
 .split-window {
@@ -1115,5 +1170,5 @@ label:has(+ #project-link2, + #project-link3) {
 /* | Login popover                                                            |
 /* + ========================================================================*/
 #login-popover .content {
-    overflow: hidden;
+    overflow: visible;
 }

@@ -1,0 +1,86 @@
+#users h1 {
+    border: 0px solid rgba(0,0,0,0);
+}
+#users .align-names {
+    display: grid;
+    grid-template-columns: 2rem 3fr 3fr 1fr 1fr 1fr 1fr 1fr 1fr 2fr;
+    padding-left: 10px;
+    padding-right: calc(5px + 1rem);
+    margin-bottom: 10px;
+}
+#users .align-names p {
+    margin: 0;
+}
+#users .content {
+    position: relative;
+}
+#users .content p {
+    margin: 0;
+    align-self: center;
+    color: var(--prominent-text);
+}
+#users .content i {
+    font-size: 1.6rem;
+    padding: 0.25rem 5px;
+}
+#users .content .user {
+    grid-template-columns: 3rem 3fr 3fr 1fr 1fr 1fr 1fr 1fr 1fr 2fr;
+    display: grid;
+    background-color: var(--prominent-background);
+    border-radius: var(--small-border-radius);
+    padding: 5px;
+    padding-left: 10px;
+    margin-bottom: 5px;
+}
+#users .content .user .buttons {
+    justify-self: end;
+    padding-right: 20px;
+}
+#users .content .add-button {
+    background-color: var(--conformation);
+    border-radius: 100%;
+    color: var(--background);
+    border: 5px solid var(--background);
+    position: absolute;
+    top: calc(100% - 15px);
+    left: calc(50% - 22px);
+}
+
+#users .user-creation.content {
+    overflow: initial;
+    width: 300px;
+}
+
+#users .user-modification .header {
+    background-color: var(--prominent-background);
+    border-radius: var(--big-border-radius);
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 3rem 1fr;
+    grid-template-areas:
+    "ico tx1" 
+    "ico tx2";
+    margin: -15px -15px 15px -15px;
+    padding: 10px;
+}
+#users .user-modification .header .fas.fa-user-alt {
+    grid-area: ico;
+    font-size: 2rem;
+}
+#users .user-modification .header p {
+    font-size: 0.9rem;
+}
+#users .user-modification .header p:nth-child(3) {
+    font-size: 0.8rem;
+    color: var(--normal-text);
+    text-decoration: underline var(--normal-text);
+}
+#users .user-modification br {
+    margin-bottom: 15px;
+}
+#users .user-modification label {
+    font-size: 0.8rem;
+}
+#users .user-modification input[type="submit"] {
+    margin-top: 10px;
+}

@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS inspiration (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (version_proposer_id) REFERENCES users(id),
     FOREIGN KEY (next_version) REFERENCES inspiration(uuid),
     FOREIGN KEY (previous_version) REFERENCES inspiration(uuid),
 

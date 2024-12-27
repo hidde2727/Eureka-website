@@ -13,21 +13,19 @@ import Footer from '../components/footer.jsx';
 export default function Suggestions({ isActive }) {
     const [url, setURL] = useState();
     const [selectedLabels, setSelectedLabels] = useState({});
-    const [suggestion1, setSuggestion1] = useState(undefined);
-    const [suggestion2, setSuggestion2] = useState(undefined);
+    const [suggestion1, setSuggestion1] = useState();
+    const [suggestion2, setSuggestion2] = useState();
 
-    const [projectError, setProjectError] = useState(undefined);
-    const [projectErrorInput, setProjectErrorInput] = useState(undefined);
+    const [projectError, setProjectError] = useState();
     const [projectSucces, setProjectSucces] = useState("");
 
-    const [inspirationError, setInspirationError] = useState(undefined);
-    const [inspirationErrorInput, setInspirationErrorInput] = useState(undefined);
+    const [inspirationError, setInspirationError] = useState();
     const [inspirationSucces, setInspirationSucces] = useState("");
 
     return (
         <div className="window" id="suggestions" style={isActive ? {display: 'block'} : {display: 'none'}}>
             <div className="split-window seperator">
-                <form onSubmit={(event) => { OnProjectSubmit(event, { setError: setProjectError, setErrorAtInput: setProjectErrorInput }, setProjectSucces); }}>
+                <form onSubmit={(event) => { OnProjectSubmit(event, setProjectError, setProjectSucces); }}>
                     <h2>Suggereer een project</h2>
                     <p>Wat is het project?</p>
                     
@@ -42,13 +40,13 @@ export default function Suggestions({ isActive }) {
                     <Input type="text" placeholder="De biologie sectie" label="Naam*" inline={true} name="projectSuggestorName" />
                     <Input type="text" placeholder="eureka@usgym.nl" label="Email*" inline={true} name="projectSuggestorEmail" />
 
-                    <FormErrorMessage message={projectError} atInput={projectErrorInput} />
+                    <FormErrorMessage error={projectError} />
                     <FormSuccesScreen message={projectSucces} error={projectSucces.includes('error')} />
 
                     <input type="submit" value="Insturen" />
 
                 </form>
-                <form onSubmit={(event) => { OnInspirationSubmit(event, selectedLabels, { setError: setInspirationError, setErrorAtInput: setInspirationErrorInput }, setInspirationSucces); }}>
+                <form onSubmit={(event) => { OnInspirationSubmit(event, selectedLabels, setInspirationError, setInspirationSucces); }}>
                     <h2>Suggereer inspiratie</h2>
                     <p>Wat is de url?</p>
 
@@ -86,7 +84,7 @@ export default function Suggestions({ isActive }) {
                         </div>
                     </div>
 
-                    <FormErrorMessage message={inspirationError} atInput={inspirationErrorInput} />
+                    <FormErrorMessage error={inspirationError} />
                     <FormSuccesScreen message={inspirationSucces} error={inspirationSucces.includes('error')} />
 
                     <input type="submit" value="Insturen" />
@@ -144,44 +142,44 @@ function LabelSelector(props) {
 /* + ======================================================================== +
 /* | Project form handeling                                                   |
 /* + ========================================================================*/
-async function OnProjectSubmit(event, errorMessaging, setSuccesMessage) {
+async function OnProjectSubmit(event, setError, setSuccesMessage) {
     event.preventDefault();
 
     var projectName = event.target.projectName.value;
-    if(!projectName) return SetFormErrorMessage(errorMessaging, 'Specificeer een naam', event.target.projectName);
-    else if(projectName.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.projectName);
+    if(!projectName) return SetFormErrorMessage(setError, 'Specificeer een naam', event.target.projectName);
+    else if(projectName.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte 255', event.target.projectName);
 
     var projectDescription = event.target.projectDescription.value;
-    if(!projectDescription) return SetFormErrorMessage(errorMessaging, 'Specificeer een omschrijving', event.target.projectDescription);
-    else if(projectDescription.length > 65535) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 65535', event.target.projectDescription);
+    if(!projectDescription) return SetFormErrorMessage(setError, 'Specificeer een omschrijving', event.target.projectDescription);
+    else if(projectDescription.length > 65535) return SetFormErrorMessage(setError, 'Maximale lengte 65535', event.target.projectDescription);
 
     var urls = [];
     var link1 = event.target.projectLink1.value;
     if(link1) {
-        if(link1.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.projectLink1);
-        else if(!IsValidURL(link1)) return  SetFormErrorMessage(errorMessaging, 'Moet valide link zijn', event.target.projectLink1);
+        if(link1.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte 255', event.target.projectLink1);
+        else if(!IsValidURL(link1)) return  SetFormErrorMessage(setError, 'Moet valide link zijn', event.target.projectLink1);
         urls.push(link1);
     }
     var link2 = event.target.projectLink2.value;
     if(link2) {
-        if(link2.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.projectLink2);
-        else if(!IsValidURL(link2)) return  SetFormErrorMessage(errorMessaging, 'Moet valide link zijn', event.target.projectLink2);
+        if(link2.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte 255', event.target.projectLink2);
+        else if(!IsValidURL(link2)) return  SetFormErrorMessage(setError, 'Moet valide link zijn', event.target.projectLink2);
         urls.push(link2);
     }
     var link3 = event.target.projectLink3.value;
     if(link3) {
-        if(link3.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.projectLink3);
-        else if(!IsValidURL(link3)) return SetFormErrorMessage(errorMessaging, 'Moet valide link zijn', event.target.projectLink3);
+        if(link3.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte 255', event.target.projectLink3);
+        else if(!IsValidURL(link3)) return SetFormErrorMessage(setError, 'Moet valide link zijn', event.target.projectLink3);
         urls.push(link3);
     }
 
     var projectSuggestorName = event.target.projectSuggestorName.value;
-    if(!projectSuggestorName) return SetFormErrorMessage(errorMessaging, 'Specificeer je naam', event.target.projectSuggestorName);
-    else if(projectSuggestorName.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.projectSuggestorName);
+    if(!projectSuggestorName) return SetFormErrorMessage(setError, 'Specificeer je naam', event.target.projectSuggestorName);
+    else if(projectSuggestorName.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte 255', event.target.projectSuggestorName);
 
     var projectSuggestorEmail = event.target.projectSuggestorEmail.value;
-    if(!projectSuggestorEmail) return SetFormErrorMessage(errorMessaging, 'Specificeer je email', event.target.projectSuggestorEmail);
-    else if(projectSuggestorEmail.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.projectSuggestorEmail);
+    if(!projectSuggestorEmail) return SetFormErrorMessage(setError, 'Specificeer je email', event.target.projectSuggestorEmail);
+    else if(projectSuggestorEmail.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte 255', event.target.projectSuggestorEmail);
 
     try {
         await suggestProject({
@@ -203,29 +201,29 @@ async function OnProjectSubmit(event, errorMessaging, setSuccesMessage) {
 /* + ======================================================================== +
 /* | Inspiration form handeling                                               |
 /* + ========================================================================*/
-async function OnInspirationSubmit(event, selectedLabels, errorMessaging, setSuccesMessage) {
+async function OnInspirationSubmit(event, selectedLabels, setError, setSuccesMessage) {
     event.preventDefault();
 
     var url = event.target.inspirationURL.value;
-    if(!url) return SetFormErrorMessage(errorMessaging, 'Specificeer een naam', event.target.inspirationURL);
-    else if(url.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.inspirationURL);
-    else if(!IsValidURL(url)) return  SetFormErrorMessage(errorMessaging, 'Moet valide zijn', event.target.inspirationURL);
+    if(!url) return SetFormErrorMessage(setError, 'Specificeer een naam', event.target.inspirationURL);
+    else if(url.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte 255', event.target.inspirationURL);
+    else if(!IsValidURL(url)) return  SetFormErrorMessage(setError, 'Moet valide zijn', event.target.inspirationURL);
   
     var description = event.target.inspirationDescription.value;
-    if(!description) return SetFormErrorMessage(errorMessaging, 'Specificeer een omschrijving', event.target.inspirationDescription);
-    else if(description.length > 65535) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 65535', event.target.inspirationDescription);
+    if(!description) return SetFormErrorMessage(setError, 'Specificeer een omschrijving', event.target.inspirationDescription);
+    else if(description.length > 65535) return SetFormErrorMessage(setError, 'Maximale lengte 65535', event.target.inspirationDescription);
   
     var suggestions = [];
     var link1 = event.target.inspirationSuggestion1.value;
     if(link1) {
-      if(link1.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.inspirationSuggestion1);
-      else if(!IsValidURL(link1)) return  SetFormErrorMessage(errorMessaging, 'Moet valide link zijn', event.target.inspirationSuggestion1);
+      if(link1.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte 255', event.target.inspirationSuggestion1);
+      else if(!IsValidURL(link1)) return SetFormErrorMessage(setError, 'Moet valide link zijn', event.target.inspirationSuggestion1);
       suggestions.push(link1);
     }
     var link2 = event.target.inspirationSuggestion2.value;
     if(link2) {
-      if(link2.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte 255', event.target.inspirationSuggestion2);
-      else if(!IsValidURL(link2)) return  SetFormErrorMessage(errorMessaging, 'Moet valide link zijn', event.target.inspirationSuggestion2);
+      if(link2.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte 255', event.target.inspirationSuggestion2);
+      else if(!IsValidURL(link2)) return SetFormErrorMessage(setError, 'Moet valide link zijn', event.target.inspirationSuggestion2);
       suggestions.push(link2);
     }
     try {

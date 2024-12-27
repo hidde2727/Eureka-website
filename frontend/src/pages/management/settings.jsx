@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useUserDataSus, useGlobalSettingsSus, updatePersonalSettings, updateGlobalSettings } from '../../utils/data_fetching.jsx';
+import { useUserDataSus, useGlobalSettings, updatePersonalSettings, updateGlobalSettings } from '../../utils/data_fetching.jsx';
 
 import Footer from '../../components/footer.jsx';
 import { Input } from '../../components/inputs.jsx'
@@ -12,22 +12,21 @@ import { useQueryClient } from '@tanstack/react-query';
 export default function Settings({isActive}) {
     const queryClient = useQueryClient();
 
-    const { userData, isFetchingU } = useUserDataSus();
-    const { settings, isFetchingS } = useGlobalSettingsSus();
-    if(isFetchingU || isFetchingS) return;
+    const { userData } = useUserDataSus();
+    const { settings, isFetching } = useGlobalSettings(userData?.modify_settings == 1);
 
-    const [userErorMessage, setUserErrorMessage] = useState();
-    const [userErrorInput, setUserErrorInput] = useState();
+    const [userError, setUserError] = useState();
     const [userSuccesMessage, setUserSuccesMessage] = useState('');
 
-    const [globalErorMessage, setGlobalErrorMessage] = useState();
-    const [globalErrorInput, setGlobalErrorInput] = useState();
+    const [globalError, setGlobalError] = useState();
     const [globalSuccesMessage, setGlobalSuccesMessage] = useState('');
+
+    if(isFetching) return;
 
     return (
         <div className="window" id="management-settings" style={isActive ? {display: 'block'} : {display: 'none'}}>
             <div className={`split-window ${ userData['modify_settings'] ? 'seperator' : ''}`}>
-                <form id="settings-left" onSubmit={(ev) => { OnUserSettingsSubmit(ev, userData, {setError: setUserErrorMessage, setErrorAtInput: setUserErrorInput}, setUserSuccesMessage); }}>
+                <form id="settings-left" onSubmit={(ev) => { OnUserSettingsSubmit(ev, userData, setUserError, setUserSuccesMessage); }}>
 
                     <h2>Instellingen</h2>
 
@@ -36,30 +35,30 @@ export default function Settings({isActive}) {
 
                     <Input type="password" placeholder="Vorige wachtwoord" value="1234" label="Wachtwoord" inline={true} name="settingsPasswordPrevious" />
                     <Input type="password" placeholder="Nieuwe wachtwoord" value="" label="" inline={true} name="settingsPassword" />
-                    <Input type="password" placeholder="Herhaal wachtwoord" value="" label="" inline={true} name="settingsPasswordPrevious" />
+                    <Input type="password" placeholder="Herhaal wachtwoord" value="" label="" inline={true} name="settingsPasswordRepeat" />
 
-                    <FormErrorMessage message={userErorMessage} atInput={userErrorInput} />
+                    <FormErrorMessage error={userError} />
                     <FormSuccesScreen message={userSuccesMessage} error={userSuccesMessage.includes('Error')} />
 
                     <input type="submit" value="Opslaan" />
 
                 </form>
-                <form id="settings-right" onSubmit={(ev) => { OnGlobalSettingsSubmit(ev, {setError: setGlobalErrorMessage, setErrorAtInput: setGlobalErrorInput}, setGlobalSuccesMessage, queryClient); }}>
+                <form id="settings-right" onSubmit={(ev) => { OnGlobalSettingsSubmit(ev, setGlobalError, setGlobalSuccesMessage, queryClient); }}>
                 <Restricted to="modify_settings">
 
                     <h2>Globale instellingen</h2>
 
                     <p>Goedkeuring</p>
-                    <Input type="text" placeholder="1" value={settings.accept.normal_vote} label="Punten normale vote" inline={true} name="settingsAcceptNormalVotes" />
-                    <Input type="text" placeholder="5" value={settings.accept.admin_vote} label="Punten admin vote" inline={true} name="settingsAcceptAdminVotes" />
-                    <Input type="text" placeholder="6 / 50%" value={settings.accept.accept_votes} label="Punten voor oordeel" inline={true} name="settingsAccept" />
+                    <Input type="text" placeholder="1" value={settings?.accept?.normal_vote} label="Punten normale vote" inline={true} name="settingsAcceptNormalVotes" />
+                    <Input type="text" placeholder="5" value={settings?.accept?.admin_vote} label="Punten admin vote" inline={true} name="settingsAcceptAdminVotes" />
+                    <Input type="text" placeholder="6 / 50%" value={settings?.accept?.accept_votes} label="Punten voor oordeel" inline={true} name="settingsAccept" />
 
                     <p>Afkeuring</p>
-                    <Input type="text" placeholder="1" value={settings.deny.normal_vote} label="Punten normale vote" inline={true} name="settingsDenyNormalVotes" />
-                    <Input type="text" placeholder="5" value={settings.deny.admin_vote} label="Punten admin vote" inline={true} name="settingsDenyAdminVotes" />
-                    <Input type="text" placeholder="6 / 50%" value={settings.deny.accept_votes} label="Punten voor oordeel" inline={true} name="settingsDeny" />
+                    <Input type="text" placeholder="1" value={settings?.deny?.normal_vote} label="Punten normale vote" inline={true} name="settingsDenyNormalVotes" />
+                    <Input type="text" placeholder="5" value={settings?.deny?.admin_vote} label="Punten admin vote" inline={true} name="settingsDenyAdminVotes" />
+                    <Input type="text" placeholder="6 / 50%" value={settings?.deny?.accept_votes} label="Punten voor oordeel" inline={true} name="settingsDeny" />
 
-                    <FormErrorMessage message={globalErorMessage} atInput={globalErrorInput} />
+                    <FormErrorMessage error={globalError} />
                     <FormSuccesScreen message={globalSuccesMessage} error={globalSuccesMessage.includes('Error')} />
 
                     <input type="submit" value="Opslaan" />
@@ -73,28 +72,28 @@ export default function Settings({isActive}) {
     );
 }
 
-async function OnUserSettingsSubmit(event, userData, errorMessaging, setSuccesMessage) {
+async function OnUserSettingsSubmit(event, userData, setError, setSuccesMessage) {
     event.preventDefault();
 
-    var newUsername = event.target.settingsUsername.value;
-    if(!newUsername) return SetFormErrorMessage(errorMessaging, 'Specificeer een gebruikersnaam', event.target.settingsUsername);
-    else if(newUsername.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte is 255', event.target.settingsUsername);
+    var newUsername = event.target.settingsUsername?.value;
+    if(!newUsername) return SetFormErrorMessage(setError, 'Specificeer een gebruikersnaam', event.target.settingsUsername);
+    else if(newUsername.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte is 255', event.target.settingsUsername);
     else if(newUsername == userData.username) newUsername = undefined;
 
-    var newEmail = event.target.settingsEmail.value;
+    var newEmail = event.target.settingsEmail?.value;
     // Skip for now
     newEmail = undefined;
 
     var newPassword = event.target.settingsPassword.value;
     var repeatPassword = event.target.settingsPasswordRepeat.value;
     var previousPassword = event.target.settingsPasswordPrevious.value;
-    if(!newPassword) return SetFormErrorMessage(errorMessaging, 'Specificeer een wachtwoord', event.target.settingsPassword);
-    else if(newPassword.length > 255) return SetFormErrorMessage(errorMessaging, 'Wachtwoord lengte is maximaal 255', event.target.settingsPassword);
-    else if(newPassword == '1234') newPassword = undefined;
-    else if(!repeatPassword) return SetFormErrorMessage(errorMessaging, 'Herhaal het wachtwoord', event.target.settingsPasswordRepeat);
-    else if(repeatPassword != newPassword) return SetFormErrorMessage(errorMessaging, 'Wachtwoorden moeten hetzelfde zijn', event.target.settingsPasswordRepeat);
-    else if(!previousPassword) return SetFormErrorMessage(errorMessaging, 'Geef je oude wachtwoord', event.target.settingsPasswordPrevious);
-    else if(previousPassword.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximale lengte is 255', event.target.settingsPasswordPrevious);
+    if(newPassword == '1234') newPassword = undefined;
+    else if(!newPassword) return SetFormErrorMessage(setError, 'Specificeer een wachtwoord', event.target.settingsPassword);
+    else if(newPassword.length > 255) return SetFormErrorMessage(setError, 'Wachtwoord lengte is maximaal 255', event.target.settingsPassword);
+    else if(!repeatPassword) return SetFormErrorMessage(setError, 'Herhaal het wachtwoord', event.target.settingsPasswordRepeat);
+    else if(repeatPassword != newPassword) return SetFormErrorMessage(setError, 'Wachtwoorden moeten hetzelfde zijn', event.target.settingsPasswordRepeat);
+    else if(!previousPassword) return SetFormErrorMessage(setError, 'Geef je oude wachtwoord', event.target.settingsPasswordPrevious);
+    else if(previousPassword.length > 255) return SetFormErrorMessage(setError, 'Maximale lengte is 255', event.target.settingsPasswordPrevious);
 
     var base64Password = undefined;
     var base64PreviousPassword = undefined;
@@ -145,36 +144,36 @@ function IsFloat(val) {
     }
 }
 
-async function OnGlobalSettingsSubmit(event, errorMessaging, setSuccesMessage, queryClient) {
+async function OnGlobalSettingsSubmit(event, setError, setSuccesMessage, queryClient) {
     event.preventDefault();
 
     var acceptNormalVote = event.target.settingsAcceptNormalVotes.value;
-    if(!acceptNormalVote) return SetFormErrorMessage(errorMessaging, 'Specificeer getal', event.target.settingsAcceptNormalVotes);
-    else if(!IsInteger(acceptNormalVote)) return SetFormErrorMessage(errorMessaging, 'Moet getal zijn', event.target.settingsAcceptNormalVotes);
+    if(!acceptNormalVote) return SetFormErrorMessage(setError, 'Specificeer getal', event.target.settingsAcceptNormalVotes);
+    else if(!IsInteger(acceptNormalVote)) return SetFormErrorMessage(setError, 'Moet getal zijn', event.target.settingsAcceptNormalVotes);
 
     var acceptAdminVote = event.target.settingsAcceptAdminVotes.value;
-    if(!acceptAdminVote) return SetFormErrorMessage(errorMessaging, 'Specificeer getal', event.target.settingsAcceptAdminVotes);
-    else if(!IsInteger(acceptAdminVote)) return SetFormErrorMessage(errorMessaging, 'Moet getal zijn', event.target.settingsAcceptAdminVotes);
+    if(!acceptAdminVote) return SetFormErrorMessage(setError, 'Specificeer getal', event.target.settingsAcceptAdminVotes);
+    else if(!IsInteger(acceptAdminVote)) return SetFormErrorMessage(setError, 'Moet getal zijn', event.target.settingsAcceptAdminVotes);
 
     var acceptAmount = event.target.settingsAccept.value;
-    if(!acceptAmount) return SetFormErrorMessage(errorMessaging, 'Specificeer getal/percentage', event.target.settingsAccept);
+    if(!acceptAmount) return SetFormErrorMessage(setError, 'Specificeer getal/percentage', event.target.settingsAccept);
     else if(!IsInteger(acceptAmount) || (acceptAmount.substr(acceptAmount.length - 1) == '%' && !IsFloat(acceptAmount.substr(0, acceptAmount.length - 1))))
-        return SetFormErrorMessage(errorMessaging, 'Moet getal/percentage zijn', event.target.settingsAccept);
+        return SetFormErrorMessage(setError, 'Moet getal/percentage zijn', event.target.settingsAccept);
 
 
 
     var denyNormalVote = event.target.settingsDenyNormalVotes.value;
-    if(!denyNormalVote) return SetFormErrorMessage(errorMessaging, 'Specificeer getal', event.target.settingsDenyNormalVotes);
-    else if(!IsInteger(denyNormalVote)) return SetFormErrorMessage(errorMessaging, 'Moet getal zijn', event.target.settingsDenyNormalVotes);
+    if(!denyNormalVote) return SetFormErrorMessage(setError, 'Specificeer getal', event.target.settingsDenyNormalVotes);
+    else if(!IsInteger(denyNormalVote)) return SetFormErrorMessage(setError, 'Moet getal zijn', event.target.settingsDenyNormalVotes);
 
     var denyAdminVote = event.target.settingsDenyAdminVotes.value;
-    if(!denyAdminVote) return SetFormErrorMessage(errorMessaging, 'Specificeer getal', event.target.settingsDenyAdminVotes);
-    else if(!IsInteger(denyAdminVote)) return SetFormErrorMessage(errorMessaging, 'Moet getal zijn', event.target.settingsDenyAdminVotes);
+    if(!denyAdminVote) return SetFormErrorMessage(setError, 'Specificeer getal', event.target.settingsDenyAdminVotes);
+    else if(!IsInteger(denyAdminVote)) return SetFormErrorMessage(setError, 'Moet getal zijn', event.target.settingsDenyAdminVotes);
 
     var denyAmount = event.target.settingsDeny.value;
-    if(!denyAmount) return SetFormErrorMessage(errorMessaging, 'Specificeer getal/percentage', event.target.settingsAccept);
+    if(!denyAmount) return SetFormErrorMessage(setError, 'Specificeer getal/percentage', event.target.settingsAccept);
     else if(!IsInteger(denyAmount) || (denyAmount.substr(denyAmount.length - 1) == '%' && !IsFloat(denyAmount.substr(0, denyAmount.length - 1))))
-        return SetFormErrorMessage(errorMessaging, 'Moet getal/percentage zijn', event.target.settingsAccept);
+        return SetFormErrorMessage(setError, 'Moet getal/percentage zijn', event.target.settingsAccept);
 
     try {
         await updateGlobalSettings({

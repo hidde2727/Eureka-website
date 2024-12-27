@@ -9,14 +9,13 @@ import { SetFormErrorMessage, FormErrorMessage } from '../components/form_error_
 export const LoginPopover = forwardRef(({}, ref) => {
 
     const [error, setError] = useState(undefined);
-    const [errorAtInput, setErrorAtInput] = useState(undefined);
 
     return (
-        <Popover ref={ref} id="login-popover" form={true} onSubmit={ (ev) => { OnLoginAttempt(ev, { setError: setError, setErrorAtInput: setErrorAtInput }); } }>
+        <Popover ref={ref} id="login-popover" form={true} onSubmit={ (ev) => { OnLoginAttempt(ev, setError); } }>
             <IconedInput iconClass="fas fa-user-alt" type="text" placeholder="Gebruikersnaam" name="loginUsername" />
             <IconedInput iconClass="fas fa-lock" type="password" placeholder="Wachtwoord" name="loginPassword" />
 
-            <FormErrorMessage message={error} atInput={errorAtInput} />
+            <FormErrorMessage error={error} />
 
             <input type="submit" value="Inloggen"></input>
         </Popover>
@@ -24,16 +23,16 @@ export const LoginPopover = forwardRef(({}, ref) => {
 })
 export default LoginPopover;
 
-async function OnLoginAttempt(event, errorMessaging) {
+async function OnLoginAttempt(event, setError) {
     event.preventDefault();
 
     var username = event.target.loginUsername.value;
-    if(!username) return SetFormErrorMessage(errorMessaging, 'Specificeer een naam', event.target.loginUsername);
-    else if(username.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximum lengte is 255', event.target.loginUsername);
+    if(!username) return SetFormErrorMessage(setError, 'Specificeer een naam', event.target.loginUsername);
+    else if(username.length > 255) return SetFormErrorMessage(setError, 'Maximum lengte is 255', event.target.loginUsername);
   
     var password = event.target.loginPassword.value;
-    if(!password) return SetFormErrorMessage(errorMessaging, 'Specificeer een wachtwoord', event.target.loginPassword);
-    else if(password.length > 255) return SetFormErrorMessage(errorMessaging, 'Maximum lengte is 255', event.target.loginPassword);
+    if(!password) return SetFormErrorMessage(setError, 'Specificeer een wachtwoord', event.target.loginPassword);
+    else if(password.length > 255) return SetFormErrorMessage(setError, 'Maximum lengte is 255', event.target.loginPassword);
   
     var encoder = new TextEncoder();
     var encodedPassword = new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(password)));
@@ -42,7 +41,7 @@ async function OnLoginAttempt(event, errorMessaging) {
     try {
         await attemptLogin({ username: username, password: base64 });
     } catch(err) {
-        return SetFormErrorMessage(errorMessaging, 'Fout wachtwoord of gebruikersnaam', event.target.loginUsername);
+        return SetFormErrorMessage(setError, 'Fout wachtwoord of gebruikersnaam', event.target.loginUsername);
     }
   
     event.target.reset();

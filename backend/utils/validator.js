@@ -1,5 +1,6 @@
 import validator from 'validator';
 import * as DB from './db.js';
+import * as Login from './login.js';
 
 export function ReturnError(res, error, errorCode=400) {
     res.status(errorCode);
@@ -71,6 +72,12 @@ export function CheckPassword(res, password) {
         return ReturnError(res, 'Wachtwoord moet 44 karakters zijn');
     else if (!validator.isBase64(password))
         return ReturnError(res, 'Wachtwoord moet base64 encoded zijn');
+
+    return false;
+}
+export function IsNotSelf(res, req, id) {
+    if(Login.GetSessionUserID(req) == id) 
+        return ReturnError(res, 'Kan niet eigen id aanpassen');
 
     return false;
 }
@@ -234,8 +241,8 @@ export function CheckIsAdminVote(res, admin) {
 export function CheckPermission(res, permission, name) {
     if(permission == undefined)
         return ReturnError(res, 'Specificeer permissie voor ' + name);
-    else if(permission != '1' && permission != '0')
-        return ReturnError(res, 'Permissie moet 1 of 0 zijn');
+    else if(permission !== false && permission !== true)
+        return ReturnError(res, 'Permissie moet true of false zijn');
 
     return false;
 }

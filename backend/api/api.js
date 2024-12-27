@@ -48,6 +48,7 @@ try {
     if(Validator.CheckSuggestionName(res, data.name)) return;
     if(Validator.CheckSuggestionDescription(res, data.description)) return;
 
+    if(data.links == undefined) return Validator.ReturnError(res, 'Specificeer een array van linkjes');
     if(data.links.length > 3) return Validator.ReturnError(res, 'Maximum hoeveelheid linkjes is 3');
     var links = [];
     for (var i = 0; i < data.links.length; i++) {

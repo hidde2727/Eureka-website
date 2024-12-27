@@ -37,6 +37,7 @@ function fetchOptions(url, queryKeys, method, body, { jsonResponse=true, include
             newURL += encodeURI(queryKey[0]) + '=' + encodeURI(queryKey[1]);
         });
     }
+    console.log(url + enable);
 
     return queryOptions({
         queryKey: [url, queryKeys, method, body],
@@ -62,9 +63,9 @@ export function useProjectsSus() {
     const { data, error, isFetching } = useSuspenseQuery(fetchOptions('/data/projects.json', undefined, 'GET', null));
     return { projects: data, hasError: error, isFetching: isFetching };
 }
-export async function suggestProject({ name, description, urls, suggestorName, suggestorEmail }) {
+export async function suggestProject({ name, description, links, suggestorName, suggestorEmail }) {
     await fetchInfo('/api/suggest/project/', 'POST', JSON.stringify(
-        { name, description, urls, suggestorName, suggestorEmail }
+        { name, description, links, suggestorName, suggestorEmail }
     ), {jsonResponse:false});
 }
 
@@ -114,12 +115,8 @@ export function useUserDataSus() {
 
 
 
-export function useGlobalSettings() {
-    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/settings/get', undefined, 'GET', null, { includeCredentials: true }));
-    return { settings: data, hasError: error, isFetching: isFetching };
-}
-export function useGlobalSettingsSus() {
-    const { data, error, isFetching } = useSuspenseQuery(fetchOptions('/api/private/settings/get', undefined, 'GET', null, { includeCredentials: true }));
+export function useGlobalSettings(enable) {
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/settings/get', undefined, 'GET', null, { includeCredentials: true, enable }));
     return { settings: data, hasError: error, isFetching: isFetching };
 }
 export async function updatePersonalSettings({ username, email, password, previousPassword }) {
@@ -142,17 +139,17 @@ export async function updateGlobalSettings({ acceptNormalVote, acceptAdminVote, 
 
 
 export function useProjectVersions(projectId) {
-    const { data, error, isFetching } = useQuery(fetchOptions(`/api/private/project/versions`, [['id', projectId]], 'GET', null, { includeCredentials: true, enable: projectId!=undefined, usePlaceholder: true }));
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/project/versions', [['id', projectId]], 'GET', null, { includeCredentials: true, enable: projectId!=undefined, usePlaceholder: true }));
     return { versions: data, hasError: error, isFetching: isFetching };
 }
 export function useProjectVoteResult(projectUUID, enable) {
-    const { data, error, isFetching } = useQuery(fetchOptions(`/api/private/self/vote`, [['type', 'project'], ['uuid', projectUUID]], 'GET', null, { includeCredentials: true, enable: enable, usePlaceholder: true }));
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/self/vote', [['type', 'project'], ['uuid', projectUUID]], 'GET', null, { includeCredentials: true, enable: enable, usePlaceholder: true }));
     return { vote: data, hasError: error, isFetching: isFetching };
 }
 export async function setProjectVote(queryClient, projectUUID, projectID, {voteValue, adminVote}) {
     try {
         // Try to optimistically update
-        queryClient.setQueryData([`/api/private/self/vote`, [['type', 'project'], ['uuid', projectUUID]], 'GET', null], (oldData) => {
+        queryClient.setQueryData(['/api/private/self/vote', [['type', 'project'], ['uuid', projectUUID]], 'GET', null], (oldData) => {
             if(oldData == undefined) return undefined;
             var newData = structuredClone(oldData);
             newData.value = voteValue;
@@ -172,7 +169,7 @@ export async function setProjectVote(queryClient, projectUUID, projectID, {voteV
         else if(response.result == 'denied') voteResult = false;
 
         // Set the vote result
-        queryClient.setQueryData([`/api/private/project/versions`, [['id', projectID]], 'GET', null], (oldData) => {
+        queryClient.setQueryData(['/api/private/project/versions', [['id', projectID]], 'GET', null], (oldData) => {
             if(oldData == undefined) return undefined;
             return oldData.map((version) => {
                 if(version.uuid = projectUUID) {
@@ -184,8 +181,8 @@ export async function setProjectVote(queryClient, projectUUID, projectID, {voteV
             });
         });
         // Force a refresh (just in case anything went wrong updating optimistically)
-        queryClient.invalidateQueries({ queryKey:[`/api/private/project/versions`, [['id', projectID]], 'GET', null]});
-        queryClient.invalidateQueries({ queryKey:[`/api/private/self/vote`, [['type', 'project'], ['uuid', projectUUID]], 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/project/versions', [['id', projectID]], 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/self/vote', [['type', 'project'], ['uuid', projectUUID]], 'GET', null]});
         queryClient.invalidateQueries({ queryKey:['/api/private/suggestion/get']});
 
     } catch(err) {
@@ -205,9 +202,6 @@ export async function createFolder(queryClient, parentID) {
             parentID: parentID
         }), {includeCredentials: true});
 
-        // Force a refresh (just in case anything went wrong updating optimistically)
-        // queryClient.invalidateQueries({ queryKey:[`/data/files.json`, undefined, 'GET', null]});
-
         return { name: response.name, id: response.id };
     } catch(err) {
         throw new Error('Failed to create a folder:\n' + err.message);
@@ -216,7 +210,7 @@ export async function createFolder(queryClient, parentID) {
 export async function changeFileName(queryClient, parentFolder, id, oldName, newName, override=false) {
     try {
         // Optimistic update
-        queryClient.setQueryData([`/data/files.json`, undefined, 'GET', null], (oldData) => {
+        queryClient.setQueryData(['/data/files.json', undefined, 'GET', null], (oldData) => {
             if(oldData == undefined) return undefined;
             let newData = structuredClone(oldData);
             let selectData = newData;
@@ -275,7 +269,7 @@ export async function changeFileParent(queryClient, currentParentId, newParentId
 export async function deleteFile(queryClient, parentFolder, id) {
     try {
         // Optimistic update
-        queryClient.setQueryData([`/data/files.json`, undefined, 'GET', null], (oldData) => {
+        queryClient.setQueryData(['/data/files.json', undefined, 'GET', null], (oldData) => {
             if(oldData == undefined) return undefined;
 
             let newData = structuredClone(oldData);
@@ -306,8 +300,68 @@ export function invalidateFiles(queryClient) {
 
 
 export function useSuggestions(page, window, history) {
-    const { data, error, isFetching } = useQuery(fetchOptions(`/api/private/suggestion/get`, [['page', page], ['window', window], ['history', history]], 'GET', null, { includeCredentials: true }));
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/suggestion/get', [['page', page], ['window', window], ['history', history]], 'GET', null, { includeCredentials: true }));
     return { suggestions: data, hasError: error, isFetching: isFetching };
+}
+
+export function useUsers() {
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/users/get', undefined, 'GET', null, { includeCredentials: true }));
+    return { users: data, hasError: error, isFetching: isFetching };
+}
+export async function createUser(queryClient, username, password) {
+    try {
+        // Request the user creation
+        await fetchInfo('/api/private/users/add', 'PUT', JSON.stringify({
+            username: username,
+            password: password
+        }), { includeCredentials: true, jsonResponse: false });
+
+        // Force a refresh
+        queryClient.invalidateQueries({ queryKey:['/api/private/users/get', undefined, 'GET', null]});
+    } catch(err) {
+        throw new Error('Failed to create user:\n' + err.message);
+    }
+}
+export async function modifyUser(queryClient, { id, admin, labels, users, settings, files, logs }) {
+    try {
+        // Optimistic update
+        queryClient.setQueryData(['/api/private/users/get', undefined, 'GET', null], (oldData) => {
+            if(oldData == undefined) return undefined;
+            return oldData.map((user) => {
+                if(user.id != id) return user;
+                return { ...user, admin: admin, modify_inspiration_labels: labels, modify_users: users, modify_settings: settings, modify_files: files, watch_logs: logs };
+            });
+        });
+        // Request the user creation
+        await fetchInfo('/api/private/users/modify', 'PUT', JSON.stringify({
+            id, admin, labels, users, settings, files, logs
+        }), { includeCredentials: true, jsonResponse: false });
+
+        // Force a refresh
+        queryClient.invalidateQueries({ queryKey:['/api/private/users/get', undefined, 'GET', null]});
+    } catch(err) {
+        throw new Error('Failed to create user:\n' + err.message);
+    }
+}
+export async function deleteUser(queryClient, id) {
+    try {
+        // Optimistic update
+        queryClient.setQueryData(['/api/private/users/get', undefined, 'GET', null], (oldData) => {
+            if(oldData == undefined) return undefined;
+            return oldData.filter((user) => {
+                return user.id !== id;
+            });
+        });
+        // Request the user creation
+        await fetchInfo('/api/private/users/delete', 'PUT', JSON.stringify({
+            id
+        }), { includeCredentials: true, jsonResponse: false });
+
+        // Force a refresh
+        queryClient.invalidateQueries({ queryKey:['/api/private/users/get', undefined, 'GET', null]});
+    } catch(err) {
+        throw new Error('Failed to delete user:\n' + err.message);
+    }
 }
 
 export async function signOut() {

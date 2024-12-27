@@ -70,15 +70,13 @@ export async function DoesUsernameExist(username) {
     return results[0]['result'] == '1';
 }
 export async function DeleteUser(id) {
-    await ExecutePreparedStatement('DELETE users WHERE id=?',[id]);
+    await ExecutePreparedStatement('DELETE FROM sessions WHERE user_ID=?', [id]);
+    await ExecutePreparedStatement('DELETE FROM users WHERE id=?',[id]);
 }
-export async function DeleteUserWithName(username) {
-    await ExecutePreparedStatement('DELETE users WHERE username=?',[username]);
-}
-export async function SetUserPermissions(id, admin, modify_inspiration_labels, modify_users, modify_settings, modify_files, watch_logs) {
+export async function SetUserPermissions(id, admin, labels, users, settings, files, logs) {
     await ExecutePreparedStatement(
         'UPDATE users SET admin=?,modify_inspiration_labels=?,modify_users=?,modify_settings=?,modify_files=?,watch_logs=? WHERE id=?',
-        [admin, modify_inspiration_labels, modify_users, modify_settings, modify_files, watch_logs, id]
+        [admin, labels, users, settings, files, logs, id]
     )
 }
 export async function SetUserUsername(id, username) {

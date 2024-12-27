@@ -15,23 +15,22 @@ function CalculateOffsets(forElement) {
     return [offsetTop, offsetLeft];
 }
 
-export function SetFormErrorMessage(errorMessaging, errorMessage, errorInput) {
-    errorMessaging.setError(errorMessage);
+export function SetFormErrorMessage(setError, errorMessage, errorInput) {
     const [offsetTop, offsetLeft] = CalculateOffsets(errorInput);
-    errorMessaging.setErrorAtInput({offsetTop, offsetLeft});
+    setError({ message: errorMessage, atInput: {offsetTop, offsetLeft} });
 
     errorInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
     errorInput.focus();
 }
 
-export function FormErrorMessage({atInput, message}) {
+export function FormErrorMessage({ error }) {
     const [isTriggered, setIsTriggered] = useState(false);
     const ref = useRef(null);
 
     useEffect(() => {
-        if(atInput != undefined && message != undefined)
+        if(error?.atInput != undefined && error?.message != undefined)
             setIsTriggered(true);
-    }, [atInput, message]);
+    }, [error?.atInput, error?.message]);
     useEffect(() => {
         if(isTriggered) {
             const HandleOutsideClick = (ev) => {
@@ -46,12 +45,12 @@ export function FormErrorMessage({atInput, message}) {
         }
     }, [isTriggered, ref]);
 
-    if(!isTriggered && !atInput && !message) return (<p className="tooltip js-controlled fault-message bottom"></p>);
-    else if(!isTriggered) return (<p className="tooltip js-controlled fault-message bottom" style={{top: atInput.offsetTop, left: atInput.offsetLeft}}>{message}</p>);
+    if(!isTriggered && !error?.atInput && !error?.message) return (<p className="tooltip js-controlled fault-message bottom"></p>);
+    else if(!isTriggered) return (<p className="tooltip js-controlled fault-message bottom" style={{top: error?.atInput?.offsetTop, left: error?.atInput?.offsetLeft}}>{error?.message}</p>);
 
     return (
-        <p className="tooltip js-controlled fault-message bottom open" style={{top: atInput.offsetTop, left: atInput.offsetLeft}} ref={ref}>
-            {message}
+        <p className="tooltip js-controlled fault-message bottom open" style={{top: error?.atInput?.offsetTop, left: error?.atInput?.offsetLeft}} ref={ref}>
+            {error?.message}
         </p>
     )
 }

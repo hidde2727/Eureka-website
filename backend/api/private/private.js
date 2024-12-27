@@ -31,7 +31,7 @@ import Inspiration from './inspiration.js';
 import Project from './project.js';
 import Self from './self.js';
 import Settings from './settings.js';
-router.use('/user', User);
+router.use('/users', User);
 router.use('/suggestion', Suggestion);
 router.use('/files', Files);
 router.use('/inspiration', Inspiration);

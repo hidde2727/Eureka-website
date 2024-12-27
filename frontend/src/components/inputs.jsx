@@ -86,12 +86,26 @@ export function Select({ items, defaultActive, onChange }) {
     );
 }
 
-export function Checkbox({ id, label, checked, onChange }) {
+export function Checkbox({ id, name, label, checked, onChange }) {
     const idInternal = id != undefined ? id : useId();
     return (
         <>
-            <span><input type="checkbox" id={idInternal} defaultChecked={checked} onChange={onChange}/></span>
+            <span><input type="checkbox" id={idInternal} defaultChecked={checked} onChange={onChange} name={name}/></span>
             <label htmlFor={idInternal}>{label}</label>
+        </>
+    );
+}
+
+export function SliderToggle({ id, name, label, checked, onChange }) {
+    const idInternal = id != undefined ? id : useId();
+
+    return (
+        <>
+            <label className="slider-toggle" htmlFor={idInternal} >
+                <input type="checkbox" id={idInternal} defaultChecked={checked} onChange={onChange} name={name} />
+                <span className="internal-slider"></span>
+            </label>
+            <label htmlFor={idInternal}>{ label }</label>
         </>
     );
 }

@@ -38,7 +38,6 @@ export async function ValidatePassword(username, password) {
         hmac.update(Buffer.from(password));
         hmac.update(Buffer.from(pepper));
         const pepperedPassword = hmac.digest('ascii');
-
         if(hashedPassword === undefined) { // The user was not found
             // Prevent timing attack so still hash and verify
             const result = await bcrypt.compare(pepperedPassword, '$2b$10$dEPL9hQYCgl3pGA29Ev8FOLhfDWmaQJCPCGOtzhPkdos/1cvAvRlu');
@@ -70,8 +69,8 @@ export async function GenerateUser(username, password) {
         throw new Error('Help, the generated hash doesn\'t match the password');
     await DB.CreateUser(username, hashedPassword);
 }
-export async function DeleteUser(username) {
-    await DB.DeleteUserWithName(username);
+export async function DeleteUser(id) {
+    await DB.DeleteUser(id);
 }
 
 export async function CreateSession(res, userID) {
@@ -142,8 +141,8 @@ export async function HasUserPermission(req, permissionName) {
         return false;
     }
 }
-export async function GiveUserPermissions(id, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles, watchLogs) {
-    await DB.SetUserPermissions(id, admin, modifyInspirationLabels, modifyUsers, modifySettings, modifyFiles, watchLogs);
+export async function GiveUserPermissions(id, admin, labels, users, settings, files, logs) {
+    await DB.SetUserPermissions(id, admin, labels, users, settings, files, logs);
 }
 
 export async function UpdateUsername(req, username) {
