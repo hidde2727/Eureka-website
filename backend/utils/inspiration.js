@@ -1,5 +1,6 @@
-import * as YT from './yt.js';
 import * as DB from './db.js';
+import Config from './config.js';
+import SendRequest from './https_request.js';
 
 export async function GetURLInfo(urlString) {
     var url = '';
@@ -32,16 +33,29 @@ export async function GetURLInfo(urlString) {
 }
 
 async function SetYoutubeVideoInfo(videoID, info) {
-    const yt = await YT.GetGeneralInfo(videoID);
+    var videoSnippet = await SendRequest({
+        host:'www.googleapis.com',
+        path:'/youtube/v3/videos?part=snippet&id=' + videoID + '&key=' + Config.google.apiKey,
+        method:'GET'
+    });
+    if(videoSnippet.pageInfo.totalResults == 0) { console.error('0 results found for this id'); return ''; }
+    videoSnippet = videoSnippet.items[0].snippet;
+    var channelSnippet = await SendRequest({
+        host:'www.googleapis.com',
+        path:'/youtube/v3/channels?part=snippet&id=' + videoSnippet.channelId + '&key=' + Config.google.apiKey,
+        method:'GET'
+    });
+    if(channelSnippet.pageInfo.totalResults == 0) { console.error('0 results found for this id'); return ''; }
+    channelSnippet = channelSnippet.items[0].snippet;
 
     info.type = DB.InspirationTypes.YT_Video;
-    info.name = yt.title;
+    info.name = videoSnippet.title;
     info.ID = videoID;
     info.url = 'https://www.youtube.com/watch?v=' + videoID;
 
     info.json.videoID = videoID;
-    info.json.title = yt.title;
-    info.json.thumbnails = yt.thumbnails;
-    info.json.channelTitle = yt.channelTitle;
-    info.json.channelThumbnails = yt.channelThumbnails;
+    info.json.title = videoSnippet.title;
+    info.json.thumbnails = videoSnippet.thumbnails;
+    info.json.channelTitle = videoSnippet.channelTitle;
+    info.json.channelThumbnails = channelSnippet.thumbnails
 }

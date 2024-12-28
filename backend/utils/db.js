@@ -426,147 +426,11 @@ export async function GetAllOpenSuggestions() {
 // + ======================================================================== +
 // | Files                                                                    |
 // + ======================================================================== +
-export async function CreateFile(parentID, name, uploadThingID) {
-    const uploadthing_id = await ExecutePreparedStatement('SELECT uploadthing_id FROM files WHERE parent_id<=>? AND name=?', [parentID, name]);
-    if(uploadthing_id.length > 0) return false;
-
-    await ExecutePreparedStatement(
-        'INSERT INTO files (parent_id, name, uploadthing_id) VALUES(?,?,?)', 
-        [parentID, name, uploadThingID]
-    );
-    return true;
-}
 export async function CreateFileAtPath(parentID, path, uploadThingID) {
-    var intParentID = parentID;
-    const explodedPath = path.split('/');
-    var index = 0;
-    for(const folder of explodedPath) {
-        if(index+1 >= explodedPath.length) {
-            return await CreateFile(intParentID, folder, uploadThingID);
-        }
-        let folderID = await GetFolderId(folder, intParentID);
-        if(folderID == undefined) {
-            folderID = await ExecutePreparedStatement('INSERT INTO files (parent_id, name) VALUES(?,?) RETURNING id', [intParentID, folder]);
-            if(folderID.length == 0) throw new Error('Failed to use INSERT RETURNING');
-            folderID = folderID[0]['id'];
-        }
-        intParentID = folderID;
-        index++;
-    }
-    return false;
-}
-export async function CreateFileReturnId(parentID, uploadThingID) {
-    const result = await ExecutePreparedStatement(
-        'INSERT INTO files (parent_id, name, uploadthing_id) VALUES(?,"placeholder",?) RETURNING id', 
-        [parentID, uploadThingID]
-    );
-    const insertedID = result[0]['id'];
-    if(insertedID == undefined) throw new Error('Failed to use INSERT RETURNING');
-    await ExecutePreparedStatement('UPDATE files SET name=? WHERE id=?', ['newFile' + insertedID, insertedID]);
-    return insertedID;
-}
-export async function RenameFile(id, newName) {
-    const currentFileInfo = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
-    if(currentFileInfo[0] == undefined) return [];
-    if(currentFileInfo[0].uploadthing_id == null) {
-        // It is a folder
-        const children = await GetChildrenOfFileID(currentFileInfo[0].id);
-        let failedUTIDs = [];
-        for(let i = 0; i < children.length; i++) {
-            if(!(await CreateFileAtPath(currentFileInfo[0].parent_id, newName + '/' + children[i].path, children[i].uploadthing_id)))
-                failedUTIDs.push(children[i].uploadthing_id);
-        }
-        await DeleteFile(id);
-        // Make sure an empty folder doesn't get removed:
-        await CreateFile(currentFileInfo[0].parent_id, newName, undefined);
-        return failedUTIDs;
-    }
-    // It is a file
-    await ExecutePreparedStatement('UPDATE files SET name=? WHERE id=?', [newName, id]);
-    return [];
-}
-export async function MoveFile(id, newParentId) {
-    const currentFileInfo = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
-    if(currentFileInfo[0] == undefined) return [];
-    if(currentFileInfo[0].uploadthing_id == null) {
-        // It is a folder
-        const children = await GetChildrenOfFileID(currentFileInfo[0].id);
-        let failedUTIDs = [];
-        for(let i = 0; i < children.length; i++) {
-            if(!(await CreateFileAtPath(newParentId, currentFileInfo[0].name + '/' + children[i].path, children[i].uploadthing_id)))
-                failedUTIDs.push(children[i].uploadthing_id);
-        }
-        await DeleteFile(id);
-        // Make sure an empty folder doesn't get removed:
-        await CreateFile(newParentId, currentFileInfo[0].name, undefined);
-        return failedUTIDs;
-    }
-    // It is a file
-    await ExecutePreparedStatement('UPDATE files SET parent_id=? WHERE id=?', [newParentId, id]);
-    return [];
+    return CreateNodeAtPath(parentID, path, [uploadThingID], {tableName: 'files', tableFields:',uploadthing_id'});
 }
 export async function DeleteFile(fileID) {
     await ExecutePreparedStatement('DELETE FROM files WHERE id=?', [fileID]);
-}
-export async function CheckFileRenamingConflicts(id, newName) {
-    const existingID = await ExecutePreparedStatement('SELECT * FROM files WHERE name=? AND parent_id <=> (SELECT parent_id FROM files WHERE id=? LIMIT 1)', [newName, id]);
-    if(existingID.length > 0) {
-        const mergingFile = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
-        if(mergingFile[0].uploadthing_id == null) {
-            // It is a folder -> compare all the children
-            const existingChildren = await GetChildrenOfFileID(existingID[0].id);
-            const mergingChildren = await GetChildrenOfFileID(mergingFile[0].id);
-            let sharedChildren = [];
-            mergingChildren.forEach((merging) => {
-                if(merging.uploadthing_id == null) return;
-                const conflictIndex = existingChildren.findIndex((existing) => existing.path == merging.path );
-                if(conflictIndex != -1) sharedChildren.push({ path: mergingFile[0].name + '/' + merging.path, id: merging.id, uploadthing_id: merging.uploadthing_id, conflictWithId: existingChildren[conflictIndex].id, conflictWithUTId: existingChildren[conflictIndex].uploadthing_id });
-            });
-            return sharedChildren;
-        } else {
-            // It is a file
-            return [{ path: mergingFile[0].name, id: mergingFile[0].id, uploadthing_id: mergingFile[0].uploadthing_id, conflictWithId: existingID[0].id, conflictWithUTId: existingID[0].uploadthing_id }];
-        }
-    }
-    return false;
-}
-export async function CheckFileMovingConflicts(id, newParentId) {
-    const existingID = await ExecutePreparedStatement('SELECT * FROM files WHERE parent_id<=>? AND name=(SELECT name FROM files WHERE id=? LIMIT 1)', [newParentId, id]);
-    if(existingID.length > 0) {
-        const mergingFile = await ExecutePreparedStatement('SELECT * FROM files WHERE id=?', [id]);
-        if(mergingFile[0].uploadthing_id == null) {
-            // It is a folder -> compare all the children
-            const existingChildren = await GetChildrenOfFileID(existingID[0].id);
-            const mergingChildren = await GetChildrenOfFileID(mergingFile[0].id);
-            let sharedChildren = [];
-            mergingChildren.forEach((merging) => {
-                if(merging.uploadthing_id == null) return;
-                const conflictIndex = existingChildren.findIndex((existing) => existing.path == merging.path );
-                if(conflictIndex != -1) sharedChildren.push({ path: mergingFile[0].name + '/' + merging.path, id: merging.id, uploadthing_id: merging.uploadthing_id, conflictWithId: existingChildren[conflictIndex].id, conflictWithUTId: existingChildren[conflictIndex].uploadthing_id });
-            });
-            return sharedChildren;
-        } else {
-            // It is a file
-            return [{ path: mergingFile[0].name, id: mergingFile[0].id, uploadthing_id: mergingFile[0].uploadthing_id, conflictWithId: existingID[0].id, conflictWithUTId: existingID[0].uploadthing_id }];
-        }
-    }
-    return false;
-}
-export async function GetFolderId(name, parent_id) {
-    const results = await ExecutePreparedStatement('SELECT id FROM files WHERE name=? AND parent_id<=>?', [name, parent_id]);
-    return results.length == 0 ? undefined : results[0]['id'];
-}
-export async function GetFileParentId(id) {
-    const results = await ExecutePreparedStatement('SELECT parent_id FROM files WHERE id=?', [id]);
-    return results.length == 0 ? undefined : results[0]['parent_id'];
-}
-export async function GetFileName(id) {
-    const results = await ExecutePreparedStatement('SELECT name FROM files WHERE id=?', [id]);
-    return results.length == 0 ? undefined : results[0]['name'];
-}
-export async function GetUploadthingID(id) {
-    const results = await ExecutePreparedStatement('SELECT uploadthing_id FROM files WHERE id=?', [id]);
-    return results.length == 0 ? undefined : results[0]['uploadthing_id'];
 }
 export async function GetUploadthingIDFromPath(parentID, path) {
     const results = await ExecutePreparedStatement(`
@@ -590,24 +454,185 @@ export async function GetUploadthingIDFromPath(parentID, path) {
     return results.length == 0 ? undefined : { ...results[0], path: path };
 }
 export async function GetChildrenOfFileID(id) {
+    return GetChildrenOfNode(id, {tableName: 'files', tableFields:',uploadthing_id'});
+}
+export async function GetAllFullFilePaths() {
+    return GetChildrenOfFileID(null);
+}
+
+
+// + ======================================================================== +
+// | Adjacency list                                                           |
+// + ======================================================================== +
+export function GetExtraFieldsOfNode(nodeInfo, { tableFields }) {
+    return tableFields
+    .split(',')
+    .filter((field) => field.length > 0)
+    .map((field) => {
+        return nodeInfo[field];
+    });
+}
+export async function CreateNode(parentID, name, otherValues, { tableName, tableFields }) {
+    const doesExists = await ExecutePreparedStatement(`SELECT id FROM files WHERE parent_id<=>? AND name=?`, [parentID, name]);
+    if(doesExists.length > 0) return false;
+
+    await ExecutePreparedStatement(
+        `INSERT INTO ${tableName} (parent_id, name${tableFields}) VALUES(?,?${',?'.repeat(tableFields.split(',').length - 1)})`, 
+        [parentID, name, ...otherValues]
+    );
+    return true;
+}
+export async function CreateNodeAtPath(parentID, path, otherValues, { tableName, tableFields }) {
+    var intParentID = parentID;
+    const explodedPath = path.split('/');
+    var index = 0;
+    for(const folder of explodedPath) {
+        if(index+1 >= explodedPath.length) {
+            return await CreateNode(intParentID, folder, otherValues, { tableName, tableFields });
+        }
+        let folderID = (await GetNodeByName(folder, intParentID, { tableName }))?.id;
+        if(folderID == undefined) {
+            folderID = await ExecutePreparedStatement(`INSERT INTO ${tableName} (parent_id, name) VALUES(?,?) RETURNING id`, [intParentID, folder]);
+            if(folderID.length == 0) throw new Error('Failed to use INSERT RETURNING');
+            folderID = folderID[0]['id'];
+        }
+        intParentID = folderID;
+        index++;
+    }
+    return false;
+}
+export async function CreateNodeReturnID(parentID, otherValues, { tableName, tableFields }) {
+    const result = await ExecutePreparedStatement(
+        `INSERT INTO ${tableName} (parent_id, name${tableFields}) VALUES(?,"placeholder"${',?'.repeat(tableFields.split(',').length - 1)}) RETURNING id`, 
+        [parentID, ...otherValues]
+    );
+    const insertedID = result[0]['id'];
+    if(insertedID == undefined) throw new Error('Failed to use INSERT RETURNING');
+    await ExecutePreparedStatement(`UPDATE ${tableName} SET name=? WHERE id=?`, ['new' + insertedID, insertedID]);
+    return insertedID;
+}
+export async function RenameNode(id, newName, { tableName, tableFields, isLeaf }) {
+    const currentFileInfo = await ExecutePreparedStatement(`SELECT * FROM ${tableName} WHERE id=?`, [id]);
+    if(currentFileInfo[0] == undefined) return [];
+    if(!(await isLeaf(currentFileInfo[0]))) {
+        const children = await GetChildrenOfNode(currentFileInfo[0].id, {tableName, tableFields});
+        let failedNodes = [];
+        for(let i = 0; i < children.length; i++) {
+            if(!(await CreateNodeAtPath(currentFileInfo[0].parent_id, newName + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields})))
+                failedNodes.push(children[i]);
+        }
+        await DeleteNode(id, {tableName, tableFields});
+        // Make sure an empty folder doesn`t get removed:
+        await CreateNode(currentFileInfo[0].parent_id, newName, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
+        return failedNodes;
+    }
+    await ExecutePreparedStatement(`UPDATE ${tableName} SET name=? WHERE id=?`, [newName, id]);
+    return [];
+}
+export async function MoveNode(id, newParentId, { tableName, tableFields, isLeaf }) {
+    const currentFileInfo = await GetNode(id, {tableName});
+    if(currentFileInfo == undefined) return [];
+
+    if(!(await isLeaf(currentFileInfo))) {
+        const children = await GetChildrenOfNode(currentFileInfo.id, { tableName, tableFields });
+        let failedNodes = [];
+        for(let i = 0; i < children.length; i++) {
+            if(!(await CreateNodeAtPath(newParentId, currentFileInfo.name + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields})))
+                failedNodes.push(children[i].uploadthing_id);
+        }
+        await DeleteNode(id, {tableName, tableFields});
+        // Make sure an empty folder doesn`t get removed:
+        await CreateNode(newParentId, currentFileInfo.name, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
+        return failedNodes;
+    }
+    await ExecutePreparedStatement(`UPDATE ${tableName} SET parent_id=? WHERE id=?`, [newParentId, id]);
+    return [];
+}
+export async function DeleteNode(id, { tableName }) {
+    await ExecutePreparedStatement(`DELETE FROM ${tableName} WHERE id=?`, [id]);
+}
+export async function CheckNodeRenamingConflicts(id, newName, { tableName, tableFields, isLeaf }) {
+    const existingID = await ExecutePreparedStatement(`SELECT * FROM ${tableName} WHERE name=? AND parent_id <=> (SELECT parent_id FROM ${tableName} WHERE id=? LIMIT 1)`, [newName, id]);
+    if(existingID.length > 0) {
+        const mergingFile = await ExecutePreparedStatement(`SELECT * FROM ${tableName} WHERE id=?`, [id]);
+        if(!(await isLeaf(mergingFile[0]))) {
+            // It is a folder -> compare all the children
+            const existingChildren = await GetChildrenOfNode(existingID[0].id, {tableName, tableFields});
+            const mergingChildren = await GetChildrenOfNode(mergingFile[0].id, {tableName, tableFields});
+            let sharedChildren = [];
+            mergingChildren.forEach((merging) => {
+                if(merging.uploadthing_id == null) return;
+                const conflictIndex = existingChildren.findIndex((existing) => existing.path == merging.path );
+                if(conflictIndex != -1) sharedChildren.push({ 
+                    child: { ...merging, path: mergingFile[0].name + '/' + merging.path },
+                    with: { ...existingChildren[conflictIndex] }
+                });
+            });
+            return sharedChildren;
+        } else {
+            return [{ 
+                child: {...mergingFile[0], path: mergingFile[0].name },
+                with: { ...existingID[0] }
+            }];
+        }
+    }
+    return false;
+}
+export async function GetNodeMovingConflicts(id, newParentId, { tableName, tableFields, isLeaf }) {
+    const existingID = await ExecutePreparedStatement(`SELECT * FROM ${tableName} WHERE parent_id<=>? AND name=(SELECT name FROM ${tableName} WHERE id=? LIMIT 1)`, [newParentId, id]);
+    if(existingID.length > 0) {
+        const mergingFile = await ExecutePreparedStatement(`SELECT * FROM ${tableName} WHERE id=?`, [id]);
+        if(!(await isLeaf(mergingFile[0]))) {
+            // It is a folder -> compare all the children
+            const existingChildren = await GetChildrenOfNode(existingID[0].id, {tableName, tableFields});
+            const mergingChildren = await GetChildrenOfNode(mergingFile[0].id, {tableName, tableFields});
+            let sharedChildren = [];
+            mergingChildren.forEach((merging) => {
+                if(merging.uploadthing_id == null) return;
+                const conflictIndex = existingChildren.findIndex((existing) => existing.path == merging.path );
+                if(conflictIndex != -1) sharedChildren.push({ 
+                    child: {...merging, path: mergingFile[0].name + '/' + merging.path },
+                    with: { ...existingChildren[conflictIndex] }
+                });
+            });
+            return sharedChildren;
+        } else {
+            // It is a file
+            return [{ 
+                child: { ...mergingFile[0], path: mergingFile[0].name },
+                with: { ...existingID[0] }
+            }];
+        }
+    }
+    return false;
+}
+export async function GetNodeByName(name, parent_id, { tableName }) {
+    const results = await ExecutePreparedStatement(`SELECT * FROM ${tableName} WHERE name=? AND parent_id<=>?`, [name, parent_id]);
+    return results.length == 0 ? undefined : results[0];
+}
+export async function GetNode(id, { tableName }) {
+    const results = await ExecutePreparedStatement(`SELECT * FROM ${tableName} WHERE id=?`, [id]);
+    return results.length == 0 ? undefined : results[0];
+}
+export async function GetChildrenOfNode(id, { tableName, tableFields }) {
     return await ExecutePreparedStatement(`
-        WITH RECURSIVE file_path (id, name, uploadthing_id, path) AS
+        WITH RECURSIVE file_path (id, name${tableFields}, path) AS
         (
-        SELECT id, name, uploadthing_id, name as path
-            FROM files
+        SELECT id, name${tableFields}, name as path
+            FROM ${tableName}
             WHERE parent_id <=> ?
         UNION ALL
-        SELECT f.id, f.name, f.uploadthing_id, CONCAT(fp.path, '/', f.name)
+        SELECT f.id, f.name${tableFields.replaceAll(' ', '').replaceAll(',', ',f.')}, CONCAT(fp.path, '/', f.name)
             FROM file_path AS fp
-            JOIN files AS f
+            JOIN ${tableName} AS f
                 ON fp.id = f.parent_id
         )
         SELECT * FROM file_path
         ORDER BY path;
     `, [id]);
 }
-export async function GetAllFullFilePaths() {
-    return await GetChildrenOfFileID(null);
+export async function GetAllFullNodePaths({ tableName, tableFields}) {
+    return await GetChildrenOfFileID(null, {tableName, tableFields});
 }
 
 

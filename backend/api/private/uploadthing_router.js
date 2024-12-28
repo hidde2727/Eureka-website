@@ -4,7 +4,8 @@ import { createUploadthing } from "uploadthing/express";
 import Config from '../../utils/config.js';
 import * as DB from '../../utils/db.js';
 import { CheckSession, HasUserPermission } from '../../utils/login.js';
-import { RegenFileIndices, fileSemaphore } from "../../utils/files.js";
+import { RegenFileIndices } from '../../utils/files.js';
+import { GetSemaphore } from '../../utils/adjancency_db_list.js';
 
 const f = createUploadthing();
 
@@ -31,7 +32,7 @@ export const uploadRouter = {
         if(req.body.input.override == undefined) throw new UploadThingError(JSON.stringify({ error: 'Specificeer of al bestaande bestaande overschreven moeten worden'}));
         const override = req.body.input.override;
 
-        const [value, release] = await fileSemaphore.acquire();
+        const [value, release] = await GetSemaphore('files').acquire();
         console.log('locked -> ' + value);
         fileRemaining = files.length;
 
@@ -74,7 +75,7 @@ export const uploadRouter = {
             }
             else if(existingFiles[0] != existingFiles[existingFiles.length - 1] || existingFiles[0]!=undefined) {
                 // There are files that shouldn't be overriden:
-                throw new UploadThingError(JSON.stringify({ existingFiles: existingFiles.filter((val) => { return val!=undefined }) }));
+                throw new UploadThingError(JSON.stringify({ existingFiles: existingFiles.filter((val) => { return val!=undefined }).map((val) => { return {child: val}; }) }));
             }
             console.log('Uploading');
             return { 
@@ -82,7 +83,7 @@ export const uploadRouter = {
                 [UTFiles]: fileOverrides 
             };
         } catch(err) {
-            fileSemaphore.release();
+            GetSemaphore('files').release();
             console.log('released');
             throw new UploadThingError(err.message);
         }
@@ -91,7 +92,7 @@ export const uploadRouter = {
         fileRemaining--;
         if(fileRemaining == 0) {
             await RegenFileIndices();
-            fileSemaphore.release();
+            GetSemaphore('files').release();
             console.log('released');
         }
     })

@@ -91,7 +91,7 @@ export default function Files() {
 
                 var conflictMap = {};
                 resolvedConflicts.forEach((conflict) => {
-                    conflictMap[conflict.id] = conflict.decision;
+                    conflictMap[conflict.child.id] = conflict.decision;
                 });
                 changeFileParent(queryClient, getCurrentFolder().id, toId, fileInfo.id, conflictMap);
             };
@@ -175,7 +175,7 @@ export default function Files() {
 
                                 var conflictMap = {};
                                 resolvedConflicts.forEach((conflict) => {
-                                    conflictMap[conflict.id] = conflict.decision;
+                                    conflictMap[conflict.child.id] = conflict.decision;
                                 });
                                 changeFileName(queryClient, currentFolder, id, name, ev.target.innerText, conflictMap);
                                 ev.target.innerText = name;

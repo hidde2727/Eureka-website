@@ -111,7 +111,7 @@ export const FilePopover = forwardRef(({parentFolder, files, setFiles}, ref) => 
         let newFiles = files;
         erroringFiles.forEach((file) => {
             if(file.decision == 'ignore') {
-                newFiles = removeFileWithName(file.path, newFiles);
+                newFiles = removeFileWithName(file.child.path, newFiles);
             }
         });
         setFiles(newFiles);

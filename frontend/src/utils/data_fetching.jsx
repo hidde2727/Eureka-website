@@ -37,7 +37,6 @@ function fetchOptions(url, queryKeys, method, body, { jsonResponse=true, include
             newURL += encodeURI(queryKey[0]) + '=' + encodeURI(queryKey[1]);
         });
     }
-    console.log(url + enable);
 
     return queryOptions({
         queryKey: [url, queryKeys, method, body],

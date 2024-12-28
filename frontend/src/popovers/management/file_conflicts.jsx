@@ -74,7 +74,7 @@ export const FileConflictPopover = forwardRef(({parentFolder, conflictingFiles, 
                 if(conflictingFiles == undefined || conflictingFiles.length == 0) return;
                 return (
                 <>
-                    <p className="existing-files"><a>{conflictingFiles[currentFile][nameProperty].split('/').pop()}</a><a> bestaat al in </a><a>{parentFolder}</a></p>
+                    <p className="existing-files"><a>{conflictingFiles[currentFile].child[nameProperty].split('/').pop()}</a><a> bestaat al in </a><a>{parentFolder}</a></p>
                     {
                         (currentFile <= conflictingFiles.length) && <p className="amount-same"><a>Net als </a><a>{conflictingFiles.length - 1 - currentFile}</a><a> andere files</a></p>
                     }

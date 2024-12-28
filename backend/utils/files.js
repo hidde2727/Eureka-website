@@ -1,9 +1,6 @@
 import * as fs from 'node:fs';
-import { Semaphore } from 'async-mutex';
 
 import * as DB from './db.js';
-
-export const fileSemaphore = new Semaphore(1);
 
 export async function RegenFileIndices() {
     console.log('regenerating the file indices');
