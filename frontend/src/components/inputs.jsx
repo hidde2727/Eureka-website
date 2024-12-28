@@ -1,6 +1,6 @@
 import { useId, useState, useRef, useEffect  } from 'react';
 
-export function Input({ inline, id=undefined, type, label, placeholder, value, name, onChange=undefined }) {
+export function Input({ inline, id=undefined, type, label, placeholder, value, name, noLabel=false, onChange=undefined }) {
     const labelClassName = inline ? 'inline' : '';
     const idInternal = id != undefined ? id : useId();
 
@@ -16,7 +16,7 @@ export function Input({ inline, id=undefined, type, label, placeholder, value, n
 
     return (
         <>
-            <label htmlFor={idInternal} className={labelClassName}>{label}</label>
+            { !noLabel && <label htmlFor={idInternal} className={labelClassName}>{label}</label> }
             <input type={type} id={idInternal} placeholder={placeholder} defaultValue={value} name={name} onKeyDown={onKeyDown} onChange={onChange} />
         </>
     );

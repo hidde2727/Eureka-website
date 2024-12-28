@@ -49,9 +49,12 @@ input, textarea, button {
     font-variation-settings:
         "wdth" 100,
         "GRAD" 0;
+
+    appearance: none;
 }
 * {
     box-sizing: border-box;
+    z-index: 0;
 }
 body {
     margin: 0;
@@ -66,7 +69,7 @@ h1 {
     color: #CCC;
     font-size: 3rem;
     padding: 2px 30px;
-    margin: 5px 0px;
+    margin: 0 0 5px 0;
     border-bottom: solid var(--border-width) var(--seperator);
     text-transform: uppercase;
 }
@@ -99,11 +102,14 @@ a {
 /* + ======================================================================== +
 /* | Input & textareas & buttons                                              |
 /* + ========================================================================*/
+label {
+    font-size: 0.875rem;
+    display: block;
+}
 label:has(+input),
 label:has(+textarea),
 label:has(+.auto-grow) {
     margin-left: 30px;
-    font-size: 0.875rem;
 }
 input:not(.iconed *),
 textarea,
@@ -221,6 +227,10 @@ button:hover {
 
     font-size: 0.75rem;
 }
+label:not(.inline) + .auto-grow {
+    width: calc(100% - 40px);
+    margin: 1px 20px 10px 20px;
+}
 .auto-grow::after {
     content: attr(data-replicated-value) " ";
     white-space: pre-wrap;
@@ -238,6 +248,9 @@ label.inline {
     padding: 12px 0px;
 
     font-size: 0.875rem;
+}
+.inline-input {
+    width: 100%;
 }
 label.inline + input,
 label.inline + textarea,
@@ -442,15 +455,25 @@ span:has(>input[type="checkbox"]) + label {
 /* + ======================================================================== +
 /* | Split window and seperators                                              |
 /* + ========================================================================*/
-.split-window {
+.split-window,
+.split-window .horizontal {
     display: grid;
     grid-template-columns: calc(50% - 25px) calc(50% - 25px);
+}
+.split-window .vertical {
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-template-columns: auto;
+    grid-gap: 100px;
+}
+.split-window .vertical.small-gap {
+    grid-gap: 20px;
 }
 .split-window > *:not(button, input) {
     position: relative;
     padding: 0px 10px 0px 30px;
 }
-.split-window.seperator > :first-child::after {
+.split-window.seperator:not(.vertical) > :first-child::after {
     content: "";
     position: absolute;
     right:0px;
@@ -458,6 +481,18 @@ span:has(>input[type="checkbox"]) + label {
     height: calc(100% - 40px);
     width: var(--border-width);
     background-color: var(--seperator);
+}
+.split-window.seperator.vertical > :first-child::after {
+    content: "";
+    position: absolute;
+    left: 0px;
+    bottom: -60px;
+    height: var(--border-width);
+    width: 100%;
+    background-color: var(--seperator);
+}
+.split-window.seperator.vertical.small-gap > :first-child::after {
+    bottom: -10px;
 }
 hr {
     color: var(--seperator);
@@ -829,47 +864,170 @@ form:has(.form-succes-screen) {
 /* + ======================================================================== +
 /* | Sidebar                                                                  |
 /* + ========================================================================*/
-#body {
-    margin: 0px!important;
-    grid-template-columns: 58px calc(100% - 58px) !important;
-    grid-template-rows: var(--app-height);
+@media screen and (min-width: 1000px) {
+    #body {
+        overflow: hidden;
+        margin: 0px!important;
+        grid-template-columns: 58px calc(100% - 58px) !important;
+        grid-template-rows: var(--app-height);
 
-    height: var(--app-height);
-}
-#sidebar {
-    height: 100%;
-    padding: 20px 0px;
+        height: var(--app-height);
+    }
+    #sidebar {
+        height: 100%;
+        padding: 20px 0px;
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
 
-    row-gap: 15px;
+        row-gap: 15px;
+    }
+    #toggle-sidebar {
+        display: none !important;
+    }
+    #sidebar > * {
+        row-gap: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+    #sidebar-top {
+        margin-top: 0;
+        margin-bottom: auto;
+    }
+    #sidebar-bottom {
+        margin-top: auto;
+        margin-bottom: 0;
+    }
+    #sidebar i {
+        color: var(--non-prominent-text);
+        font-size: 2rem;
+    
+        transition: color 0.5s;
+    }
+    #sidebar i:hover {
+        color: var(--prominent-text);
+    }
+    #sidebar .tooltip.right {
+        left: calc(100% + 15px);
+    }
 }
-#sidebar > * {
-    row-gap: 15px;
-    display: flex;
-    flex-direction: column;
-}
-#sidebar-top {
-    margin-top: 0;
-    margin-bottom: auto;
-}
-#sidebar-bottom {
-    margin-top: auto;
-    margin-bottom: 0;
-}
-#sidebar i {
-    color: var(--non-prominent-text);
-    font-size: 2rem;
+@media screen and (max-width: 1000px) {
+    #body {
+        overflow: hidden;
+        height: var(--app-height);
+        display: block;
+        
+    }
+    #body > :nth-child(2) {
+        padding: 0;
+    }
+    .split-window > * {
+        padding: 0 0 0 5px!important;
+    }
+    .window {
+        padding-top: 40px!important;
+    }
+    #toggle-sidebar {
+        visibility: visible;
 
-    transition: color 0.5s;
-}
-#sidebar i:hover {
-    color: var(--prominent-text);
-}
-#sidebar .tooltip.right {
-    left: calc(100% + 15px);
+        display: flex!important;
+        position: fixed;
+        top: 0;
+        left: 0;
+
+        width: 60px;
+        height: 60px;
+        border-radius: 0 0 100% 0;
+        background-color: var(--extra-prominent-background);
+
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        
+        z-index: 100000000;
+    }
+    #toggle-sidebar i {
+        transition: rotate 0.5s;
+        height: fit-content;
+        width: fit-content;
+        font-size: 1.25rem;
+
+        position: relative;
+        top: -7px;
+        left: -8px;
+    }
+    #toggle-sidebar.open i {
+        rotate: 90deg;
+    }
+
+    #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: calc(var(--app-height) + 40px);
+        z-index: 10000;
+        padding: 40px 0 0 0!important;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        row-gap: 30px;
+
+        visibility: hidden;
+
+        transform: translateY(-40px);
+        transition: background-color 0.5s, visibility allow-discrete 0.5s, transform 0.5s;
+
+        overflow-y: auto;
+    }
+    #sidebar.open {
+        transform: translateY(0px);
+        visibility: visible;
+        background-color: var(--background);
+    }
+    #sidebar > * {
+        row-gap: 15px;
+        display: flex;
+        flex-direction: column;
+        width: 175px;
+    }
+    #sidebar.closed i {
+        opacity: 0;
+    }
+    #sidebar i {
+        transition: opacity 0.5s;
+        opacity: 1;
+        font-size: 2rem;
+        color: var(--prominent-text);
+    }
+    #sidebar p.tooltip {
+        opacity: 1;
+        transition: opacity 0.5s, visibility allow-discrete 0.5s!important;
+        cursor: pointer;
+        background-color: var(--background) !important;
+
+        font-size: 1rem;
+    }
+    #sidebar:not(.open) *:hover > .tooltip {
+        transition-delay: initial;
+        visibility: hidden!important;
+        opacity: 1!important;
+    }
+    #sidebar p.tooltip::before {
+        visibility: hidden;
+    }
+    #sidebar.open p.tooltip {
+        visibility: visible!important;
+        opacity: 1!important;
+    }
+    #sidebar i:hover {
+        color: var(--prominent-text);
+    }
+    #sidebar .tooltip.right {
+        left: calc(100% + 15px);
+    }
 }
 
 
@@ -911,8 +1069,15 @@ form:has(.form-succes-screen) {
     
     user-select: none;
 }
-div:has(+.footer) {
-    min-height: calc(var(--app-height) - 35px);
+@media screen and (min-width: 1000px) {
+    div:has(+.footer) {
+        min-height: calc(var(--app-height) - 35px);
+    }
+}
+@media screen and (max-width: 1000px) {
+    div:has(+.footer) {
+        min-height: calc(var(--app-height) - 70px);
+    }
 }
 
 
@@ -933,7 +1098,7 @@ div:has(+.footer) {
 }
 #projects h1 {
     padding-top: 0px;
-    margin-top: 0px;
+    margin-top: -8px;
 }
 .project {
     break-inside: avoid;
@@ -1068,6 +1233,8 @@ div:has(+.footer) {
 }
 #files .files > .file, 
 #files .folders > .folder {
+    break-inside: avoid;
+
     border-radius: var(--small-border-radius);
 
     width: 100%;
@@ -1132,7 +1299,6 @@ div:has(+.footer) {
 /* | Suggestion window                                                        |
 /* + ========================================================================*/
 #suggestions > .split-window {
-    min-height: 100%;
     padding-bottom: 20px;
 }
 label:has(+ #project-link2, + #project-link3) {
@@ -1145,13 +1311,14 @@ label:has(+ #project-link2, + #project-link3) {
 #project-link3 {
     margin-top: -7px;
 }
-#inspiration-suggestion1 + .website,
-#inspiration-suggestion2 + .website {
-    margin-left: 20px;
+#suggestion-label-selector {
+    margin: 0px 0px 0px 50px;
 }
 #suggestion-label-selector label.inline {
-    margin: 0px 0px 0px 50px;
     padding: 10px 0px;
+}
+#suggestion-label-selector label:not(.inline) {
+    margin-left: -20px;
 }
 #suggestion-label-selector .inline-input {
     margin: 0px;
@@ -1162,6 +1329,8 @@ label:has(+ #project-link2, + #project-link3) {
 
     position: relative;
     top: 5px;
+
+    margin-bottom: 15px;
 }
 #suggestion-label-selector .label {
     transition: color 0.2s, background-color 0.2s;

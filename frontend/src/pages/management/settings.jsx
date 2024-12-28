@@ -8,6 +8,7 @@ import Restricted from '../../components/restricted.jsx';
 import { SetFormErrorMessage, FormErrorMessage } from '../../components/form_error_message.jsx';
 import FormSuccesScreen from '../../components/form_succes_screen.jsx';
 import { useQueryClient } from '@tanstack/react-query';
+import { SplitWindow } from '../../components/split_window.jsx';
 
 export default function Settings({isActive}) {
     const queryClient = useQueryClient();
@@ -25,7 +26,7 @@ export default function Settings({isActive}) {
 
     return (
         <div className="window" id="management-settings" style={isActive ? {display: 'block'} : {display: 'none'}}>
-            <div className={`split-window ${ userData['modify_settings'] ? 'seperator' : ''}`}>
+            <SplitWindow minColumnWidth={600} seperator={userData['modify_settings']} >
                 <form id="settings-left" onSubmit={(ev) => { OnUserSettingsSubmit(ev, userData, setUserError, setUserSuccesMessage); }}>
 
                     <h2>Instellingen</h2>
@@ -65,7 +66,7 @@ export default function Settings({isActive}) {
 
                 </Restricted>
                 </form>
-            </div>
+            </SplitWindow>
 
             <Footer />
         </div>

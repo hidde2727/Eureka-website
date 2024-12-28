@@ -1,4 +1,4 @@
-import { useState, Suspense, Fragment } from 'react';
+import { useState, Suspense, Fragment, useEffect, useRef } from 'react';
 
 import { IsValidURL } from '../utils/utils.jsx';
 import { useInspirationLabelsSus, suggestProject, suggestInspiration } from '../utils/data_fetching.jsx';
@@ -9,8 +9,28 @@ import Loading from '../components/loading.jsx';
 import { FormErrorMessage, SetFormErrorMessage } from '../components/form_error_message.jsx';
 import FormSuccesScreen from '../components/form_succes_screen.jsx';
 import Footer from '../components/footer.jsx';
+import { SplitWindow } from '../components/split_window.jsx';
 
 export default function Suggestions({ isActive }) {
+    const windowRef = useRef();
+    const [inlineInputs, setInlineInputs] = useState(true);
+    useEffect(() => {
+        window.addEventListener('resize', (ev) => {
+            if(windowRef.current.clientWidth <= 800) {
+                setInlineInputs(false);
+                return;
+            }
+            setInlineInputs(true);
+        });
+    }, []);
+    useEffect(() => {
+        if(windowRef.current.clientWidth <= 800) {
+            setInlineInputs(false);
+            return;
+        }
+        setInlineInputs(true);
+    })
+
     const [url, setURL] = useState();
     const [selectedLabels, setSelectedLabels] = useState({});
     const [suggestion1, setSuggestion1] = useState();
@@ -23,22 +43,22 @@ export default function Suggestions({ isActive }) {
     const [inspirationSucces, setInspirationSucces] = useState("");
 
     return (
-        <div className="window" id="suggestions" style={isActive ? {display: 'block'} : {display: 'none'}}>
-            <div className="split-window seperator">
+        <div className={'window' + (inlineInputs?'':' small')} id="suggestions" style={isActive ? {display: 'block'} : {display: 'none'}} ref={windowRef}>
+            <SplitWindow minColumnWidth={750} seperator={true} >
                 <form onSubmit={(event) => { OnProjectSubmit(event, setProjectError, setProjectSucces); }}>
                     <h2>Suggereer een project</h2>
                     <p>Wat is het project?</p>
                     
-                    <Input type="text" placeholder="Project naam" label="Naam*" inline={true} name="projectName" />
-                    <Textarea placeholder="Een mooie omschrijving" label="Omschrijving*" inline={true} name="projectDescription" />
+                    <Input type="text" placeholder="Project naam" label="Naam*" inline={inlineInputs} name="projectName" />
+                    <Textarea placeholder="Een mooie omschrijving" label="Omschrijving*" inline={inlineInputs} name="projectDescription" />
 
-                    <Input type="text" placeholder="www.youtube.com" id="project-link1" label="Linkjes" inline={true} name="projectLink1" />
-                    <Input type="text" placeholder="www.youtube.com" id="project-link2" label="" inline={true} name="projectLink2" />
-                    <Input type="text" placeholder="www.youtube.com" id="project-link3" label="" inline={true} name="projectLink3" />
+                    <Input type="text" placeholder="www.youtube.com" id="project-link1" label="Linkjes" inline={inlineInputs} name="projectLink1" />
+                    <Input type="text" placeholder="www.youtube.com" id="project-link2" label="" inline={inlineInputs} name="projectLink2" noLabel={!inlineInputs} />
+                    <Input type="text" placeholder="www.youtube.com" id="project-link3" label="" inline={inlineInputs} name="projectLink3" noLabel={!inlineInputs} />
 
                     <p>Hoe houden we je op de hoogte?</p>
-                    <Input type="text" placeholder="De biologie sectie" label="Naam*" inline={true} name="projectSuggestorName" />
-                    <Input type="text" placeholder="eureka@usgym.nl" label="Email*" inline={true} name="projectSuggestorEmail" />
+                    <Input type="text" placeholder="De biologie sectie" label="Naam*" inline={inlineInputs} name="projectSuggestorName" />
+                    <Input type="text" placeholder="eureka@usgym.nl" label="Email*" inline={inlineInputs} name="projectSuggestorEmail" />
 
                     <FormErrorMessage error={projectError} />
                     <FormSuccesScreen message={projectSucces} error={projectSucces.includes('error')} />
@@ -50,9 +70,9 @@ export default function Suggestions({ isActive }) {
                     <h2>Suggereer inspiratie</h2>
                     <p>Wat is de url?</p>
 
-                    <Input type="text" placeholder="www.youtube.com" label="URL*" inline={true} name="inspirationURL" onChange={(event) => { setURL(event.target.value); }} />
+                    <Input type="text" placeholder="www.youtube.com" label="URL*" inline={inlineInputs} name="inspirationURL" onChange={(event) => { setURL(event.target.value); }} />
 
-                    <label className="inline"></label>
+                    { inlineInputs && <label className="inline"></label> }
                     <div className="center-content inline-input" style={{display:'inline-flex'}}>
                         <Website id="inspiration-preview" url={url} />
                     </div>
@@ -61,28 +81,32 @@ export default function Suggestions({ isActive }) {
                     
                     <Textarea 
                         placeholder="Dit is een geweldige video om te bekijken als je graag meer te weten wilt komen over AI. Het start op een perfect niveau om voor iedereen begrijpbaar te zijn en zal je een solide basis geven voor de rest van de serie. Absoluut een aanrader om te kijken als je graag meer te weten wilt komen over AI."
-                        label="Korte omschrijving*" inline={true} name="inspirationDescription" 
+                        label="Korte omschrijving*" inline={inlineInputs} name="inspirationDescription" 
                         rows={5} 
                     />
 
                     <p>Welke label zijn van toepassing?</p>
                     <div id="suggestion-label-selector">
                         <Suspense fallback={<Loading />}>
-                            <LabelSelector selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} />
+                            <LabelSelector inlineInputs={inlineInputs} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} />
                         </Suspense>
                     </div>
 
                     <p>Suggesties om na afloop te bekijken?</p>
-                    <div className="split-window">
+                    <SplitWindow minColumnWidth={312} smallVerticalGap={true}>
                         <div>
                             <Input type="text" placeholder="www.youtube.com" label="Suggestie 1" name="inspirationSuggestion1" onChange={(event) => { setSuggestion1(event.target.value); }} />
-                            <Website id="inspiration-preview1" url={suggestion1} />
+                            <div className="center-content">
+                                <Website url={suggestion1} />
+                            </div>
                         </div>
                         <div>
                             <Input type="text" placeholder="www.youtube.com" label="Suggestie 2" name="inspirationSuggestion2" onChange={(event) => { setSuggestion2(event.target.value); }} />
-                            <Website id="inspiration-preview2" url={suggestion2} />
+                            <div className="center-content">
+                                <Website url={suggestion2} />
+                            </div>
                         </div>
-                    </div>
+                    </SplitWindow>
 
                     <FormErrorMessage error={inspirationError} />
                     <FormSuccesScreen message={inspirationSucces} error={inspirationSucces.includes('error')} />
@@ -90,7 +114,7 @@ export default function Suggestions({ isActive }) {
                     <input type="submit" value="Insturen" />
 
                 </form>
-            </div>
+            </SplitWindow>
             <Footer />
         </div>
     );
@@ -113,7 +137,7 @@ function OnLabelClick(selectedLabels, setSelectedLabels, labelId) {
         });
     }
 }
-function LabelSelector(props) {
+function LabelSelector({ inlineInputs, selectedLabels, setSelectedLabels }) {
     const { labels, hasError, isFetching } = useInspirationLabelsSus();
     if(isFetching) return;
     if(hasError || labels==undefined) return (<p>Error tijdens het ophalen van de labels</p>);
@@ -122,13 +146,13 @@ function LabelSelector(props) {
         Object.entries(labels.labels).map((label) => {
             const [categoryName, values] = label;
             return <Fragment key={categoryName}>
-                <label className="inline">{categoryName}</label>
+                <label className={inlineInputs?'inline':''}>{categoryName}</label>
                 <div className="inline-input">
                     {values.map((value, i) => {
                         return (
                         <p className={'label ' + value.id} key={i} 
-                        onClick={() => { OnLabelClick(props.selectedLabels, props.setSelectedLabels, value.id); }} 
-                        style={ props.selectedLabels[value.id] ? {color:"var(--prominent-text)", backgroundColor:"var(--accent)"} : {} }>
+                        onClick={() => { OnLabelClick(selectedLabels, setSelectedLabels, value.id); }} 
+                        style={ selectedLabels[value.id] ? {color:"var(--prominent-text)", backgroundColor:"var(--accent)"} : {} }>
                             {value.name}
                         </p> )
                     })}

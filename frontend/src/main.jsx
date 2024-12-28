@@ -27,10 +27,11 @@ export default function App() {
     }, []);
 
     useEffect(() => {
+        const root = document.querySelector(':root');
         window.addEventListener('resize', () => {
-            document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
+            root.style.setProperty('--app-height', `${window.innerHeight}px`);
         });
-        document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
+        root.style.setProperty('--app-height', `${window.innerHeight}px`);
     }, []);
 
     return (

@@ -23,7 +23,7 @@ export default function PageManager(props) {
     const projectRef = useRef();
 
     return (
-        <div>
+        <div className="content-windows">
         <PopoverContext.Provider value={{ login:loginRef, project:projectRef }}>
             <Home isActive={ props.currentWindow == 'home' } />
             <Projects isActive={ props.currentWindow == 'projects' } />
