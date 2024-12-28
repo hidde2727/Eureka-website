@@ -10,6 +10,7 @@ export const Popover = forwardRef(({children, id, className, form, onSubmit}, re
     });
     useImperativeHandle(ref, () => ({
         open: () => {
+            if(internalRef.current.showPopover == undefined) return alert('Popovers hebben geen support in deze browser!');
             internalRef.current.showPopover();
             window.addEventListener('click', eventHandler.current);
         },

@@ -5,25 +5,25 @@
     background-color: var(--background);
     color: var(--prominent-text);
 
-    --background: light-dark(#111, #111);
-    --prominent-background: light-dark(#222, #222);
-    --extra-prominent-background: light-dark(#3A3A3A, #3A3A3A);
-    --prominent-text: light-dark(#EEE, #EEE);
-    --normal-text: light-dark(#AAA, #AAA);
-    --non-prominent-text: light-dark(#777, #777);
-    --seperator: light-dark(#444, #444);
-    --border: light-dark(#444, #444);
-    --label: light-dark(#CCC, #CCC);
-    --prominent-label: light-dark(#FFF, #FFF);
-    --yt-video: light-dark(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2));
-    --yt-description: light-dark(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1));
-    --input-border: light-dark(#777, #777);
-    --conformation: light-dark(#00712D, #00712D);
-    --denial: light-dark(#B90E0A, #B90E0A);
-    --checkbox: light-dark(#292929, #292929);
-    --checkbox-hover: light-dark(#444, #444);
+    --background: #111;
+    --prominent-background: #222;
+    --extra-prominent-background: #3A3A3A;
+    --prominent-text: #EEE;
+    --normal-text: #AAA;
+    --non-prominent-text: #777;
+    --seperator: #444;
+    --border: #444;
+    --label: #CCC;
+    --prominent-label: #FFF;
+    --yt-video: rgba(255, 255, 255, 0.2);
+    --yt-description: rgba(255, 255, 255, 0.1);
+    --input-border: #777;
+    --conformation: #00712D;
+    --denial: #B90E0A;
+    --checkbox: #292929;
+    --checkbox-hover: #444;
     --popover-background: rgba(0,0,0,0.1);
-    --accent: light-dark(#0f4d92, #0f4d92);
+    --accent: #0f4d92;
 
     --extra-small-border-radius: 3px;
     --small-border-radius: 5px;
@@ -38,6 +38,8 @@
     font-variation-settings:
         "wdth" 100,
         "GRAD" 0;
+
+    --app-height: 100vh;
 }
 input, textarea, button {
     font-family: "Roboto Serif", serif;
@@ -53,6 +55,7 @@ input, textarea, button {
 }
 body {
     margin: 0;
+    background-color:#111;
 }
 
 
@@ -60,7 +63,7 @@ body {
 /* | Text                                                                     |
 /* + ========================================================================*/
 h1 {
-    color: light-dark(#CCC, #CCC);
+    color: #CCC;
     font-size: 3rem;
     padding: 2px 30px;
     margin: 5px 0px;
@@ -829,9 +832,9 @@ form:has(.form-succes-screen) {
 #body {
     margin: 0px!important;
     grid-template-columns: 58px calc(100% - 58px) !important;
-    grid-template-rows: 100vh;
+    grid-template-rows: var(--app-height);
 
-    height: 100vh;
+    height: var(--app-height);
 }
 #sidebar {
     height: 100%;
@@ -879,7 +882,7 @@ form:has(.form-succes-screen) {
     overflow-x: hidden;
     overflow-y: auto;
 
-    height: 100vh;
+    height: var(--app-height);
 }
 
 
@@ -896,10 +899,10 @@ form:has(.form-succes-screen) {
 .footer a {
     margin-left: 5px;
     font-size: 1.5rem;
-    color: light-dark(#111, #eee);
+    color: var(--prominent-text);
 }
 .footer a:visited {
-    color: light-dark(#111, #eee);
+    color: var(--prominent-text);
 }
 .footer .copyright {
     margin-left: auto;
@@ -909,7 +912,7 @@ form:has(.form-succes-screen) {
     user-select: none;
 }
 div:has(+.footer) {
-    min-height: calc(100vh - 35px);
+    min-height: calc(var(--app-height) - 35px);
 }
 
 
@@ -933,6 +936,8 @@ div:has(+.footer) {
     margin-top: 0px;
 }
 .project {
+    break-inside: avoid;
+
     display: block;
 
     border: var(--border-width) solid var(--border);
@@ -1105,7 +1110,7 @@ div:has(+.footer) {
     padding: 0px;
     z-index: 100;
 
-    background-color: light-dark(#eee, #111);
+    background-color: var(--background-color);
 
     align-items: center;
     justify-content: center;

@@ -6,6 +6,7 @@
   "main": "index.jsx",
   "scripts": {
     "start": "vite dev --port 5000",
+    "host": "vite dev --port 5000 --host",
     "build": "vite build --watch && vite preview",
     "prod": "vite build"
   },
