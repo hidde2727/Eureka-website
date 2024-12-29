@@ -220,36 +220,8 @@ export async function GetAllInspirationVersionsOfID(inspirationID) {
 // + ======================================================================== +
 // | InspirationLabels                                                        |
 // + ======================================================================== +
-export async function CreateCategory(category) {
-    await ExecutePreparedStatement('INSERT INTO labels (category) VALUES(?)', [category]);
-}
-export async function CreateLabel(category, name) {
-    await ExecutePreparedStatement('INSERT INTO labels (category, name) VALUES(?,?)', [category, name])
-}
-export async function AddLabelToInspiration(labelID, inspirationUUID) {
-    await ExecutePreparedStatement('INSERT INTO labels_to_inspiration (label_id, inspiration_id) VALUES(?,?)', [labelID, inspirationUUID]);
-}
-export async function AddLabelsToLastInsertedInspiration(labelIDs) {
-    var query = 'INSERT INTO labels_to_inspiration (label_id, inspiration_id) VALUES';
-    for(var i = 0; i < labelIDs.length; i++) {
-        if(i != 0) query += ',';
-        query += '(?,LAST_INSERT_ID())';
-    }
-    await ExecutePreparedStatement(query, labelIDs);
-}
-export async function DeleteLabelFromInspiration(labelID, inspirationUUID) {
-    await ExecutePreparedStatement('DELETE FROM labels WHERE label_id=? AND inspiration_id=?', [labelID, inspirationUUID]);
-}
-export async function DeleteCategory(category) {
-    await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id IN (SELECT id FROM labels WHERE category=?)', [category]);
-    await ExecutePreparedStatement('DELETE FROM labels WHERE category=?', [category]);
-}
-export async function DeleteLabel(labelID) {
-    await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id=?', [labelID]);
-    await ExecutePreparedStatement('DELETE FROM labels WHERE id=?', [labelID]);
-}
-export async function GetAllLabels() {
-    return await ExecuteStatement('SELECT * FROM labels');
+export async function GetAllFullLabelPaths() {
+    return GetChildrenOfNode(null, {tableName: 'labels', tableFields:''});
 }
 
 

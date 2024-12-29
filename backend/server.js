@@ -10,6 +10,7 @@ import * as Login from './utils/login.js';
 import * as Settings from './utils/settings.js';
 import { GenerateProjectJSON } from './utils/projects.js';
 import { RegenFileIndices } from './utils/files.js';
+import { RegenLabels } from './utils/inspiration_labels.js';
 import Config from './utils/config.js';
 
 const app = express();
@@ -24,6 +25,7 @@ await DB.SetupTables();
 
 await GenerateProjectJSON();
 await RegenFileIndices();
+await RegenLabels();
 
 // !!!! DELETE IN PRODUCTION !!!!!
 if(Config.isDev) {

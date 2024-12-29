@@ -1183,6 +1183,50 @@ form:has(.form-succes-screen) {
 /* + ======================================================================== +
 /* | Inspiration window                                                       |
 /* + ========================================================================*/
+#inspiration > div:first-child {
+    display: grid;
+    grid-template-columns: auto 275px;
+    height: calc(var(--app-height) - 35px);
+}
+
+#inspiration .sidebar {
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    margin: 30px 10px 0 30px;
+    padding: 10px 0 0 30px;
+    border-left: var(--border-width) solid var(--seperator);
+}
+#inspiration .category {
+    margin-bottom: 10px;
+    transition: margin-bottom 0.5s;
+}
+#inspiration .category.closed {
+    margin-bottom: 5px;
+}
+#inspiration .sidebar .header {
+    display: grid;
+    grid-template-columns: auto 1rem;
+
+    margin: 0px 0 5px -10px;
+}
+#inspiration .sidebar .header i {
+    font-size: 0.8rem;
+    transition: rotate 0.5s;
+}
+#inspiration .sidebar .category.closed i {
+    rotate: 90deg;
+}
+#inspiration .sidebar .content {
+    margin: 0 0 0 5px;
+    overflow: hidden;
+    transition: height 0.5s;
+}
+
+#inspiration > div > .content {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
 
 
 /* + ======================================================================== +

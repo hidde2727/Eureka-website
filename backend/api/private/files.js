@@ -4,7 +4,6 @@ const router = Router();
 import * as Files from '../../utils/files.js';
 import * as Login from '../../utils/login.js';
 import * as Validator from '../../utils/validator.js';
-import * as DB from '../../utils/db.js';
 import { utapi } from './uploadthing_router.js';
 import Config from '../../utils/config.js';
 import SendRequest from '../../utils/https_request.js';

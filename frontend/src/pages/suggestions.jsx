@@ -144,11 +144,11 @@ function LabelSelector({ inlineInputs, selectedLabels, setSelectedLabels }) {
 
     return (<> {
         Object.entries(labels.labels).map((label) => {
-            const [categoryName, values] = label;
+            const [categoryName, content] = label;
             return <Fragment key={categoryName}>
                 <label className={inlineInputs?'inline':''}>{categoryName}</label>
                 <div className="inline-input">
-                    {values.map((value, i) => {
+                    {content.labels.map((value, i) => {
                         return (
                         <p className={'label ' + value.id} key={i} 
                         onClick={() => { OnLabelClick(selectedLabels, setSelectedLabels, value.id); }} 
