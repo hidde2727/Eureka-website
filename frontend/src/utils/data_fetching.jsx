@@ -190,6 +190,52 @@ export async function setProjectVote(queryClient, projectUUID, projectID, {voteV
 }
 
 
+export async function RenameLabel(queryClient, parentID, id, newName, override) {
+    try {
+        // Optimistic update
+        queryClient.setQueryData(['/data/labels.json', undefined, 'GET', null], (oldData) => {
+            if(oldData == undefined) return undefined;
+            let newData = structuredClone(oldData);
+
+            if(parentID == null) {
+                newData.labels.map((category) => {
+                    if(category.id == id) return { ...category, name: newName };
+                    return category;
+                });
+            } else {
+                newData.labels.forEach((category) => {
+                    if(category.id == parentID) { 
+                        category.labels = category.labels.map((label) => {
+                            if(label.id == id) return { ...label, name: newName };
+                            return label;
+                        });
+                    }
+                });
+            }
+            return newData;
+        });
+        // Request the folder renaming
+        var response = await fetchInfo('/api/private/labels/rename', 'PUT', JSON.stringify({
+            id: id,
+            newName: newName,
+            override: override
+        }), { includeCredentials: true, jsonResponse: false });
+
+        // Force a refresh (just in case anything went wrong updating optimistically)
+        queryClient.invalidateQueries({ queryKey:['/data/labels.json', undefined, 'GET', null]});
+
+        try {
+            response = JSON.parse(response);
+            return { hasConflicts: true, conflicts: response.conflicts };
+        } catch(err) {
+            return { hasConflicts: false };
+        }
+    } catch(err) {
+        throw new Error('Failed to change folder name:\n' + err.message);
+    }
+}
+
+
 export function useFileStorageUsage() {
     const { data, error, isFetching } = useQuery(fetchOptions('/api/private/files/usage', undefined, 'GET', null, { includeCredentials: true }));
     return { storageUsage: data, hasError: error, isFetching: isFetching };

@@ -11,6 +11,7 @@ const ManagementSidebar = lazy(() => import('./management/inspiration_sidebar.js
 
 export default function Inspiration({isActive}) {
     const sidebar = useRef();
+    const [isEditing, setIsEditing] = useState(false);
 
     return (
         <div className="window" id="inspiration" style={isActive ? {display: 'block'} : {display: 'none'}}>
@@ -25,7 +26,9 @@ export default function Inspiration({isActive}) {
                             <Sidebar sidebar={sidebar} />
                         </Restricted>
                         <Restricted to="modify_inspiration_labels">
-                            <ManagementSidebar sidebar={sidebar} />
+                            <button onMouseDown={()=> {setIsEditing(!isEditing);}}/>
+                            <div style={{display:!isEditing?'block':'none'}}><Sidebar sidebar={sidebar} display={!isEditing} /></div>
+                            <div className="management" style={{display:isEditing?'block':'none'}}><ManagementSidebar sidebar={sidebar} display={isEditing} /></div>
                         </Restricted>
                     </Suspense>
                 </div>
@@ -50,20 +53,20 @@ export default function Inspiration({isActive}) {
         return (
             <>
                 {
-                    Object.entries(labels.labels).map(([categoryName, content], index) => {
+                    labels.labels.map((category, index) => {
                         return (
-                            <div className={'category' + (openedCategories[index]?' opened':' closed')} key={categoryName}>
+                            <div className={'category' + (openedCategories[index]?' opened':' closed')} key={category.name}>
                                 <div className="header" onClick={() => {
                                     let copiedCategories = [...openedCategories];
                                     copiedCategories[index] = !copiedCategories[index];
                                     setOpenedCategories(copiedCategories);
                                 }}>
-                                    <a>{categoryName}</a>
+                                    <a>{category.name}</a>
                                     <i className="fas fa-chevron-down" />
                                 </div>
                                 <div className="content" style={{height: openedCategories[index]?`${categoryHeights[index]}px`:'0px'}}>
                                     {
-                                        content.labels.map(({ id, name }) => {
+                                        category.labels.map(({ id, name }) => {
                                             return (
                                                 <div className="inspiration-label" key={id}>
                                                     <Checkbox name={id} label={name} />

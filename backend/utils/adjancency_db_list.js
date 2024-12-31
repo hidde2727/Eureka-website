@@ -3,7 +3,7 @@ import { Semaphore } from 'async-mutex';
 
 // tableName = just the tableName
 // fields = ,fieldName,otherFieldName (every fieldname should be started with a ,)
-// isLeaf => receives the full node info and should decide if it is a leaf (async function)
+// isLeaf => receives the full node info and should decide if it is a leaf (async function) (only for optimization, can also always return false)
 export function CreateTableInfo(tableName, fields, isLeaf) {
     return { tableName: tableName, tableFields: fields, isLeaf };
 }
@@ -22,8 +22,8 @@ async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableIn
         // Go through all the conflicts and look at their respective matches in the override array
         conflicts.forEach((conflict) => {
             if (resolveConflicts[conflict.child.id] == undefined) { return 'Incorrect override array'; }
-            if (resolveConflicts[conflict.child.id] === 'replace') {
-                onNodeDelete(conflict.with);
+            if (resolveConflicts === true || resolveConflicts[conflict.child.id] === 'replace') {
+                onNodeDelete(conflict.with, conflict.child);
             } else if (resolveConflicts[conflict.child.id] === 'ignore') { parentID=true }
             else { return 'Incorrect override array'; }
         });
@@ -31,7 +31,7 @@ async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableIn
 
         let toBeRemoved = [];
         conflicts.forEach((conflict) => {
-            if (resolveConflicts[conflict.child.id] === 'replace') {
+            if (resolveConflicts === true || resolveConflicts[conflict.child.id] === 'replace') {
                 // Remove the file at the new location
                 toBeRemoved.push(DB.DeleteNode(conflict.with.id, tableInfo));
             } else if (resolveConflicts[conflict.child.id] === 'ignore') {
@@ -50,7 +50,7 @@ async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableIn
         for (let i = 0; i < toBeKept.length; i++) {
             if (!(await DB.CreateNodeAtPath(parentID, toBeKept[i].path, DB.GetExtraFieldsOfNode(toBeKept[i], tableInfo), tableInfo))) {
                 console.error('Failed to insert node ids');
-                onNodeDelete(toBekept[i]);
+                onNodeDelete(toBekept[i], undefined);
             }
         }
     }
@@ -73,9 +73,9 @@ export async function DeleteNode(id, tableInfo, { onNodeDelete, onComplete, onEr
         const node = await DB.GetNode(id, tableInfo);
         if (!(await tableInfo.isLeaf(node))) {
             const children = await DB.GetChildrenOfNode(id, tableInfo);
-            children.forEach((child) => onNodeDelete(child));
+            children.forEach((child) => onNodeDelete(child, undefined));
         } else {
-            onNodeDelete(node);
+            onNodeDelete(node, undefined);
         }
 
         await DB.DeleteNode(id, tableInfo);
@@ -87,7 +87,7 @@ export async function DeleteNode(id, tableInfo, { onNodeDelete, onComplete, onEr
     });
 }
 
-export async function RenameNode(id, newName, override, tableInfo, { onNodeDelete, onComplete, onInvalidInput, onError }) {
+export async function RenameNode(id, newName, override, tableInfo, { onNodeDelete, onIDChange, onComplete, onInvalidInput, onError }) {
     await GetSemaphore(tableInfo.tableName).runExclusive(async (val) => {
         if (override == undefined) return onInvalidInput('Please specify the overrides');
         if (id == null) return onInvalidInput("Can't rename the root");
@@ -103,10 +103,13 @@ export async function RenameNode(id, newName, override, tableInfo, { onNodeDelet
         const result = await ResolveConflicts(conflicts, override, id, {
             tableInfo: tableInfo,
             modificationAction: async () => {
-                let failedNodes = await DB.RenameNode(id, newName, tableInfo);
+                let [failedNodes, changedIDs] = await DB.RenameNode(id, newName, tableInfo);
                 failedNodes.forEach((node) => {
-                    onNodeDelete(node);
+                    onNodeDelete(node, undefined);
                 })
+                changedIDs.forEach(({ from, to, nodeInfo }) => {
+                    onIDChange(from, to, nodeInfo);
+                });
             },
             onNodeDelete: onNodeDelete
         });
@@ -119,7 +122,7 @@ export async function RenameNode(id, newName, override, tableInfo, { onNodeDelet
     });
 }
 
-export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDelete, onComplete, onInvalidInput, onError }) {
+export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDelete, onIDChange, onComplete, onInvalidInput, onError }) {
     await GetSemaphore(tableInfo.tableName).runExclusive(async (val) => {
         if (override == undefined) return onInvalidInput('Please specify the overrides');
         if (id == null) return onInvalidInput("Can't move the root");
@@ -135,10 +138,13 @@ export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDel
         const result = await ResolveConflicts(conflicts, override, id, {
             tableInfo: tableInfo,
             modificationAction: async () => {
-                let failedNodes = await DB.MoveNode(id, newParentId, tableInfo);
+                let [failedNodes, changedIDs] = await DB.MoveNode(id, newParentId, tableInfo);
                 failedNodes.forEach((node) => {
-                    onNodeDelete(node);
+                    onNodeDelete(node, undefined);
                 })
+                changedIDs.forEach(({ from, to, nodeInfo }) => {
+                    onIDChange(from, to, nodeInfo);
+                });
             },
             onNodeDelete: onNodeDelete
         });

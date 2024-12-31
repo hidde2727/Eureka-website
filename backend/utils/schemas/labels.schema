@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS labels (
     parent_id INT UNSIGNED,
     name TINYTEXT DEFAULT NULL,
 
+    position INT UNSIGNED DEFAULT NULL,
+
     -- Used to force uniqueness
     u_parent_id INT UNSIGNED GENERATED ALWAYS AS (COALESCE(parent_id, 0)) STORED,
     UNIQUE INDEX (u_parent_id, name),

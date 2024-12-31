@@ -32,9 +32,11 @@ export function CheckLink(res, link) {
 
     return false;
 }
-export function CheckBoolean(res, boolean) {
+export function CheckBoolean(res, boolean, canBeString=true) {
     if(boolean == undefined)
         return ReturnError(res, 'Specificeer boolean');
+    else if(!canBeString &&  boolean !== true && boolean !== false)
+        return ReturnError(res, 'Boolean moet true of false zijn');
     else if(boolean !== 'false' && boolean !== 'true' && boolean !== true && boolean !== false)
         return ReturnError(res, 'Boolean moet true of false zijn');
 
@@ -125,11 +127,11 @@ export function CheckSuggestorEmail(res, email) {
 /* + ======================================================================== +
 /* | Inspiration                                                              |
 /* + ========================================================================*/
-export function CheckLabelID(res, labelID) {
-    if (labelID == undefined) 
-        return ReturnError(res, 'Specificeer label id ' + labelID);
-    else if(!validator.isInt(labelID)) 
-        return ReturnError(res, 'Specifier valide label id');
+export function CheckLabelName(res, name) {
+    if(name == undefined) 
+        return ReturnError(res, 'Specificeer een label naam');
+    else if(name.length > 255)
+        return ReturnError(res, 'Label naam kan maximaal 255 karakters zijn');
 
     return false;
 }

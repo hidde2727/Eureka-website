@@ -1193,7 +1193,7 @@ form:has(.form-succes-screen) {
     overflow-y: auto;
     overflow-x: hidden;
 
-    margin: 30px 10px 0 30px;
+    margin: 30px 10px 0 20px;
     padding: 10px 0 0 30px;
     border-left: var(--border-width) solid var(--seperator);
 }
@@ -1208,7 +1208,7 @@ form:has(.form-succes-screen) {
     display: grid;
     grid-template-columns: auto 1rem;
 
-    margin: 0px 0 5px -10px;
+    margin-bottom: 5px;
 }
 #inspiration .sidebar .header i {
     font-size: 0.8rem;
@@ -1218,7 +1218,7 @@ form:has(.form-succes-screen) {
     rotate: 90deg;
 }
 #inspiration .sidebar .content {
-    margin: 0 0 0 5px;
+    margin: 0 0 0 15px;
     overflow: hidden;
     transition: height 0.5s;
 }

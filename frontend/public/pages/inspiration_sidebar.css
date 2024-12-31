@@ -1,0 +1,53 @@
+#inspiration .sidebar .management .category {
+    background-color: var(--prominent-background);
+    padding: 10px;
+    margin-left: -10px;
+    border-radius: var(--big-border-radius);
+}
+#inspiration .sidebar .management .header {
+    display: block;
+}
+#inspiration .sidebar .management .header a {
+    color: var(--prominent-text);
+}
+#inspiration .sidebar .management label {
+    display: inline;
+
+    line-height: calc(1rem + 3px);
+    font-size: 0.75rem;
+    color: var(--prominent-text);
+}
+#inspiration .sidebar .management .fa-grip-vertical {
+    margin-right: 10px;
+    font-size: 0.75rem;
+    line-height: calc(1rem + 3px);
+    color: var(--non-prominent-text);
+}
+
+#inspiration .sidebar .management .content {
+    overflow: visible;
+}
+#inspiration .sidebar .management .drop-zone {
+    position: relative;
+    height: 0;
+}
+#inspiration .sidebar .management .internal-drop-zone {
+    position: absolute;
+    width: 100%;
+    top: -10px;
+    left: -10px;
+    padding: 9px 0px;
+}
+#inspiration .sidebar .management .internal-drop-zone::after {
+    content: "";
+    display: block;
+    height: 2px;
+    width: 100%;
+    background-color: var(--prominent-text);
+
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+#inspiration .sidebar .management .internal-drop-zone.hovered::after {
+    opacity: 1;
+}
