@@ -11,6 +11,7 @@ const ManagementSidebar = lazy(() => import('./management/inspiration_sidebar.js
 
 export default function Inspiration({isActive}) {
     const sidebar = useRef();
+    const managamentSidebar = useRef();
     const [isEditing, setIsEditing] = useState(false);
 
     return (
@@ -28,7 +29,7 @@ export default function Inspiration({isActive}) {
                         <Restricted to="modify_inspiration_labels">
                             <button onMouseDown={()=> {setIsEditing(!isEditing);}}/>
                             <div style={{display:!isEditing?'block':'none'}}><Sidebar sidebar={sidebar} display={!isEditing} /></div>
-                            <div className="management" style={{display:isEditing?'block':'none'}}><ManagementSidebar sidebar={sidebar} display={isEditing} /></div>
+                            <ManagementSidebar display={isEditing} />
                         </Restricted>
                     </Suspense>
                 </div>

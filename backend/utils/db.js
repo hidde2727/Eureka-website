@@ -221,15 +221,15 @@ export async function GetAllInspirationVersionsOfID(inspirationID) {
 // | InspirationLabels                                                        |
 // + ======================================================================== +
 export async function CreateLabel(parentID, name) {
-    const doesExists = await ExecutePreparedStatement(`SELECT id FROM label WHERE parent_id<=>? AND name=?`, [parentID, name]);
+    const doesExists = await ExecutePreparedStatement('SELECT id FROM labels WHERE parent_id<=>? AND name=?', [parentID, name]);
     if(doesExists.length > 0) return doesExists[0]['id'];
+    console.log(name);
 
     const id = (await ExecutePreparedStatement(
         'INSERT INTO labels (parent_id, name) VALUES(?,?) RETURNING id', 
         [parentID, name]
     ))[0]['id'];
-    const highestPos = (await ExecutePreparedStatement('SELECT position FROM labels WHERE parent_id=? ORDER BY position LIMIT 1'))[0]['position'];
-    await ExecutePreparedStatement('UPDATE position SET position=? WHERE id=?', [highestPos+1, id]);
+    await ExecutePreparedStatement('UPDATE labels SET position= COALESCE((SELECT MAX(position) FROM labels WHERE parent_id<=>?)+1, 1) WHERE id=?', [parentID, id]);
     return id;
 }
 export async function DeleteLabelFromInspiration(id) {
@@ -239,8 +239,30 @@ export async function ReplaceLabelFromInspiration(id, replacementId) {
     await ExecutePreparedStatement('UPDATE IGNORE labels_to_inspiration SET label_id=? WHERE label_id=?', [replacementId, id]);
     await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id=?', [id]);
 }
+export async function SetLabelPosition(id, position) {
+    await ExecutePreparedStatement('UPDATE labels SET position=? WHERE id=?', [position, id]);
+}
+export async function MovePositionDownAfterLabel(id) {
+    await ExecutePreparedStatement('UPDATE labels SET position=position-1 WHERE position > (SELECT position FROM labels WHERE id=?) AND parent_id <=> (SELECT parent_id FROM labels WHERE id=?)', [id, id]);
+}
+export async function MovePositionUpAfterPosition(id, position) {
+    await ExecutePreparedStatement('UPDATE labels SET position=position+1 WHERE position >= ? AND parent_id <=> (SELECT parent_id FROM labels WHERE id=?)', [position, id]);
+}
+export async function SetLabelPositionAfterPosition(id, atPosition) {
+    await ExecutePreparedStatement('UPDATE labels SET position=? WHERE id=?', [atPosition, id]);
+}
 export async function GetAllFullLabelPaths() {
     return GetChildrenOfNode(null, {tableName: 'labels', tableFields:',position'});
+}
+export async function GetAllChildrenOfID(id) {
+    return await ExecutePreparedStatement('SELECT * FROM labels WHERE parent_id<=>?', [id]);
+}
+export async function GetMaxPositionInLabel(id) {
+    return (await ExecutePreparedStatement('SELECT MAX(position) FROM labels WHERE parent_id<=>?', [id]))[0]['MAX(position)'];
+}
+export async function GetLabel(id) {
+    const result = await ExecutePreparedStatement('SELECT * FROM labels WHERE id=?', [id]);
+    return result==undefined ? undefined : result[0];
 }
 
 
@@ -506,12 +528,13 @@ export async function RenameNode(id, newName, { tableName, tableFields, isLeaf }
     const currentFileInfo = await GetNode(id, {tableName});
     if(currentFileInfo == undefined) return [];
     if(!(await isLeaf(currentFileInfo))) {
+        let changedIDs = [];
         // Make sure an empty folder doesn`t get removed:
-        await CreateNode(currentFileInfo.parent_id, newName, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
+        const newID = await CreateNode(currentFileInfo.parent_id, newName, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
+        changedIDs.push({from: id, to: newID, nodeInfo: currentFileInfo});
         // Move the children
         const children = await GetChildrenOfNode(currentFileInfo.id, {tableName, tableFields});
         let failedNodes = [];
-        let changedIDs = [];
         for(let i = 0; i < children.length; i++) {
             const id = await CreateNodeAtPath(currentFileInfo.parent_id, newName + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields});
             if(!id) failedNodes.push(children[i]);
@@ -528,15 +551,16 @@ export async function MoveNode(id, newParentId, { tableName, tableFields, isLeaf
     if(currentFileInfo == undefined) return [[],[]];
 
     if(!(await isLeaf(currentFileInfo))) {
+        let changedIDs = [];
         // Make sure an empty folder doesn`t get removed:
-        await CreateNode(newParentId, currentFileInfo.name, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
+        const newID = await CreateNode(newParentId, currentFileInfo.name, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
+        changedIDs.push({from: id, to: newID, nodeInfo: currentFileInfo});
         // Move the children
         const children = await GetChildrenOfNode(currentFileInfo.id, { tableName, tableFields });
         let failedNodes = [];
-        let changedIDs = [];
         for(let i = 0; i < children.length; i++) {
             const id = await CreateNodeAtPath(newParentId, currentFileInfo.name + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields})
-            if(!id) failedNodes.push(children[i].uploadthing_id);
+            if(!id) failedNodes.push(children[i]);
             changedIDs.push({from: children[i].id, to: id, nodeInfo: children[i].id});
         }
         await DeleteNode(id, {tableName, tableFields});

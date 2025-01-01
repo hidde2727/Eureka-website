@@ -42,6 +42,16 @@ export function CheckBoolean(res, boolean, canBeString=true) {
 
     return false;
 }
+export function CheckInteger(res, int, canBeString=false) {
+    if(int == undefined)
+        return ReturnError(res, 'Specificeer integer');
+    else if(!canBeString && !Number.isInteger(int))
+        return ReturnError(res, 'Integer moet een volledig getal zijn');
+    else if(!Number.isInteger(int) && !validator.isInteger(int))
+        return ReturnError(res, 'Integer moet een volledig getal zijn');
+
+    return false;
+}
 
 
 /* + ======================================================================== +
@@ -128,7 +138,7 @@ export function CheckSuggestorEmail(res, email) {
 /* | Inspiration                                                              |
 /* + ========================================================================*/
 export function CheckLabelName(res, name) {
-    if(name == undefined) 
+    if(name == undefined || name.length == 0) 
         return ReturnError(res, 'Specificeer een label naam');
     else if(name.length > 255)
         return ReturnError(res, 'Label naam kan maximaal 255 karakters zijn');

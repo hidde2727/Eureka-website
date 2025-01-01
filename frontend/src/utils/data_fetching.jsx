@@ -190,7 +190,7 @@ export async function setProjectVote(queryClient, projectUUID, projectID, {voteV
 }
 
 
-export async function RenameLabel(queryClient, parentID, id, newName, override) {
+export async function renameLabel(queryClient, parentID, id, newName, override) {
     try {
         // Optimistic update
         queryClient.setQueryData(['/data/labels.json', undefined, 'GET', null], (oldData) => {
@@ -231,7 +231,57 @@ export async function RenameLabel(queryClient, parentID, id, newName, override) 
             return { hasConflicts: false };
         }
     } catch(err) {
-        throw new Error('Failed to change folder name:\n' + err.message);
+        throw new Error('Failed to change labels name:\n' + err.message);
+    }
+}
+export async function moveLabel(queryClient, id, newParentID, oldParentId, atPosition, override) {
+    try {
+        // Request the folder renaming
+        var response = await fetchInfo('/api/private/labels/move', 'PUT', JSON.stringify({
+            id: id,
+            newParentID: newParentID,
+            atPosition: atPosition,
+            override: override
+        }), { includeCredentials: true, jsonResponse: false });
+
+        // Force a refresh
+        queryClient.invalidateQueries({ queryKey:['/data/labels.json', undefined, 'GET', null]});
+
+        try {
+            response = JSON.parse(response);
+            return { hasConflicts: true, conflicts: response.conflicts };
+        } catch(err) {
+            return { hasConflicts: false };
+        }
+    } catch(err) {
+        throw new Error('Failed to move label:\n' + err.message);
+    }
+}
+export async function addLabel(queryClient, parentID, name) {
+    try {
+        // Request the folder renaming
+        await fetchInfo('/api/private/labels/add', 'PUT', JSON.stringify({
+            parentID: parentID,
+            name: name
+        }), { includeCredentials: true, jsonResponse: false });
+
+        // Force a refresh
+        queryClient.invalidateQueries({ queryKey:['/data/labels.json', undefined, 'GET', null]});
+    } catch(err) {
+        throw new Error('Failed to add label:\n' + err.message);
+    }
+}
+export async function deleteLabel(queryClient, id) {
+    try {
+        // Request the folder renaming
+        await fetchInfo('/api/private/labels/delete', 'PUT', JSON.stringify({
+            id: id
+        }), { includeCredentials: true, jsonResponse: false });
+
+        // Force a refresh
+        queryClient.invalidateQueries({ queryKey:['/data/labels.json', undefined, 'GET', null]});
+    } catch(err) {
+        throw new Error('Failed to delete label:\n' + err.message);
     }
 }
 

@@ -858,6 +858,9 @@ form:has(.form-succes-screen) {
 .loading .dot:nth-child(4) {
     animation: third-dot 4s infinite;
 }
+.fa-rotate-45 {
+    rotate: 45deg;
+}
 
 
 
@@ -1199,7 +1202,7 @@ form:has(.form-succes-screen) {
 }
 #inspiration .category {
     margin-bottom: 10px;
-    transition: margin-bottom 0.5s;
+    transition: margin 0.5s;
 }
 #inspiration .category.closed {
     margin-bottom: 5px;

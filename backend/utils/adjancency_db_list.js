@@ -15,7 +15,7 @@ export function GetSemaphore(tableName) {
     }
     return semaphores[tableName];
 }
-async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableInfo, modificationAction, onNodeDelete }) {
+async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableInfo, modificationAction, onNodeDelete, onIDChange }) {
     let toBeKept = [];
     let parentID = undefined;
     if (conflicts.length > 0) {
@@ -48,28 +48,34 @@ async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableIn
     // Replace the nodes that needed to be kept:
     if (toBeKept.length > 0) {
         for (let i = 0; i < toBeKept.length; i++) {
-            if (!(await DB.CreateNodeAtPath(parentID, toBeKept[i].path, DB.GetExtraFieldsOfNode(toBeKept[i], tableInfo), tableInfo))) {
+            const newID = await DB.CreateNodeAtPath(parentID, toBeKept[i].path, DB.GetExtraFieldsOfNode(toBeKept[i], tableInfo), tableInfo);
+            if (!newID) {
                 console.error('Failed to insert node ids');
                 onNodeDelete(toBekept[i], undefined);
             }
+            onIDChange(toBeKept[i].id, newID, toBeKept[i]);
         }
     }
 
     return false;
 }
 
-export async function CreateNode(parentId, otherValues, tableInfo, { onComplete, onError }) {
+export async function CreateNode(parentId, otherValues, tableInfo, { onComplete, onSephamoreActivate, onError }) {
     await GetSemaphore(tableInfo.tableName).runExclusive(async (val) => {
+        if(onSephamoreActivate != undefined) { const result = await onSephamoreActivate(); if(!result) return }
+
         let newId = await DB.CreateNodeReturnID(parentId, otherValues, tableInfo);
-        await onComplete(newId);
+        if(onComplete != undefined) await onComplete(newId);
     }).catch((err) => {
         console.error('Error while adding node: ' + err.stack);
         return onError('Server error');
     });
 }
 
-export async function DeleteNode(id, tableInfo, { onNodeDelete, onComplete, onError }) {
+export async function DeleteNode(id, tableInfo, { onNodeDelete, onSephamoreActivate, onComplete, onError }) {
     await GetSemaphore(tableInfo.tableName).runExclusive(async (val) => {
+        if(onSephamoreActivate != undefined) { const result = await onSephamoreActivate(); if(!result) return }
+
         const node = await DB.GetNode(id, tableInfo);
         if (!(await tableInfo.isLeaf(node))) {
             const children = await DB.GetChildrenOfNode(id, tableInfo);
@@ -80,15 +86,17 @@ export async function DeleteNode(id, tableInfo, { onNodeDelete, onComplete, onEr
 
         await DB.DeleteNode(id, tableInfo);
 
-        await onComplete();
+        if(onComplete != undefined) await onComplete();
     }).catch((err) => {
         console.error('Error while deleting nodes: ' + err.stack);
         return onError('Server error');
     });
 }
 
-export async function RenameNode(id, newName, override, tableInfo, { onNodeDelete, onIDChange, onComplete, onInvalidInput, onError }) {
+export async function RenameNode(id, newName, override, tableInfo, { onNodeDelete, onIDChange, onSephamoreActivate, onComplete, onInvalidInput, onError }) {
     await GetSemaphore(tableInfo.tableName).runExclusive(async (val) => {
+        if(onSephamoreActivate != undefined) { const result = await onSephamoreActivate(); if(!result) return }
+
         if (override == undefined) return onInvalidInput('Please specify the overrides');
         if (id == null) return onInvalidInput("Can't rename the root");
 
@@ -115,25 +123,27 @@ export async function RenameNode(id, newName, override, tableInfo, { onNodeDelet
         });
         if(result) return onInvalidInput(result);
 
-        await onComplete();
+        if(onComplete != undefined) await onComplete();
     }).catch((err) => {
         console.error('Error while renaming nodes: ' + err.stack);
         return onError('Server error');
     });
 }
 
-export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDelete, onIDChange, onComplete, onInvalidInput, onError }) {
+export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDelete, onIDChange, onSephamoreActivate, onComplete, onInvalidInput, onError }) {
     await GetSemaphore(tableInfo.tableName).runExclusive(async (val) => {
+        if(onSephamoreActivate != undefined) { const result = await onSephamoreActivate(); if(!result) return }
+
         if (override == undefined) return onInvalidInput('Please specify the overrides');
         if (id == null) return onInvalidInput("Can't move the root");
 
         const currentParentId = (await DB.GetNode(id, tableInfo)).parent_id;
         if (currentParentId === undefined) { console.error('Parent id is undefined'); return onInvalidInput('Incorrect file id'); }
-        if (newParentId == currentParentId) { await onComplete(); return; }
+        if (newParentId == currentParentId) { await onComplete(undefined, false); return; }
 
         const conflicts = await DB.GetNodeMovingConflicts(id, newParentId, tableInfo);
         if (!override && conflicts.length > 0) {
-            return await onComplete({ conflicts: conflicts });
+            return await onComplete({ conflicts: conflicts }, false);
         }
         const result = await ResolveConflicts(conflicts, override, id, {
             tableInfo: tableInfo,
@@ -150,7 +160,7 @@ export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDel
         });
         if(result) return onInvalidInput(result);
 
-        await onComplete();
+        if(onComplete != undefined) await onComplete(undefined, true);
     }).catch((err) => {
         console.error('Error while moving nodes: ' + err.stack);
         return onError('Server error');
