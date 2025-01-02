@@ -87,6 +87,10 @@ export function useInspirationLabelsSus() {
     const { data, error, isFetching } = useSuspenseQuery(fetchOptions('/data/labels.json', undefined, 'GET', null));
     return { labels: data, hasError: error, isFetching: isFetching };
 }
+export function useInspirationSus() {
+    const { data, error, isFetching } = useSuspenseQuery(fetchOptions('/api/inspiration', undefined, 'GET', null));
+    return { inspiration: data, hasError: error, isFetching: isFetching };
+}
 export async function suggestInspiration({ url, description, recommendations, labels }) {
     await fetchInfo('/api/suggest/inspiration/', 'POST', JSON.stringify(
         { url, description, recommendations, labels }
@@ -142,7 +146,7 @@ export function useProjectVersions(projectId) {
     return { versions: data, hasError: error, isFetching: isFetching };
 }
 export function useProjectVoteResult(projectUUID, enable) {
-    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/self/vote', [['type', 'project'], ['uuid', projectUUID]], 'GET', null, { includeCredentials: true, enable: enable, usePlaceholder: true }));
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/self/vote', [['type', 'project'], ['uuid', projectUUID]], 'GET', null, { includeCredentials: true, enable: enable && projectUUID!=undefined, usePlaceholder: true }));
     return { vote: data, hasError: error, isFetching: isFetching };
 }
 export async function setProjectVote(queryClient, projectUUID, projectID, {voteValue, adminVote}) {
@@ -282,6 +286,60 @@ export async function deleteLabel(queryClient, id) {
         queryClient.invalidateQueries({ queryKey:['/data/labels.json', undefined, 'GET', null]});
     } catch(err) {
         throw new Error('Failed to delete label:\n' + err.message);
+    }
+}
+
+
+export function useInspirationVersions(inspirationID) {
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/inspiration/versions', [['id', inspirationID]], 'GET', null, { includeCredentials: true, enable: inspirationID!=undefined }));
+    return { versions: data, hasError: error, isFetching: isFetching };
+}
+export function useInspirationVoteResult(inspirationUUID, enable) {
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/self/vote', [['type', 'inspiration'], ['uuid', inspirationUUID]], 'GET', null, { includeCredentials: true, enable: enable && inspirationUUID != undefined, usePlaceholder: true }));
+    return { vote: data, hasError: error, isFetching: isFetching };
+}
+export async function setInspirationVote(queryClient, inspirationUUID, inspirationID, {voteValue, adminVote}) {
+    try {
+        // Try to optimistically update
+        queryClient.setQueryData(['/api/private/self/vote', [['type', 'inspiration'], ['uuid', inspirationUUID]], 'GET', null], (oldData) => {
+            if(oldData == undefined) return undefined;
+            var newData = structuredClone(oldData);
+            newData.value = voteValue;
+            newData.admin_vote = adminVote;
+            return newData;
+        });
+        // Request the vote
+        var response = await fetchInfo('/api/private/suggestion/vote', 'PUT', JSON.stringify({
+            type: 'inspiration',
+            uuid: inspirationUUID,
+            voteValue: voteValue,
+            adminVote: adminVote
+        }), {includeCredentials: true});
+        
+        var voteResult = null;
+        if(response.result == 'accepted') voteResult = true;
+        else if(response.result == 'denied') voteResult = false;
+
+        // Set the vote result
+        queryClient.setQueryData(['/api/private/inspiration/versions', [['id', inspirationID]], 'GET', null], (oldData) => {
+            if(oldData == undefined) return undefined;
+            return oldData.map((version) => {
+                if(version.uuid = inspirationUUID) {
+                    var newVersion = structuredClone(version);
+                    newVersion.vote_result = voteResult;
+                    return newVersion;
+                }
+                return version;
+            });
+        });
+        // Force a refresh (just in case anything went wrong updating optimistically)
+        queryClient.invalidateQueries({ queryKey:['/api/inspiration', undefined, 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/inspiration/versions', [['id', inspirationID]], 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/self/vote', [['type', 'inspiration'], ['uuid', inspirationUUID]], 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/suggestion/get']});
+
+    } catch(err) {
+        throw new Error('Failed to vote:\n' + err.message);
     }
 }
 

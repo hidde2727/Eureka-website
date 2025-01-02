@@ -1,11 +1,13 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useContext, useEffect, useRef, useState } from 'react';
 
 import Footer from '../components/footer.jsx';
 import { Checkbox } from '../components/inputs.jsx';
 import Loading from '../components/loading.jsx';
 import Restricted from '../components/restricted.jsx';
+import Website from '../components/website.jsx';
+import PopoverContext from '../popovers/context.jsx'
 
-import { useInspirationLabelsSus } from '../utils/data_fetching.jsx';
+import { useInspirationSus, useInspirationLabelsSus } from '../utils/data_fetching.jsx';
 
 const ManagementSidebar = lazy(() => import('./management/inspiration_sidebar.jsx'));
 
@@ -19,7 +21,9 @@ export default function Inspiration({isActive}) {
             <div>
                 <div className="content">
                     <h1>Inspiratie</h1>
-
+                    <Suspense fallback={<Loading />}>
+                        <InspirationSuspense />
+                    </Suspense>
                 </div>
                 <div className="sidebar" ref={sidebar}>
                     <Suspense fallback={<Loading />}>
@@ -37,6 +41,23 @@ export default function Inspiration({isActive}) {
             <Footer />
         </div>
     );
+
+    function InspirationSuspense({}) {
+        const { inspiration, isFetching, hasError } = useInspirationSus();
+        const popoverContext = useContext(PopoverContext)
+
+        if (hasError || inspiration == undefined) return <p>Error tijdens het ophalen van de projecten</p>;
+
+        return (
+            <>
+                {
+                    inspiration.map((inspirationData) => <Website data={inspirationData.additionInfo} key={inspirationData.uuid} onClick={() => {
+                        popoverContext.inspiration.current.open(inspirationData)
+                    }} ></Website>)
+                }
+            </>
+        )
+    }
 
     function Sidebar({sidebar}) {
         const { labels, isFetching, hasError } = useInspirationLabelsSus();

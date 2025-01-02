@@ -23,8 +23,8 @@ export const Popover = forwardRef(({children, id, className, form, onSubmit}, re
 
     if(form) {
         return (
-            <div popover="true" id={id} ref={internalRef}>
-                <form ref={internalContentRef} className={ "content " + className } onSubmit={onSubmit}>
+            <div popover="true" ref={internalRef}>
+                <form ref={internalContentRef} id={id} className={ "content " + className } onSubmit={onSubmit}>
                     {children}
                 </form>
             </div>
@@ -32,8 +32,8 @@ export const Popover = forwardRef(({children, id, className, form, onSubmit}, re
     }
 
     return (
-        <div popover="true" id={id} ref={internalRef}>
-            <div ref={internalContentRef} className={ "content " + className }>
+        <div popover="true" ref={internalRef}>
+            <div ref={internalContentRef} id={id} className={ "content " + className }>
                 {children}
             </div>
         </div>

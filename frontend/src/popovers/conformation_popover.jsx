@@ -18,11 +18,16 @@ export const ConformationPopover = forwardRef(({}, ref) => {
     const [message, setMessage] = useState();
     var callback = useRef();
 
+    function onClick(ev) {
+        ref.current.close();
+        callback.current(ev);
+    }
+
     return (
         <Popover ref={internalRef} id={popoverID}>
             <p id="project-conformation-message">{message}</p>
             <div className="split-window">
-                <button popovertarget={popoverID} popovertargetaction="hide" style={{backgroundColor: 'var(--denial)', borderColor: 'var(--denial)'}} onClick={callback.current}>Doe het</button>
+                <button popovertarget={popoverID} popovertargetaction="hide" style={{backgroundColor: 'var(--denial)', borderColor: 'var(--denial)'}} onClick={onClick}>Doe het</button>
                 <button popovertarget={popoverID} popovertargetaction="hide">Annuleer</button>
             </div>
         </Popover>

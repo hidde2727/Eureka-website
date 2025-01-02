@@ -10,12 +10,13 @@ const InspirationTypes = Object.freeze({
     Website: 4,
 });
 
-export default function Website({ id, data, url }) {
+export default function Website({ id, data, url, onClick }) {
     const {fetchedData, hasError, isFetching} = useWebsiteInfo(url, data==undefined && url != undefined && url!=null && url != '' && IsValidURL(url));
     if(data == undefined) data = fetchedData;
+    if(typeof(data) == 'string') data=JSON.parse(data);
     if(data ==undefined && (isFetching || hasError)) {
         return (
-            <div className="website" id={id}>
+            <div className="website" id={id} onClick={onClick}>
                 <div className="website-content"></div>
                 <div className="website-author-icon"></div>
                 <p className="website-author-name"></p>
@@ -27,7 +28,7 @@ export default function Website({ id, data, url }) {
     if(data.type == InspirationTypes.None) throw new Error("Invalid website data");
     else if(data.type == InspirationTypes.YT_Video) {
         return (
-            <div className="website" id={id}>
+            <div className="website" id={id} onClick={onClick}>
                 <div className="website-content" style={{backgroundImage: `url(${data.json.thumbnails.medium.url})`}}></div>
                 <div className="website-author-icon" style={{backgroundImage: `url(${data.json.channelThumbnails.medium.url})`}}></div>
                 <p className="website-author-name" style={{backgroundColor: 'rgba(0,0,0,0)'}}>{data.name}</p>

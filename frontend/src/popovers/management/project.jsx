@@ -42,7 +42,7 @@ export const ProjectPopover = forwardRef(({}, ref) => {
         return versions.filter((version) => version.uuid === selectedVersionUUID )[0];
     }, [selectedVersionUUID, isFetching]);
 
-    if(hasError || versionData==undefined) return <Popover ref={internalRef} id="project-popover" />;
+    if(hasError) return <Popover ref={internalRef} id="project-popover" />;
 
     return (
         <Popover ref={internalRef} id="project-popover">
@@ -53,11 +53,11 @@ export const ProjectPopover = forwardRef(({}, ref) => {
                 <MiddleTop>
                     <div className="split-window">
                         <Project projectData={versionData} urls={false} />
-                        <Website data={JSON.parse(versionData.url1)} />
+                        <Website data={versionData?.url1} />
                     </div>
                     <div className="split-window">
-                        <Website data={JSON.parse(versionData.url2)} />
-                        <Website data={JSON.parse(versionData.url3)} />
+                        <Website data={versionData?.url2} />
+                        <Website data={versionData?.url3} />
                     </div>
                 </MiddleTop>
                 <MiddleBottom className="toolbar">
@@ -70,132 +70,134 @@ export const ProjectPopover = forwardRef(({}, ref) => {
             <ConformationPopover ref={conformationPopover} />
         </Popover>
     )
-});
-export default ProjectPopover;
 
-/* + ======================================================================== +
-/* | Toolbar                                                                  |
-/* + ========================================================================*/
-function Toolbar({ versionData, setSelectedVersionUUID, conformationPopover }) {
-    const queryClient = useQueryClient();
-    const { vote, isFetching:isFetchingP, hasError:hasErrorP } = useProjectVoteResult(versionData.uuid, versionData.voting_result == null);
-    const { userData, isFetching:isFetchingU, hasError:hasErrorU } = useUserData();
+    
 
-    const [showVotingBar, setShowVotingBar] = useState();
-    useEffect(() => {
-        setShowVotingBar(false);
-    }, [vote, versionData])
+    /* + ======================================================================== +
+    /* | Toolbar                                                                  |
+    /* + ========================================================================*/
+    function Toolbar({}) {
+        const queryClient = useQueryClient();
+        const { vote, isFetching:isFetchingP, hasError:hasErrorP } = useProjectVoteResult(versionData?.uuid, versionData?.voting_result == null);
+        const { userData, isFetching:isFetchingU, hasError:hasErrorU } = useUserData();
 
-    if(isFetchingU || userData == undefined) return;
+        const [showVotingBar, setShowVotingBar] = useState();
+        useEffect(() => {
+            setShowVotingBar(false);
+        }, [vote, versionData])
 
-    if(versionData.is_suggestion != undefined) {
-        return (
-            <>
-                 <i className="fas fa-x fa-fw"><p className="tooltip bottom">Annuleer</p></i>
-                 <i className="fas fa-save fa-fw"><p className="tooltip bottom">Stel voor</p></i>
-            </>
-        );
-    } else if(versionData.voting_result == null) {
-        if(isFetchingP) return;
-        // User has voted
-        if(!showVotingBar && !IsObjectEmpty(vote)) {
-            var isAdmin = vote.admin_vote;
-            var value = vote.value;
-            if(isAdmin && value == 1) {
-                return (
-                    <span className="double-thumbs up selected" onClick={() => {setShowVotingBar(true)}}><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><p className="tooltip bottom">Admin ja vote</p></span>
-                );
-            }
-            else if(value == 1) {
-                return (
-                    <i className="fas fa-thumbs-up fa-fw selected" onClick={() => {setShowVotingBar(true)}}><p className="tooltip bottom">Ja</p></i>
-                );
-            }
-            else if(isAdmin && value == -1) {
-                return (
-                    <span className="double-thumbs down selected" onClick={() => {setShowVotingBar(true)}}><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><p className="tooltip bottom">Admin nee vote</p></span>
-                )
-            }
-            else if(value == -1) {
-                return (
-                    <i className="fas fa-thumbs-down fa-fw selected" onClick={() => {setShowVotingBar(true)}}><p className="tooltip bottom">Nee</p></i>
-                )
-            }
-            return;
-        }
-        // User hasn't voted / wants to revote
-        if(userData.admin) {
+        if(isFetchingU || userData == undefined) return;
+
+        if(versionData?.is_suggestion != undefined) {
             return (
                 <>
-                <span className="double-thumbs up" onClick={() => { VoteAdminAccept(queryClient, versionData.uuid, versionData.original_id) }}><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><p className="tooltip bottom">Admin ja vote</p></span>
-                <i className="fas fa-thumbs-up fa-fw" onClick={() => { VoteAccept(queryClient, versionData.uuid, versionData.original_id) }}><p className="tooltip bottom">Ja</p></i>
-                <i className="fas fa-thumbs-down fa-fw" onClick={() => { VoteDeny(queryClient, versionData.uuid, versionData.original_id) }}><p className="tooltip bottom">Nee</p></i>
-                <span className="double-thumbs down" onClick={() => { VoteAdminDeny(queryClient, versionData.uuid, versionData.original_id) }}><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><p className="tooltip bottom">Admin nee vote</p></span>
+                    <i className="fas fa-x fa-fw"><p className="tooltip bottom">Annuleer</p></i>
+                    <i className="fas fa-save fa-fw"><p className="tooltip bottom">Stel voor</p></i>
+                </>
+            );
+        } else if(versionData?.voting_result == null) {
+            if(isFetchingP) return;
+            // User has voted
+            if(!showVotingBar && !IsObjectEmpty(vote)) {
+                var isAdmin = vote.admin_vote;
+                var value = vote.value;
+                if(isAdmin && value == 1) {
+                    return (
+                        <span className="double-thumbs up selected" onClick={() => {setShowVotingBar(true)}}><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><p className="tooltip bottom">Admin ja vote</p></span>
+                    );
+                }
+                else if(value == 1) {
+                    return (
+                        <i className="fas fa-thumbs-up fa-fw selected" onClick={() => {setShowVotingBar(true)}}><p className="tooltip bottom">Ja</p></i>
+                    );
+                }
+                else if(isAdmin && value == -1) {
+                    return (
+                        <span className="double-thumbs down selected" onClick={() => {setShowVotingBar(true)}}><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><p className="tooltip bottom">Admin nee vote</p></span>
+                    )
+                }
+                else if(value == -1) {
+                    return (
+                        <i className="fas fa-thumbs-down fa-fw selected" onClick={() => {setShowVotingBar(true)}}><p className="tooltip bottom">Nee</p></i>
+                    )
+                }
+                return;
+            }
+            // User hasn't voted / wants to revote
+            if(userData.admin) {
+                return (
+                    <>
+                    <span className="double-thumbs up" onClick={() => { voteAdminAccept(versionData.uuid, versionData.original_id) }}><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><i className="fas fa-thumbs-up"></i><p className="tooltip bottom">Admin ja vote</p></span>
+                    <i className="fas fa-thumbs-up fa-fw" onClick={() => { voteAccept(versionData.uuid, versionData.original_id) }}><p className="tooltip bottom">Ja</p></i>
+                    <i className="fas fa-thumbs-down fa-fw" onClick={() => { voteDeny(versionData.uuid, versionData.original_id) }}><p className="tooltip bottom">Nee</p></i>
+                    <span className="double-thumbs down" onClick={() => { voteAdminDeny(versionData.uuid, versionData.original_id) }}><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><i className="fas fa-thumbs-down"></i><p className="tooltip bottom">Admin nee vote</p></span>
+                    </>
+                );
+            }
+            else {
+                return (
+                    <>
+                        <i className="fas fa-thumbs-up fa-fw" onClick={() => { voteAccept(versionData.uuid, versionData.original_id) }}></i><i className="fas fa-thumbs-down fa-fw" onClick={() => { voteDeny(versionData.uuid, versionData.original_id, setShowVotingBar) }}></i>
+                    </>
+                )
+            }
+        } else {
+            return (
+                <>
+                    <i className="fas fa-award fa-fw"><p className="tooltip bottom">Stel als inspiratie voor</p></i>
+                    <i className="fas fa-edit fa-fw" onClick={() => { openEdit() }}><p className="tooltip bottom">Stel aanpassing voor</p></i>
+                    <i className="fas fa-trash-alt fa-fw"><p className="tooltip bottom">Stel verwijdering voor</p></i>
                 </>
             );
         }
-        else {
-            return (
-                <>
-                    <i className="fas fa-thumbs-up fa-fw" onClick={() => { VoteAccept(queryClient, versionData.uuid, versionData.original_id) }}></i><i className="fas fa-thumbs-down fa-fw" onClick={() => { VoteDeny(queryClient, versionData.uuid, versionData.original_id, setShowVotingBar) }}></i>
-                </>
-            )
+
+        /* + ======================================================================== +
+        /* | Editing button                                                           |
+        /* + ========================================================================*/
+        function openEdit(confirmed) {
+            // Check if there isn't already a suggestion that should be overriden
+            var suggestionExists = localStorage.getItem('project-suggestion:' + versionData.original_id) != undefined;
+            if(!confirmed && suggestionExists) {
+                conformationPopover.current.open(
+                    'Deze actie zal de huidige suggestie verwijderen en dit kan niet ongedaan worden',
+                    () => { openEdit(true); }
+                )
+                return;
+            }
+
+            // Create a deep copy
+            var editedVersionData = JSON.parse(JSON.stringify(versionData));
+            editedVersionData.uuid = 0;
+            editedVersionData.is_suggestion = true;
+            editedVersionData.active_version = 0;
+            editedVersionData.voting_result = null;
+            editedVersionData.version_name = 'Geef deze verandering een naam';
+            editedVersionData.version_description = 'Insert uitleg hier';
+            editedVersionData.version_proposer = '<insert huidige gebruikersnaam>';
+            editedVersionData.created_at = new Date();
+
+            localStorage.setItem('project-suggestion:' + versionData.original_id, JSON.stringify(editedVersionData));
+
+            setSelectedVersionUUID(0);
         }
-    } else {
-        return (
-            <>
-                <i className="fas fa-award fa-fw"><p className="tooltip bottom">Stel als inspiratie voor</p></i>
-                <i className="fas fa-edit fa-fw" onClick={() => { OpenEdit(versionData, setSelectedVersionUUID, conformationPopover) }}><p className="tooltip bottom">Stel aanpassing voor</p></i>
-                <i className="fas fa-trash-alt fa-fw"><p className="tooltip bottom">Stel verwijdering voor</p></i>
-            </>
-        );
-    }
-}
 
 
-/* + ======================================================================== +
-/* | Editing button                                                           |
-/* + ========================================================================*/
-function OpenEdit(versionData, setSelectedVersionUUID, conformationPopover, confirmed) {
-    // Check if there isn't already a suggestion that should be overriden
-    var suggestionExists = localStorage.getItem('project-suggestion:' + versionData.original_id) != undefined;
-    if(!confirmed && suggestionExists) {
-        conformationPopover.current.open(
-            'Deze actie zal de huidige suggestie verwijderen en dit kan niet ongedaan worden',
-            () => { OpenEdit(versionData, setSelectedVersionUUID, undefined, true); }
-        )
-        return;
+        /* + ======================================================================== +
+        /* | Voting                                                                   |
+        /* + ========================================================================*/
+        async function voteAdminAccept(uuid, id) {
+            setProjectVote(queryClient, uuid, id, {voteValue:1, adminVote:true})
+        }
+        async function voteAccept(uuid, id) {
+            setProjectVote(queryClient, uuid, id, {voteValue:1, adminVote:false})
+        }
+        async function voteAdminDeny(uuid, id) {
+            setProjectVote(queryClient, uuid, id, {voteValue:-1, adminVote:true})
+        }
+        async function voteDeny(uuid, id) {
+            setProjectVote(queryClient, uuid, id, {voteValue:-1, adminVote:false})
+        }
     }
 
-    // Create a deep copy
-    var editedVersionData = JSON.parse(JSON.stringify(versionData));
-    editedVersionData.uuid = 0;
-    editedVersionData.is_suggestion = true;
-    editedVersionData.active_version = 0;
-    editedVersionData.voting_result = null;
-    editedVersionData.version_name = 'Geef deze verandering een naam';
-    editedVersionData.version_description = 'Insert uitleg hier';
-    editedVersionData.version_proposer = '<insert huidige gebruikersnaam>';
-    editedVersionData.created_at = new Date();
-
-    localStorage.setItem('project-suggestion:' + versionData.original_id, JSON.stringify(editedVersionData));
-
-    setSelectedVersionUUID(0);
-}
-
-
-/* + ======================================================================== +
-/* | Voting                                                                   |
-/* + ========================================================================*/
-async function VoteAdminAccept(queryClient, uuid, id) {
-    setProjectVote(queryClient, uuid, id, {voteValue:1, adminVote:true})
-}
-async function VoteAccept(queryClient, uuid, id) {
-    setProjectVote(queryClient, uuid, id, {voteValue:1, adminVote:false})
-}
-async function VoteAdminDeny(queryClient, uuid, id) {
-    setProjectVote(queryClient, uuid, id, {voteValue:-1, adminVote:true})
-}
-async function VoteDeny(queryClient, uuid, id) {
-    setProjectVote(queryClient, uuid, id, {voteValue:-1, adminVote:false})
-}
+});
+export default ProjectPopover;

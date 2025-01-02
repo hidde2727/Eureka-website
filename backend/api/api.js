@@ -11,6 +11,24 @@ import * as Login from '../utils/login.js';
 import * as DB from '../utils/db.js';
 import * as INS from '../utils/inspiration.js';
 
+router.get('/inspiration', async (req, res) => {
+    const inspirations = await DB.GetAllActiveInspiration();
+    res.json(inspirations.map((inspiration) => {
+        return {
+            uuid: inspiration.uuid,
+            original_id: inspiration.original_id,
+            type: inspiration.type,
+            name: inspiration.name,
+            description: inspiration.description,
+            ID: inspiration.ID,
+            url: inspiration.url,
+            recommendation1: JSON.parse(inspiration.recommendation1),
+            recommendation2: JSON.parse(inspiration.recommendation2),
+            additionInfo: JSON.parse(inspiration.additionInfo),
+            labels: inspiration.labels
+        }
+    }));
+});
 router.post('/login', async (req, res) => {
 try {
     var data = req.body;
@@ -93,7 +111,7 @@ try {
         return Validator.ReturnError(res, 'Specificeer labels');
     var error = false;
     data.labels.forEach((label, index) => {
-        if(Validator.CheckLabelID(res, label)) error = true;
+        if(Validator.CheckID(res, label)) error = true;
     });
     if(error) return true;
 
@@ -104,16 +122,16 @@ try {
         urlInfo.type, urlInfo.name, data.description, urlInfo.ID, data.url, 
         data.recommendations.length >= 1 ? JSON.stringify(await INS.GetURLInfo(data.recommendations[0])) : null, 
         data.recommendations.length >= 2 ? JSON.stringify(await INS.GetURLInfo(data.recommendations[1])) : null, 
-        JSON.stringify(urlInfo.json)
+        JSON.stringify(urlInfo),
+        data.labels
     );
-    await DB.AddLabelsToLastInsertedInspiration(data.labels);
 
     res.send('Inspiratie is aangevraagd!');
 } catch(err) {
+    console.error(err.message);
     if(err.message.includes('Illegale website string: ')) return Validator.ReturnError(res, 'Inspiratie url is incorrect');
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
-    console.error(err.message);
 }
 });
 router.get('/retrieve/url', async (req, res) => {

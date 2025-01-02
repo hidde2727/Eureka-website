@@ -1,4 +1,4 @@
-export default function Project({ projectData, urls, onClick }) {
+export default function Project({ projectData, urls=true, onClick }) {
     if(projectData == undefined) return <div className="project"></div>;
     var url1 = projectData.url1, url2 = projectData.url2, url3 = projectData.url3;
     if(typeof(url1) == 'string') url1 = JSON.parse(url1);

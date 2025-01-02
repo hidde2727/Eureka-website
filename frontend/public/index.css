@@ -512,7 +512,7 @@ hr {
 
     background-color: var(--extra-prominent-background) !important;
     color: var(--prominent-text) !important;
-    padding: 6px !important;
+    padding: 0px !important;
     border-radius: var(--small-border-radius) !important;
 
     z-index: 100000;
@@ -540,6 +540,7 @@ hr {
 .tooltip.js-controlled.open {
     opacity: 1 !important;
     visibility: visible !important;
+    padding: 6px!important;
 }
 .tooltip:before {
     content: "";
@@ -734,6 +735,8 @@ form:has(.form-succes-screen) {
         "cont cont"
         "icon info1"
         "icon info2";
+
+    box-sizing: content-box;
 }
 .website .website-content {
     grid-area: cont;
@@ -1231,6 +1234,51 @@ form:has(.form-succes-screen) {
     overflow-x: hidden;
 }
 
+/* + ======================================================================== +
+/* | Inspiration popover                                                      |
+/* + ========================================================================*/
+#inspiration-popover:not(:has(.middle, .left, .right)) {
+    max-width: 800px;
+    padding: 15px 25px;
+}
+#inspiration-popover .middle .top {
+    max-width: 800px;
+    padding: 15px 25px;
+}
+#inspiration-popover .comparable {
+    margin: 10px 0;
+}
+#inspiration-popover .labels {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    gap: 3px;
+}
+#inspiration-popover .labels .label {
+    color: var(--prominent-text);
+}
+#inspiration-popover .labels .label::before {
+    color: var(--prominent-text);
+}
+#inspiration-popover .split-window {
+    grid-template-columns: auto 1fr;
+    padding: 0;
+    justify-content: center;
+}
+#inspiration-popover .split-window :first-child .website {
+    margin-left: 15px;
+}
+#inspiration-popover .split-window > :not(button, input) {
+    padding: 0;
+}
+#inspiration-popover .description {
+    margin: 20px;
+    margin-left: 40px;
+}
+#inspiration-popover .description p {
+    margin: 0;
+}
+
 
 /* + ======================================================================== +
 /* | Files window                                                             |
@@ -1390,6 +1438,6 @@ label:has(+ #project-link2, + #project-link3) {
 /* + ======================================================================== +
 /* | Login popover                                                            |
 /* + ========================================================================*/
-#login-popover .content {
+#login-popover {
     overflow: visible;
 }

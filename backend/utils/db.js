@@ -144,42 +144,50 @@ export async function GetSession(id) {
 export async function CreateInspiration(
     versionName, versionDescription, versionSuggestor, versionSuggestorID, 
     type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
+    labels,
     originalID=undefined
 ) {
+    let insertedID = undefined;
     if(originalID != undefined) {
 
-        var previousID = await ExecutePreparedStatement('SELECT id FROM inspiration WHERE original_id=? AND next_version=NULL', [originalID]);
+        var previousID = await ExecutePreparedStatement('SELECT uuid FROM inspiration WHERE original_id=? AND next_version=NULL', [originalID]);
         if(previousID.length == 0) throw new Error('No inspiration with original_id found');
-        previousID = previousID[0]['id'];
+        previousID = previousID[0]['uuid'];
 
-        await ExecutePreparedStatement(
+        insertedID = await ExecutePreparedStatement(
             `INSERT INTO inspiration 
             (version_name, version_description, version_proposer, version_proposer_id, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
             previous_version, original_id) 
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            RETURNING uuid`, [
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
             previousID, original_id
         ]);
-        var insertedID = await ExecuteStatement('SELECT LAST_INSERT_ID() AS \'id\';');
-        if(insertedID.length == 0) throw new Error('Error retrieving the last inserted id');
-        insertedID = insertedID[0]['id'];
 
-        ExecutePreparedStatement('UPDATE inspiration SET next_version=? WHERE id=?', [newID, previousID]);
+        ExecutePreparedStatement('UPDATE inspiration SET next_version=? WHERE uuid=?', [insertedID[0]['uuid'], previousID]);
 
     } else {
 
-        await ExecutePreparedStatement(`INSERT INTO inspiration 
+        insertedID = await ExecutePreparedStatement(`INSERT INTO inspiration 
             (version_name, version_description, version_proposer, version_proposer_id, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, original_id) 
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) 
+            RETURNING uuid`, [
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 0
         ]);
-        await ExecuteStatement('UPDATE inspiration SET original_id=uuid WHERE uuid=LAST_INSERT_ID()');
+        await ExecutePreparedStatement('UPDATE inspiration SET original_id=uuid WHERE uuid=?', [insertedID[0]['uuid']]);
 
     }
+    let query = 'INSERT INTO labels_to_inspiration (label_id, inspiration_id) VALUES' + '(?,?),'.repeat(labels.length).slice(0, -1);
+    let preparedValues = [];
+    for(let i = 0; i < labels.length; i++) {
+        preparedValues.push(parseInt(labels[i]));
+        preparedValues.push(insertedID[0]['uuid']);
+    }
+    await ExecutePreparedStatement(query, preparedValues);
 }
 export async function DoesInspirationExist(type, ID) {
     var result = await ExecutePreparedStatement(
@@ -199,21 +207,71 @@ export async function GetInspiration(uuid) {
     var results = await ExecutePreparedStatement('SELECT * FROM inspiration WHERE uuid=?', [uuid]);
     return results.length == 0 ? undefined : results[0];
 }
-export async function GetAllActiveInspirationWithLabels(labels, limit, offset) {
-    var statement = 'SELECT * FROM inspiration WHERE active_version=TRUE AND original_id IN(SELECT inspiration_id FROM labels_to_inspiration l1 ';
-    for(var i = 1; i < labels.length; i++) statement += 'JOIN labels_to_inspiration l' + i.toString() + ' USING(inspiration_id) ';
-    for(var i = 0; i < labels.length; i++) {
-        statement += i == 0 ? 'WHERE' : 'AND';
-        statement += ' l' + i.toString() + '.label_id=' + labels[i] + ' ';
-    }
-    statement += ' LIMIT ? OFFSET ?)';
-    return await ExecutePreparedStatement(statement, labels.concat([limit, offset]));
+export async function GetAllActiveInspirationWithLabels(filters, limit=20, offset=0) {
+    return await ExecutePreparedStatement(`
+    WITH filtered_inspirations AS (
+        SELECT inspiration_id
+        FROM labels_to_inspiration
+        WHERE label_id IN (${'?,'.repeat(filters.length).slice(0, -1)})
+        GROUP BY inspiration_id
+        HAVING COUNT(DISTINCT label_id)=?,
+        LIMIT ? OFFSET ?
+    )
+    SELECT 
+        i.*,
+        GROUP_CONCAT(lti.label_id ORDER BY lti.label_id SEPARATOR ',') AS labels
+    FROM 
+        inspiration i
+    LEFT JOIN 
+        labels_to_inspiration lti ON i.uuid = lti.inspiration_id
+    WHERE 
+        i.active_version=TRUE AND i.uuid IN (SELECT inspiration_id FROM filtered_inspirations)
+    GROUP BY 
+        i.uuid
+    `, [...filters, filters.length, limit, offset]);
 }
-export async function GetAllActiveInspiration(limit, offset) {
-    return await ExecutePreparedStatement('SELECT * FROM inspiration WHERE active_version=TRUE LIMIT ? OFFSET ?', [limit, offset]);
+export async function GetAllActiveInspiration(limit=20, offset=0) {
+    return await ExecutePreparedStatement(`
+    SELECT 
+        i.*,
+        GROUP_CONCAT(lti.label_id ORDER BY lti.label_id SEPARATOR ',') AS labels
+    FROM 
+        inspiration i
+    LEFT JOIN 
+        labels_to_inspiration lti ON i.uuid = lti.inspiration_id
+    WHERE 
+        i.active_version=TRUE
+    GROUP BY 
+        i.uuid
+    LIMIT ? OFFSET ?
+    `, [limit, offset]);
 }
 export async function GetAllInspirationVersionsOfID(inspirationID) {
-    return await ExecutePreparedStatement('SELECT * FROM inspiration WHERE original_id=? ORDER BY created_at ASC', [inspirationID]);
+    return await ExecutePreparedStatement(`
+    SELECT 
+        i.*,
+        GROUP_CONCAT(lti.label_id ORDER BY lti.label_id SEPARATOR ',') AS labels
+    FROM 
+        inspiration i
+    LEFT JOIN 
+        labels_to_inspiration lti ON i.uuid = lti.inspiration_id
+    WHERE 
+        i.original_id=?
+    GROUP BY 
+        i.uuid
+    ORDER BY i.created_at ASC`
+    , [inspirationID]);
+}
+export async function IsValidInspiration(uuid) {
+    var results = await ExecutePreparedStatement(
+        'SELECT CASE WHEN EXISTS(SELECT 1 FROM inspiration WHERE uuid=?) THEN 1 ELSE 0 END AS result',
+        [uuid]
+    );
+    return results[0]['result'] == '1';
+}
+export async function HasInspirationVoteResult(uuid) {
+    var results = await ExecutePreparedStatement('SELECT voting_result FROM inspiration WHERE uuid=?', [uuid]);
+    return results.length==0? undefined : results[0]['voting_result'] !== null;
 }
 
 
@@ -332,6 +390,10 @@ export async function IsValidProject(uuid) {
         [uuid]
     );
     return results[0]['result'] == '1';
+}
+export async function HasProjectVoteResult(uuid) {
+    var results = await ExecutePreparedStatement('SELECT voting_result FROM projects WHERE uuid=?', [uuid]);
+    return results.length==0? undefined : results[0]['voting_result'] !== null;
 }
 
 

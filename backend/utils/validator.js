@@ -232,7 +232,7 @@ export function CheckSuggestionType(res, type) {
 export function CheckVoteValue(res, value) {
     if(value == undefined) 
         return ReturnError(res, 'Specificeer de vote');
-    else if(value != 'accept' && value != 'deny') 
+    else if(value != 1 && value != -1) 
         return ReturnError(res, 'Specificeer valide vote');
 
     return false;

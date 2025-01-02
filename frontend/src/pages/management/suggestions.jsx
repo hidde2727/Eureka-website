@@ -56,7 +56,7 @@ export default function SuggestionVoting({isActive}) {
 
 function OnSuggestionClick(popoverContext, suggestion) {
     if(suggestion.type == 'inspiration') {
-
+        popoverContext.inspiration.current.open({original_id: suggestion.original_id, uuid: suggestion.uuid});
     }
     else if(suggestion.type == 'project') {
         popoverContext.project.current.open({original_id: suggestion.original_id, uuid: suggestion.uuid});
