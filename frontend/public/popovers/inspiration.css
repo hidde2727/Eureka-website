@@ -1,0 +1,41 @@
+#inspiration-popover .center-content {
+    flex-direction: column;
+}
+#inspiration-popover .center-content input {
+    width: 312px;
+    margin: 0px 5px 5px 15px;
+}
+#inspiration-popover .center-content:nth-child(2) input {
+    margin: 0px 5px 5px 0px;
+}
+#inspiration-popover .description .auto-grow {
+    margin: -21px -21px 0 -21px;
+}
+
+#inspiration-popover .right {
+    min-width: 250px;
+    padding-right: 5px;
+}
+#inspiration-popover .right .category > p {
+    margin: 0 0 2px -5px;
+    font-size: 0.9rem;
+}
+#inspiration-popover .right .category .content {
+    margin-bottom: 10px;
+}
+#inspiration-popover .right .category .content > div {
+    margin-left: 5px;
+}
+
+#inspiration-popover .inspiration-suggestion-popover {
+    width: 350px;
+    overflow: visible;
+}
+#inspiration-popover .inspiration-suggestion-popover label {
+    margin-left: 10px;
+}
+#inspiration-popover .inspiration-suggestion-popover input[type="submit"] {
+    margin: 30px 0 0 0;
+    width: 100%;
+    text-align: center;
+}

@@ -10,6 +10,8 @@ import * as Validator from '../utils/validator.js';
 import * as Login from '../utils/login.js';
 import * as DB from '../utils/db.js';
 import * as INS from '../utils/inspiration.js';
+import * as Voting from '../utils/suggestion_voting.js';
+import { GenerateProjectJSON } from '../utils/projects.js';
 
 router.get('/inspiration', async (req, res) => {
     const inspirations = await DB.GetAllActiveInspiration();
@@ -78,7 +80,7 @@ try {
     if(Validator.CheckSuggestorName(res, data.suggestorName)) return;
     if(Validator.CheckEmail(res, data.suggestorEmail)) return;
 
-    await DB.CreateProject(
+    const insertedID = await DB.CreateProject(
         'Origineel', 'Originele suggestie', data.suggestorName, null,
         data.name, data.description,
         links.length >= 1 ? JSON.stringify(await INS.GetURLInfo(links[0])) : null, 
@@ -86,6 +88,11 @@ try {
         links.length >= 3 ? JSON.stringify(await INS.GetURLInfo(links[2])) : null,
         data.suggestorName, '-', data.suggestorEmail
     );
+    if(await Login.CheckSession(req, res)) {
+        await Voting.VoteProject(req, insertedID, 1, await Login.HasUserPermission(req, 'admin'))
+    }
+
+    await GenerateProjectJSON();
 
     res.send('Project is aangevraagd!');
 } catch(err) {
@@ -115,16 +122,22 @@ try {
     });
     if(error) return true;
 
+    var loggedIn = await Login.CheckSession(req, res);
+    let username = loggedIn?Login.GetSessionUsername():'-';
+
     var urlInfo = await INS.GetURLInfo(data.url);
     if(await DB.DoesInspirationExist(urlInfo.type, urlInfo.ID)) return Validator.ReturnError(res, 'Inspiratie url zit al in onze database');
-    await DB.CreateInspiration(
-        'Origineel', 'Originele suggestie', '-', null,
+    const insertedID = await DB.CreateInspiration(
+        'Origineel', 'Originele suggestie', username, null,
         urlInfo.type, urlInfo.name, data.description, urlInfo.ID, data.url, 
         data.recommendations.length >= 1 ? JSON.stringify(await INS.GetURLInfo(data.recommendations[0])) : null, 
         data.recommendations.length >= 2 ? JSON.stringify(await INS.GetURLInfo(data.recommendations[1])) : null, 
         JSON.stringify(urlInfo),
         data.labels
     );
+    if(loggedIn) {
+        await Voting.VoteInspiration(req, insertedID, 1, await Login.HasUserPermission(req, 'admin'))
+    }
 
     res.send('Inspiratie is aangevraagd!');
 } catch(err) {

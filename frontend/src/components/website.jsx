@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useWebsiteInfo } from "../utils/data_fetching.jsx";
 import { IsValidURL } from "../utils/utils.jsx";
 
@@ -10,8 +11,14 @@ const InspirationTypes = Object.freeze({
     Website: 4,
 });
 
-export default function Website({ id, data, url, onClick }) {
-    const {fetchedData, hasError, isFetching} = useWebsiteInfo(url, data==undefined && url != undefined && url!=null && url != '' && IsValidURL(url));
+export default function Website({ id, data, url, onClick, onDataLoad }) {
+    const {fetchedData, hasError, isFetching} = useWebsiteInfo(url, data==undefined && url!=undefined && url!=null && url != '' && IsValidURL(url));
+    
+    useEffect(() => {
+        if(isFetching || fetchedData==undefined) return;
+        onDataLoad(fetchedData);
+    }, [fetchedData])
+
     if(data == undefined) data = fetchedData;
     if(typeof(data) == 'string') data=JSON.parse(data);
     if(data ==undefined && (isFetching || hasError)) {

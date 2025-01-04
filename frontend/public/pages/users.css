@@ -46,7 +46,7 @@
     left: calc(50% - 22px);
 }
 
-#users .user-creation.content {
+#users .user-modification.content {
     overflow: initial;
     width: 300px;
 }
@@ -80,6 +80,7 @@
 }
 #users .user-modification label {
     font-size: 0.8rem;
+    display: inline-block;
 }
 #users .user-modification input[type="submit"] {
     margin-top: 10px;

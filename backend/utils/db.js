@@ -149,8 +149,7 @@ export async function CreateInspiration(
 ) {
     let insertedID = undefined;
     if(originalID != undefined) {
-
-        var previousID = await ExecutePreparedStatement('SELECT uuid FROM inspiration WHERE original_id=? AND next_version=NULL', [originalID]);
+        var previousID = await ExecutePreparedStatement('SELECT uuid FROM inspiration WHERE original_id=? AND next_version<=>NULL', [originalID]);
         if(previousID.length == 0) throw new Error('No inspiration with original_id found');
         previousID = previousID[0]['uuid'];
 
@@ -163,13 +162,13 @@ export async function CreateInspiration(
             RETURNING uuid`, [
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
-            previousID, original_id
+            previousID, originalID
         ]);
+        insertedID = insertedID[0]['uuid'];
 
-        ExecutePreparedStatement('UPDATE inspiration SET next_version=? WHERE uuid=?', [insertedID[0]['uuid'], previousID]);
+        ExecutePreparedStatement('UPDATE inspiration SET next_version=? WHERE uuid=?', [insertedID, previousID]);
 
     } else {
-
         insertedID = await ExecutePreparedStatement(`INSERT INTO inspiration 
             (version_name, version_description, version_proposer, version_proposer_id, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, original_id) 
@@ -178,16 +177,18 @@ export async function CreateInspiration(
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 0
         ]);
-        await ExecutePreparedStatement('UPDATE inspiration SET original_id=uuid WHERE uuid=?', [insertedID[0]['uuid']]);
+        insertedID = insertedID[0]['uuid'];
+        await ExecutePreparedStatement('UPDATE inspiration SET original_id=uuid WHERE uuid=?', [insertedID]);
 
     }
     let query = 'INSERT INTO labels_to_inspiration (label_id, inspiration_id) VALUES' + '(?,?),'.repeat(labels.length).slice(0, -1);
     let preparedValues = [];
     for(let i = 0; i < labels.length; i++) {
         preparedValues.push(parseInt(labels[i]));
-        preparedValues.push(insertedID[0]['uuid']);
+        preparedValues.push(insertedID);
     }
     await ExecutePreparedStatement(query, preparedValues);
+    return insertedID;
 }
 export async function DoesInspirationExist(type, ID) {
     var result = await ExecutePreparedStatement(
@@ -198,7 +199,7 @@ export async function DoesInspirationExist(type, ID) {
 }
 export async function SetInspirationAsActive(uuid) {
     // Set all versions to non active
-    var inspirationID = await ExecutePreparedStatement('SELECT original_id FROM inspiration WHERE uuid=?', [uuid]);
+    var inspirationID = (await ExecutePreparedStatement('SELECT original_id FROM inspiration WHERE uuid=?', [uuid]))[0]['original_id'];
     await ExecutePreparedStatement('UPDATE inspiration SET active_version=FALSE WHERE original_id=?', [inspirationID]);
     // Set specified uuid to active
     await ExecutePreparedStatement('UPDATE inspiration SET active_version=TRUE WHERE uuid=?', [uuid]);
@@ -259,7 +260,7 @@ export async function GetAllInspirationVersionsOfID(inspirationID) {
         i.original_id=?
     GROUP BY 
         i.uuid
-    ORDER BY i.created_at ASC`
+    ORDER BY i.created_at DESC`
     , [inspirationID]);
 }
 export async function IsValidInspiration(uuid) {
@@ -332,40 +333,41 @@ export async function CreateProject(
     name, description, url1, url2, url3, requester, implementer, requestEmail, 
     originalID=undefined
 ) {
+    let insertedID;
     if(originalID != undefined) {
-
-        var previousID = await ExecutePreparedStatement('SELECT id FROM projects WHERE original_id=? AND next_version=NULL', [originalID]);
+        let previousID = await ExecutePreparedStatement('SELECT uuid FROM projects WHERE original_id=? AND next_version<=>NULL', [originalID]);
         if(previousID.length == 0) throw new Error('No projects with original_id found');
-        previousID = previousID[0]['id'];
+        previousID = previousID[0]['uuid'];
 
-        await ExecutePreparedStatement(
+        insertedID = await ExecutePreparedStatement(
             `INSERT INTO projects 
             (version_name, version_description, version_proposer, version_proposer_id, 
             name, description, url1, url2, url3, requester, implementer, request_email, 
             previous_version, original_id) 
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            RETURNING uuid`, [
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
             name, description, url1, url2, url3, requester, implementer, requestEmail, 
-            previousID, original_id
+            previousID, originalID
         ]);
-        var insertedID = await ExecuteStatement('SELECT LAST_INSERT_ID() AS \'id\'');
-        if(insertedID.length == 0) throw new Error('Error retrieving the last inserted id');
-        insertedID = insertedID[0]['id'];
-
-        ExecutePreparedStatement('UPDATE projects SET next_version=?  WHERE id=?', [newID, previousID]);
+        insertedID = insertedID[0]['uuid'];
+        ExecutePreparedStatement('UPDATE projects SET next_version=? WHERE uuid=?', [insertedID, previousID]);
 
     } else {
-        await ExecutePreparedStatement(
+        insertedID = await ExecutePreparedStatement(
             `INSERT INTO projects 
             (version_name, version_description, version_proposer, version_proposer_id, 
             name, description, url1, url2, url3, requester, implementer, request_email, original_id) 
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) 
+            RETURNING uuid`, [
             versionName, versionDescription, versionSuggestor, versionSuggestorID,
             name, description, url1, url2, url3, requester, implementer, requestEmail, 0
         ]);
-        await ExecuteStatement('UPDATE projects SET original_id=uuid WHERE uuid=LAST_INSERT_ID()');
+        insertedID = insertedID[0]['uuid'];
+        await ExecuteStatement('UPDATE projects SET original_id=uuid WHERE uuid=?', [insertedID]);
 
     }
+    return insertedID;
 }
 export async function SetProjectAsActive(uuid) {
     // Set all versions to non active
@@ -394,6 +396,9 @@ export async function IsValidProject(uuid) {
 export async function HasProjectVoteResult(uuid) {
     var results = await ExecutePreparedStatement('SELECT voting_result FROM projects WHERE uuid=?', [uuid]);
     return results.length==0? undefined : results[0]['voting_result'] !== null;
+}
+export async function HasProjectPendingVotes(projectID) {
+    return (await ExecutePreparedStatement('SELECT CASE WHEN EXISTS(SELECT 1 FROM projects WHERE original_id=? AND voting_result<=>NULL) THEN 1 ELSE 0 END AS result', [projectID]))[0]['result'];
 }
 
 

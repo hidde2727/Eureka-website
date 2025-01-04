@@ -39,37 +39,37 @@ export const Popover = forwardRef(({children, id, className, form, onSubmit}, re
         </div>
     );
 });
-export function Left({children}) {
+export function Left({children, className, keepClosed}) {
     return (
-        <div className="left">
+        <div className={`left ${className} ${keepClosed?'closed':''}`}>
             {children}
         </div>
     );
 }
-export function Middle({children}) {
+export function Middle({children, className, keepClosed}) {
     return (
-        <div className="middle">
+        <div className={`middle ${className} ${keepClosed?'closed':''}`}>
             {children}
         </div>
     );
 }
-export function Right({children}) {
+export function Right({children, className, keepClosed}) {
     return (
-        <div className="right">
+        <div className={`right ${className} ${keepClosed?'closed':''}`}>
             {children}
         </div>
     );
 }
-export function MiddleTop({children}) {
+export function MiddleTop({children, className, keepClosed}) {
     return (
-        <div className="top">
+        <div className={`top ${className} ${keepClosed?'closed':''}`}>
             {children}
         </div>
     );
 }
-export function MiddleBottom({children, className}) {
+export function MiddleBottom({children, className, keepClosed}) {
     return (
-        <div className={`bottom ${className}`}>
+        <div className={`bottom ${className} ${keepClosed?'closed':''}`}>
             {children}
         </div>
     );

@@ -235,6 +235,9 @@ label:not(.inline) + .auto-grow {
     content: attr(data-replicated-value) " ";
     white-space: pre-wrap;
     visibility: hidden;
+
+    width: 100%;
+    box-sizing: border-box;
 }
 
 
@@ -817,6 +820,8 @@ form:has(.form-succes-screen) {
     display: flex;
     align-items: center;
     justify-content: center;
+
+    flex-direction: column;
 }
 
 .loading a {
@@ -1215,6 +1220,9 @@ form:has(.form-succes-screen) {
     grid-template-columns: auto 1rem;
 
     margin-bottom: 5px;
+}
+#inspiration .sidebar .header a {
+    font-size: 0.9rem;
 }
 #inspiration .sidebar .header i {
     font-size: 0.8rem;

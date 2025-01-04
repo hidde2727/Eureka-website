@@ -1,5 +1,5 @@
 import { keepPreviousData, queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { GetCookie, DeleteCookie } from './utils.jsx';
+import { GetCookie, DeleteCookie, Prepend } from './utils.jsx';
 
 async function fetchInfo(url, method, body, { jsonResponse=true, includeCredentials=false }) {
     const headers = new Headers();
@@ -65,7 +65,7 @@ export function useProjectsSus() {
 export async function suggestProject({ name, description, links, suggestorName, suggestorEmail }) {
     await fetchInfo('/api/suggest/project/', 'POST', JSON.stringify(
         { name, description, links, suggestorName, suggestorEmail }
-    ), {jsonResponse:false});
+    ), {jsonResponse:false, includeCredentials: true});
 }
 
 
@@ -94,7 +94,7 @@ export function useInspirationSus() {
 export async function suggestInspiration({ url, description, recommendations, labels }) {
     await fetchInfo('/api/suggest/inspiration/', 'POST', JSON.stringify(
         { url, description, recommendations, labels }
-    ), {jsonResponse:false});
+    ), {jsonResponse:false, includeCredentials: true});
 }
 
 
@@ -188,6 +188,29 @@ export async function setProjectVote(queryClient, projectUUID, projectID, {voteV
         queryClient.invalidateQueries({ queryKey:['/api/private/self/vote', [['type', 'project'], ['uuid', projectUUID]], 'GET', null]});
         queryClient.invalidateQueries({ queryKey:['/api/private/suggestion/get']});
 
+    } catch(err) {
+        throw new Error('Failed to vote:\n' + err.message);
+    }
+}
+export async function suggestProjectChange(queryClient, newData) {
+    try {
+        // Try to optimistically update
+        queryClient.setQueryData(['/api/private/project/versions', [['id', newData.originalID]], 'GET', null], (oldData) => {
+            if(oldData == undefined) return undefined;
+            var clone = structuredClone(oldData);
+            Prepend(clone, newData);
+            return clone;
+        });
+
+        // Request the vote
+        var response = await fetchInfo('/api/private/project/suggest', 'PUT', JSON.stringify(newData), {includeCredentials: true, jsonResponse: false});
+
+        // Force a refresh (just in case anything went wrong updating optimistically)
+        queryClient.invalidateQueries({ queryKey:['/data/project.json']});
+        queryClient.invalidateQueries({ queryKey:['/api/private/project/versions', [['id', newData.originalID]], 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/suggestion/get']});
+
+        return response;
     } catch(err) {
         throw new Error('Failed to vote:\n' + err.message);
     }
@@ -338,6 +361,29 @@ export async function setInspirationVote(queryClient, inspirationUUID, inspirati
         queryClient.invalidateQueries({ queryKey:['/api/private/self/vote', [['type', 'inspiration'], ['uuid', inspirationUUID]], 'GET', null]});
         queryClient.invalidateQueries({ queryKey:['/api/private/suggestion/get']});
 
+    } catch(err) {
+        throw new Error('Failed to vote:\n' + err.message);
+    }
+}
+export async function suggestInspirationChange(queryClient, newData) {
+    try {
+        // Try to optimistically update
+        queryClient.setQueryData(['/api/private/inspiration/versions', [['id', newData.originalID]], 'GET', null], (oldData) => {
+            if(oldData == undefined) return undefined;
+            var clone = structuredClone(oldData);
+            Prepend(clone, newData);
+            return clone;
+        });
+
+        // Request the vote
+        var response = await fetchInfo('/api/private/inspiration/suggest', 'PUT', JSON.stringify(newData), {includeCredentials: true, jsonResponse: false});
+
+        // Force a refresh (just in case anything went wrong updating optimistically)
+        queryClient.invalidateQueries({ queryKey:['/api/inspiration', undefined, 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/inspiration/versions', [['id', newData.originalID]], 'GET', null]});
+        queryClient.invalidateQueries({ queryKey:['/api/private/suggestion/get']});
+
+        return response;
     } catch(err) {
         throw new Error('Failed to vote:\n' + err.message);
     }

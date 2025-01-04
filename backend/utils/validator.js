@@ -171,14 +171,14 @@ export function CheckFilename(res, filename) {
 /* + ======================================================================== +
 /* | ID's                                                                     |
 /* + ========================================================================*/
-export function CheckID(res, projectID, canBeNull=false) {
-    if (projectID === undefined)
+export function CheckID(res, id, canBeNull=false) {
+    if (id === undefined)
         return ReturnError(res, 'Specificeer een ID');
-    else if(canBeNull && projectID == null) return false;
-    else if(typeof projectID == 'number') return false;
-    else if(!(typeof projectID === 'string') && !(projectID instanceof String))
+    else if(canBeNull && id == null) return false;
+    else if(typeof id == 'number') return false;
+    else if(!(typeof id === 'string') && !(id instanceof String))
         return ReturnError(res, 'ID moet een string of number zijn');
-    else if(!validator.isInt(projectID)) 
+    else if(!validator.isInt(id))
         return ReturnError(res, 'Specifier valide ID');
 
     return false;
