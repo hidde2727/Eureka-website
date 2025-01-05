@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS projects (
     previous_version INT UNSIGNED DEFAULT NULL,
     
     version_name TINYTEXT NOT NULL,
-    version_description TINYTEXT NOT NULL,
+    version_description TEXT NOT NULL,
     version_proposer TINYTEXT NOT NULL,
     version_proposer_id INT UNSIGNED DEFAULT NULL,
 

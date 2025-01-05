@@ -144,42 +144,51 @@ export async function GetSession(id) {
 export async function CreateInspiration(
     versionName, versionDescription, versionSuggestor, versionSuggestorID, 
     type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
+    labels,
     originalID=undefined
 ) {
+    let insertedID = undefined;
     if(originalID != undefined) {
-
-        var previousID = await ExecutePreparedStatement('SELECT id FROM inspiration WHERE original_id=? AND next_version=NULL', [originalID]);
+        var previousID = await ExecutePreparedStatement('SELECT uuid FROM inspiration WHERE original_id=? AND next_version<=>NULL', [originalID]);
         if(previousID.length == 0) throw new Error('No inspiration with original_id found');
-        previousID = previousID[0]['id'];
+        previousID = previousID[0]['uuid'];
 
-        await ExecutePreparedStatement(
+        insertedID = await ExecutePreparedStatement(
             `INSERT INTO inspiration 
             (version_name, version_description, version_proposer, version_proposer_id, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
             previous_version, original_id) 
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            RETURNING uuid`, [
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 
-            previousID, original_id
+            previousID, originalID
         ]);
-        var insertedID = await ExecuteStatement('SELECT LAST_INSERT_ID() AS \'id\';');
-        if(insertedID.length == 0) throw new Error('Error retrieving the last inserted id');
-        insertedID = insertedID[0]['id'];
+        insertedID = insertedID[0]['uuid'];
 
-        ExecutePreparedStatement('UPDATE inspiration SET next_version=? WHERE id=?', [newID, previousID]);
+        ExecutePreparedStatement('UPDATE inspiration SET next_version=? WHERE uuid=?', [insertedID, previousID]);
 
     } else {
-
-        await ExecutePreparedStatement(`INSERT INTO inspiration 
+        insertedID = await ExecutePreparedStatement(`INSERT INTO inspiration 
             (version_name, version_description, version_proposer, version_proposer_id, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, original_id) 
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) 
+            RETURNING uuid`, [
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
             type, name, description, ID, url, recommendation1, recommendation2, additionInfo, 0
         ]);
-        await ExecuteStatement('UPDATE inspiration SET original_id=uuid WHERE uuid=LAST_INSERT_ID()');
+        insertedID = insertedID[0]['uuid'];
+        await ExecutePreparedStatement('UPDATE inspiration SET original_id=uuid WHERE uuid=?', [insertedID]);
 
     }
+    let query = 'INSERT INTO labels_to_inspiration (label_id, inspiration_id) VALUES' + '(?,?),'.repeat(labels.length).slice(0, -1);
+    let preparedValues = [];
+    for(let i = 0; i < labels.length; i++) {
+        preparedValues.push(parseInt(labels[i]));
+        preparedValues.push(insertedID);
+    }
+    await ExecutePreparedStatement(query, preparedValues);
+    return insertedID;
 }
 export async function DoesInspirationExist(type, ID) {
     var result = await ExecutePreparedStatement(
@@ -190,7 +199,7 @@ export async function DoesInspirationExist(type, ID) {
 }
 export async function SetInspirationAsActive(uuid) {
     // Set all versions to non active
-    var inspirationID = await ExecutePreparedStatement('SELECT original_id FROM inspiration WHERE uuid=?', [uuid]);
+    var inspirationID = (await ExecutePreparedStatement('SELECT original_id FROM inspiration WHERE uuid=?', [uuid]))[0]['original_id'];
     await ExecutePreparedStatement('UPDATE inspiration SET active_version=FALSE WHERE original_id=?', [inspirationID]);
     // Set specified uuid to active
     await ExecutePreparedStatement('UPDATE inspiration SET active_version=TRUE WHERE uuid=?', [uuid]);
@@ -199,57 +208,150 @@ export async function GetInspiration(uuid) {
     var results = await ExecutePreparedStatement('SELECT * FROM inspiration WHERE uuid=?', [uuid]);
     return results.length == 0 ? undefined : results[0];
 }
-export async function GetAllActiveInspirationWithLabels(labels, limit, offset) {
-    var statement = 'SELECT * FROM inspiration WHERE active_version=TRUE AND original_id IN(SELECT inspiration_id FROM labels_to_inspiration l1 ';
-    for(var i = 1; i < labels.length; i++) statement += 'JOIN labels_to_inspiration l' + i.toString() + ' USING(inspiration_id) ';
-    for(var i = 0; i < labels.length; i++) {
-        statement += i == 0 ? 'WHERE' : 'AND';
-        statement += ' l' + i.toString() + '.label_id=' + labels[i] + ' ';
+export async function GetAmountInspiration(filters) {
+    if(filters.length == 0) {
+        return (await ExecuteStatement(`
+            SELECT COUNT(*) AS count 
+            FROM inspiration
+            WHERE active_version=TRUE
+        `))[0]['count'];
     }
-    statement += ' LIMIT ? OFFSET ?)';
-    return await ExecutePreparedStatement(statement, labels.concat([limit, offset]));
+    const results = await ExecutePreparedStatement(`
+        WITH filtered_inspirations AS (
+            SELECT inspiration_id
+            FROM labels_to_inspiration
+            WHERE label_id IN (${'?,'.repeat(filters.length).slice(0, -1)})
+            GROUP BY inspiration_id
+            HAVING COUNT(DISTINCT label_id)=?
+        )
+        SELECT COUNT(*) AS count
+        FROM inspiration
+        WHERE 
+            active_version=TRUE AND uuid IN (SELECT inspiration_id FROM filtered_inspirations)
+    `, [...filters, filters.length]);
+    return results.length==0?0:results[0]['count'];
 }
-export async function GetAllActiveInspiration(limit, offset) {
-    return await ExecutePreparedStatement('SELECT * FROM inspiration WHERE active_version=TRUE LIMIT ? OFFSET ?', [limit, offset]);
+export async function GetAllActiveInspirationWithLabels(filters, limit=20, offset=0) {
+    return await ExecutePreparedStatement(`
+    WITH filtered_inspirations AS (
+        SELECT inspiration_id
+        FROM labels_to_inspiration
+        WHERE label_id IN (${'?,'.repeat(filters.length).slice(0, -1)})
+        GROUP BY inspiration_id
+        HAVING COUNT(DISTINCT label_id)=?
+    )
+    SELECT 
+        i.*,
+        GROUP_CONCAT(lti.label_id ORDER BY lti.label_id SEPARATOR ',') AS labels
+    FROM 
+        inspiration i
+    LEFT JOIN 
+        labels_to_inspiration lti ON i.uuid = lti.inspiration_id
+    WHERE 
+        i.active_version=TRUE AND i.uuid IN (SELECT inspiration_id FROM filtered_inspirations)
+    GROUP BY 
+        i.uuid
+    LIMIT ? OFFSET ?
+    `, [...filters, filters.length, limit, offset]);
+}
+export async function GetAllActiveInspiration(limit=20, offset=0) {
+    return await ExecutePreparedStatement(`
+    SELECT 
+        i.*,
+        GROUP_CONCAT(lti.label_id ORDER BY lti.label_id SEPARATOR ',') AS labels
+    FROM 
+        inspiration i
+    LEFT JOIN 
+        labels_to_inspiration lti ON i.uuid = lti.inspiration_id
+    WHERE 
+        i.active_version=TRUE
+    GROUP BY 
+        i.uuid
+    LIMIT ? OFFSET ?
+    `, [limit, offset]);
 }
 export async function GetAllInspirationVersionsOfID(inspirationID) {
-    return await ExecutePreparedStatement('SELECT * FROM inspiration WHERE original_id=? ORDER BY created_at ASC', [inspirationID]);
+    return await ExecutePreparedStatement(`
+    SELECT 
+        i.*,
+        GROUP_CONCAT(lti.label_id ORDER BY lti.label_id SEPARATOR ',') AS labels
+    FROM 
+        inspiration i
+    LEFT JOIN 
+        labels_to_inspiration lti ON i.uuid = lti.inspiration_id
+    WHERE 
+        i.original_id=?
+    GROUP BY 
+        i.uuid
+    ORDER BY i.created_at DESC`
+    , [inspirationID]);
+}
+export async function IsValidInspiration(uuid) {
+    var results = await ExecutePreparedStatement(
+        'SELECT CASE WHEN EXISTS(SELECT 1 FROM inspiration WHERE uuid=?) THEN 1 ELSE 0 END AS result',
+        [uuid]
+    );
+    return results[0]['result'] == '1';
+}
+export async function HasInspirationVoteResult(uuid) {
+    var results = await ExecutePreparedStatement('SELECT voting_result FROM inspiration WHERE uuid=?', [uuid]);
+    return results.length==0? undefined : results[0]['voting_result'] !== null;
+}
+export async function HasInspirationPendingVotes(inspirationID) {
+    return (await ExecutePreparedStatement('SELECT CASE WHEN EXISTS(SELECT 1 FROM inspiration WHERE original_id=? AND voting_result<=>NULL) THEN 1 ELSE 0 END AS result', [inspirationID]))[0]['result'];
 }
 
 
 // + ======================================================================== +
 // | InspirationLabels                                                        |
 // + ======================================================================== +
-export async function CreateCategory(category) {
-    await ExecutePreparedStatement('INSERT INTO labels (category) VALUES(?)', [category]);
+export async function CreateLabel(parentID, name) {
+    const doesExists = await ExecutePreparedStatement('SELECT id FROM labels WHERE parent_id<=>? AND name=?', [parentID, name]);
+    if(doesExists.length > 0) return doesExists[0]['id'];
+    console.log(name);
+
+    const id = (await ExecutePreparedStatement(
+        'INSERT INTO labels (parent_id, name) VALUES(?,?) RETURNING id', 
+        [parentID, name]
+    ))[0]['id'];
+    await ExecutePreparedStatement('UPDATE labels SET position= COALESCE((SELECT MAX(position) FROM labels WHERE parent_id<=>?)+1, 1) WHERE id=?', [parentID, id]);
+    return id;
 }
-export async function CreateLabel(category, name) {
-    await ExecutePreparedStatement('INSERT INTO labels (category, name) VALUES(?,?)', [category, name])
+export async function DeleteLabelFromInspiration(id) {
+    await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id=?', [id]);
 }
-export async function AddLabelToInspiration(labelID, inspirationUUID) {
-    await ExecutePreparedStatement('INSERT INTO labels_to_inspiration (label_id, inspiration_id) VALUES(?,?)', [labelID, inspirationUUID]);
+export async function ReplaceLabelFromInspiration(id, replacementId) {
+    await ExecutePreparedStatement('UPDATE IGNORE labels_to_inspiration SET label_id=? WHERE label_id=?', [replacementId, id]);
+    await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id=?', [id]);
 }
-export async function AddLabelsToLastInsertedInspiration(labelIDs) {
-    var query = 'INSERT INTO labels_to_inspiration (label_id, inspiration_id) VALUES';
-    for(var i = 0; i < labelIDs.length; i++) {
-        if(i != 0) query += ',';
-        query += '(?,LAST_INSERT_ID())';
-    }
-    await ExecutePreparedStatement(query, labelIDs);
+export async function SetLabelPosition(id, position) {
+    await ExecutePreparedStatement('UPDATE labels SET position=? WHERE id=?', [position, id]);
 }
-export async function DeleteLabelFromInspiration(labelID, inspirationUUID) {
-    await ExecutePreparedStatement('DELETE FROM labels WHERE label_id=? AND inspiration_id=?', [labelID, inspirationUUID]);
+export async function MovePositionDownAfterLabel(id) {
+    await ExecutePreparedStatement('UPDATE labels SET position=position-1 WHERE position > (SELECT position FROM labels WHERE id=?) AND parent_id <=> (SELECT parent_id FROM labels WHERE id=?)', [id, id]);
 }
-export async function DeleteCategory(category) {
-    await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id IN (SELECT id FROM labels WHERE category=?)', [category]);
-    await ExecutePreparedStatement('DELETE FROM labels WHERE category=?', [category]);
+export async function MovePositionUpAfterPosition(id, position) {
+    await ExecutePreparedStatement('UPDATE labels SET position=position+1 WHERE position >= ? AND parent_id <=> (SELECT parent_id FROM labels WHERE id=?)', [position, id]);
 }
-export async function DeleteLabel(labelID) {
-    await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id=?', [labelID]);
-    await ExecutePreparedStatement('DELETE FROM labels WHERE id=?', [labelID]);
+export async function SetLabelPositionAfterPosition(id, atPosition) {
+    await ExecutePreparedStatement('UPDATE labels SET position=? WHERE id=?', [atPosition, id]);
 }
-export async function GetAllLabels() {
-    return await ExecuteStatement('SELECT * FROM labels');
+export async function GetAllFullLabelPaths() {
+    return GetChildrenOfNode(null, {tableName: 'labels', tableFields:',position'});
+}
+export async function GetAllChildrenOfID(id) {
+    return await ExecutePreparedStatement('SELECT * FROM labels WHERE parent_id<=>?', [id]);
+}
+export async function GetMaxPositionInLabel(id) {
+    return (await ExecutePreparedStatement('SELECT MAX(position) FROM labels WHERE parent_id<=>?', [id]))[0]['MAX(position)'];
+}
+export async function GetLabel(id) {
+    const result = await ExecutePreparedStatement('SELECT * FROM labels WHERE id=?', [id]);
+    return result==undefined ? undefined : result[0];
+}
+export async function HasLabelChildren(id) {
+    const result = await ExecutePreparedStatement('SELECT CASE WHEN EXISTS(SELECT 1 FROM labels WHERE parent_id=?) THEN 1 ELSE 0 END AS result', [id]);
+    return result[0]['result'];
 }
 
 
@@ -261,40 +363,41 @@ export async function CreateProject(
     name, description, url1, url2, url3, requester, implementer, requestEmail, 
     originalID=undefined
 ) {
+    let insertedID;
     if(originalID != undefined) {
-
-        var previousID = await ExecutePreparedStatement('SELECT id FROM projects WHERE original_id=? AND next_version=NULL', [originalID]);
+        let previousID = await ExecutePreparedStatement('SELECT uuid FROM projects WHERE original_id=? AND next_version<=>NULL', [originalID]);
         if(previousID.length == 0) throw new Error('No projects with original_id found');
-        previousID = previousID[0]['id'];
+        previousID = previousID[0]['uuid'];
 
-        await ExecutePreparedStatement(
+        insertedID = await ExecutePreparedStatement(
             `INSERT INTO projects 
             (version_name, version_description, version_proposer, version_proposer_id, 
             name, description, url1, url2, url3, requester, implementer, request_email, 
             previous_version, original_id) 
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            RETURNING uuid`, [
             versionName, versionDescription, versionSuggestor, versionSuggestorID, 
             name, description, url1, url2, url3, requester, implementer, requestEmail, 
-            previousID, original_id
+            previousID, originalID
         ]);
-        var insertedID = await ExecuteStatement('SELECT LAST_INSERT_ID() AS \'id\'');
-        if(insertedID.length == 0) throw new Error('Error retrieving the last inserted id');
-        insertedID = insertedID[0]['id'];
-
-        ExecutePreparedStatement('UPDATE projects SET next_version=?  WHERE id=?', [newID, previousID]);
+        insertedID = insertedID[0]['uuid'];
+        ExecutePreparedStatement('UPDATE projects SET next_version=? WHERE uuid=?', [insertedID, previousID]);
 
     } else {
-        await ExecutePreparedStatement(
+        insertedID = await ExecutePreparedStatement(
             `INSERT INTO projects 
             (version_name, version_description, version_proposer, version_proposer_id, 
             name, description, url1, url2, url3, requester, implementer, request_email, original_id) 
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) 
+            RETURNING uuid`, [
             versionName, versionDescription, versionSuggestor, versionSuggestorID,
             name, description, url1, url2, url3, requester, implementer, requestEmail, 0
         ]);
-        await ExecuteStatement('UPDATE projects SET original_id=uuid WHERE uuid=LAST_INSERT_ID()');
+        insertedID = insertedID[0]['uuid'];
+        await ExecuteStatement('UPDATE projects SET original_id=uuid WHERE uuid=?', [insertedID]);
 
     }
+    return insertedID;
 }
 export async function SetProjectAsActive(uuid) {
     // Set all versions to non active
@@ -319,6 +422,13 @@ export async function IsValidProject(uuid) {
         [uuid]
     );
     return results[0]['result'] == '1';
+}
+export async function HasProjectVoteResult(uuid) {
+    var results = await ExecutePreparedStatement('SELECT voting_result FROM projects WHERE uuid=?', [uuid]);
+    return results.length==0? undefined : results[0]['voting_result'] !== null;
+}
+export async function HasProjectPendingVotes(projectID) {
+    return (await ExecutePreparedStatement('SELECT CASE WHEN EXISTS(SELECT 1 FROM projects WHERE original_id=? AND voting_result<=>NULL) THEN 1 ELSE 0 END AS result', [projectID]))[0]['result'];
 }
 
 
@@ -473,14 +583,14 @@ export function GetExtraFieldsOfNode(nodeInfo, { tableFields }) {
     });
 }
 export async function CreateNode(parentID, name, otherValues, { tableName, tableFields }) {
-    const doesExists = await ExecutePreparedStatement(`SELECT id FROM files WHERE parent_id<=>? AND name=?`, [parentID, name]);
+    const doesExists = await ExecutePreparedStatement(`SELECT id FROM ${tableName} WHERE parent_id<=>? AND name=?`, [parentID, name]);
     if(doesExists.length > 0) return false;
 
-    await ExecutePreparedStatement(
-        `INSERT INTO ${tableName} (parent_id, name${tableFields}) VALUES(?,?${',?'.repeat(tableFields.split(',').length - 1)})`, 
+    const insertedID = await ExecutePreparedStatement(
+        `INSERT INTO ${tableName} (parent_id, name${tableFields}) VALUES(?,?${',?'.repeat(tableFields.split(',').length - 1)}) RETURNING id`, 
         [parentID, name, ...otherValues]
     );
-    return true;
+    return insertedID[0]['id'];
 }
 export async function CreateNodeAtPath(parentID, path, otherValues, { tableName, tableFields }) {
     var intParentID = parentID;
@@ -512,41 +622,49 @@ export async function CreateNodeReturnID(parentID, otherValues, { tableName, tab
     return insertedID;
 }
 export async function RenameNode(id, newName, { tableName, tableFields, isLeaf }) {
-    const currentFileInfo = await ExecutePreparedStatement(`SELECT * FROM ${tableName} WHERE id=?`, [id]);
-    if(currentFileInfo[0] == undefined) return [];
-    if(!(await isLeaf(currentFileInfo[0]))) {
-        const children = await GetChildrenOfNode(currentFileInfo[0].id, {tableName, tableFields});
+    const currentFileInfo = await GetNode(id, {tableName});
+    if(currentFileInfo == undefined) return [[], []];
+    if(!(await isLeaf(currentFileInfo))) {
+        let changedIDs = [];
+        // Make sure an empty folder doesn`t get removed:
+        const newID = await CreateNode(currentFileInfo.parent_id, newName, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
+        changedIDs.push({from: id, to: newID, nodeInfo: currentFileInfo});
+        // Move the children
+        const children = await GetChildrenOfNode(currentFileInfo.id, {tableName, tableFields});
         let failedNodes = [];
         for(let i = 0; i < children.length; i++) {
-            if(!(await CreateNodeAtPath(currentFileInfo[0].parent_id, newName + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields})))
-                failedNodes.push(children[i]);
+            const id = await CreateNodeAtPath(currentFileInfo.parent_id, newName + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields});
+            if(!id) failedNodes.push(children[i]);
+            changedIDs.push({from: children[i].id, to: id, nodeInfo: children[i].id });
         }
         await DeleteNode(id, {tableName, tableFields});
-        // Make sure an empty folder doesn`t get removed:
-        await CreateNode(currentFileInfo[0].parent_id, newName, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
-        return failedNodes;
+        return [failedNodes, changedIDs];
     }
     await ExecutePreparedStatement(`UPDATE ${tableName} SET name=? WHERE id=?`, [newName, id]);
-    return [];
+    return [[], []];
 }
 export async function MoveNode(id, newParentId, { tableName, tableFields, isLeaf }) {
     const currentFileInfo = await GetNode(id, {tableName});
-    if(currentFileInfo == undefined) return [];
+    if(currentFileInfo == undefined) return [[],[]];
 
     if(!(await isLeaf(currentFileInfo))) {
+        let changedIDs = [];
+        // Make sure an empty folder doesn`t get removed:
+        const newID = await CreateNode(newParentId, currentFileInfo.name, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
+        changedIDs.push({from: id, to: newID, nodeInfo: currentFileInfo});
+        // Move the children
         const children = await GetChildrenOfNode(currentFileInfo.id, { tableName, tableFields });
         let failedNodes = [];
         for(let i = 0; i < children.length; i++) {
-            if(!(await CreateNodeAtPath(newParentId, currentFileInfo.name + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields})))
-                failedNodes.push(children[i].uploadthing_id);
+            const id = await CreateNodeAtPath(newParentId, currentFileInfo.name + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields})
+            if(!id) failedNodes.push(children[i]);
+            changedIDs.push({from: children[i].id, to: id, nodeInfo: children[i].id});
         }
         await DeleteNode(id, {tableName, tableFields});
-        // Make sure an empty folder doesn`t get removed:
-        await CreateNode(newParentId, currentFileInfo.name, GetExtraFieldsOfNode(currentFileInfo, {tableFields}), {tableName, tableFields});
-        return failedNodes;
+        return [failedNodes, changedIDs];
     }
     await ExecutePreparedStatement(`UPDATE ${tableName} SET parent_id=? WHERE id=?`, [newParentId, id]);
-    return [];
+    return [[],[]];
 }
 export async function DeleteNode(id, { tableName }) {
     await ExecutePreparedStatement(`DELETE FROM ${tableName} WHERE id=?`, [id]);

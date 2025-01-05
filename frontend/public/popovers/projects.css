@@ -1,0 +1,39 @@
+#project-popover .project.editable {
+    overflow: visible;
+}
+#project-popover .project.editable .title {
+    font-size: 1.75rem;
+    margin: 5px 0px;
+    padding: 0;
+    border-bottom: var(--border-width) solid var(--border);
+    color: var(--prominent-text);
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+#project-popover .project.editable .requestor input,
+#project-popover .project.editable .executor input {
+    margin: 0px 0px 5px -2px;
+    padding: 2px 5px;
+    width: 100%;
+}
+#project-popover .project.editable .description {
+    margin: 10px 0px;
+    padding: 5px;
+    width: 100%;
+    color: var(--normal-text);
+    font-size: 0.75rem;
+}
+
+#project-popover .inspiration-suggestion-popover {
+    width: 350px;
+    overflow: visible;
+}
+#project-popover .inspiration-suggestion-popover label {
+    margin-left: 10px;
+}
+#project-popover .inspiration-suggestion-popover input[type="submit"] {
+    margin: 30px 0 0 0;
+    width: 100%;
+    text-align: center;
+}

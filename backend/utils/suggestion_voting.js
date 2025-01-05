@@ -16,8 +16,7 @@ Settings.SetCheckSuggestionVoting(async () => {
 });
 
 export async function VoteProject(req, uuid, value, isAdmin) {
-    if(value) await DB.CreateProjectVoteOrUpdate(1, isAdmin, Login.GetSessionUserID(req), uuid);
-    else await DB.CreateProjectVoteOrUpdate(-1, isAdmin, Login.GetSessionUserID(req), uuid);
+    await DB.CreateProjectVoteOrUpdate(value, isAdmin, Login.GetSessionUserID(req), uuid);
 
     return await CheckProjectVotes(uuid);
 }
@@ -40,9 +39,25 @@ export async function CheckProjectVotes(uuid) {
 }
 
 export async function VoteInspiration(req, uuid, value, isAdmin) {
+    await DB.CreateInspirationVoteOrUpdate(value, isAdmin, Login.GetSessionUserID(req), uuid);
 
+    return await CheckInspirationVotes(uuid);
 }
 
 export async function CheckInspirationVotes(uuid) {
-    
+    var votes = await DB.GetInspirationVotes(uuid);
+    var settings = Settings.GetSettings();
+    var upVotes = 0;
+    var downVotes = 0;
+    for(var i = 0; i < votes.length; i++) {
+        if(votes[i].value == 1 && votes[i].admin_vote == true) upVotes += settings.accept.admin_vote;
+        else if(votes[i].value == 1) upVotes += settings.accept.normal_vote;
+        else if(votes[i].value == -1 && votes[i].admin_vote == true) downVotes += settings.deny.admin_vote;
+        else if(votes[i].value == -1) downVotes += settings.deny.normal_vote;
+        else throw new Error('Invalid suggestion vote in database');
+    }
+
+    if(upVotes >= settings.accept.calculated_votes) { await DB.AcceptInspiration(uuid); return 'accepted'; }
+    else if(downVotes >= settings.deny.calculated_votes) { await DB.DenyInspiration(uuid); return 'denied'; }
+    return 'nothing';
 }

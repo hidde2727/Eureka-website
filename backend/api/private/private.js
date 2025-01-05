@@ -27,6 +27,7 @@ router.use(async (req, res, next) => {
 import User from './user.js';
 import Suggestion from './suggestion.js';
 import Files from './files.js';
+import Labels from './inspiration_labels.js';
 import Inspiration from './inspiration.js';
 import Project from './project.js';
 import Self from './self.js';
@@ -34,6 +35,7 @@ import Settings from './settings.js';
 router.use('/users', User);
 router.use('/suggestion', Suggestion);
 router.use('/files', Files);
+router.use('/labels', Labels);
 router.use('/inspiration', Inspiration);
 router.use('/project', Project);
 router.use('/self', Self);

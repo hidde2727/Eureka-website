@@ -235,6 +235,9 @@ label:not(.inline) + .auto-grow {
     content: attr(data-replicated-value) " ";
     white-space: pre-wrap;
     visibility: hidden;
+
+    width: 100%;
+    box-sizing: border-box;
 }
 
 
@@ -512,7 +515,7 @@ hr {
 
     background-color: var(--extra-prominent-background) !important;
     color: var(--prominent-text) !important;
-    padding: 6px !important;
+    padding: 0px !important;
     border-radius: var(--small-border-radius) !important;
 
     z-index: 100000;
@@ -540,6 +543,7 @@ hr {
 .tooltip.js-controlled.open {
     opacity: 1 !important;
     visibility: visible !important;
+    padding: 6px!important;
 }
 .tooltip:before {
     content: "";
@@ -734,6 +738,8 @@ form:has(.form-succes-screen) {
         "cont cont"
         "icon info1"
         "icon info2";
+
+    box-sizing: content-box;
 }
 .website .website-content {
     grid-area: cont;
@@ -814,6 +820,8 @@ form:has(.form-succes-screen) {
     display: flex;
     align-items: center;
     justify-content: center;
+
+    flex-direction: column;
 }
 
 .loading a {
@@ -857,6 +865,9 @@ form:has(.form-succes-screen) {
 }
 .loading .dot:nth-child(4) {
     animation: third-dot 4s infinite;
+}
+.fa-rotate-45 {
+    rotate: 45deg;
 }
 
 
@@ -1183,6 +1194,192 @@ form:has(.form-succes-screen) {
 /* + ======================================================================== +
 /* | Inspiration window                                                       |
 /* + ========================================================================*/
+#inspiration > div:first-child {
+    display: grid;
+    grid-template-columns: auto 275px;
+    height: calc(var(--app-height) - 35px);
+}
+
+#inspiration .toggle-sidebar {
+    display: none;
+}
+#inspiration .sidebar {
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    margin: 30px 10px 0 20px;
+    padding: 10px 0 0 30px;
+    border-left: var(--border-width) solid var(--seperator);
+}
+#inspiration .category {
+    margin-bottom: 10px;
+    transition: margin 0.5s;
+}
+#inspiration .category.closed {
+    margin-bottom: 5px;
+}
+#inspiration .sidebar .header {
+    display: grid;
+    grid-template-columns: auto 1rem;
+
+    margin-bottom: 5px;
+}
+#inspiration .sidebar .header a {
+    font-size: 0.9rem;
+}
+#inspiration .sidebar .header i {
+    font-size: 0.8rem;
+    transition: rotate 0.5s;
+}
+#inspiration .sidebar .category.closed i {
+    rotate: 90deg;
+}
+#inspiration .sidebar .content {
+    margin: 0 0 0 15px;
+    overflow: hidden;
+    transition: height 0.5s;
+}
+@media screen and (max-width: 1000px) {
+    #inspiration > div:first-child {
+        display: grid;
+        grid-template-columns: auto;
+        height: fit-content;
+        min-height: calc(var(--app-height) - 75px);
+    }
+    #inspiration > div > .content {
+        overflow: visible;
+        height: fit-content;
+    }
+    
+    #inspiration .toggle-sidebar {
+        visibility: visible;
+
+        display: flex!important;
+        position: fixed;
+        top: 0;
+        right: 0;
+
+        width: 60px;
+        height: 60px;
+        border-radius: 0 0 0 100%;
+        background-color: var(--extra-prominent-background);
+
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        
+        z-index: 100000000;
+    }
+    #inspiration .toggle-sidebar i {
+        transition: rotate 0.5s;
+        height: fit-content;
+        width: fit-content;
+        font-size: 1.25rem;
+
+        position: relative;
+        top: -8px;
+        left: 5px;
+    }
+    #inspiration.open .toggle-sidebar i {
+        rotate: 90deg;
+    }
+    
+    #inspiration .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: calc(var(--app-height) + 40px);
+        z-index: 10000;
+        padding: 40px 0 40px 0!important;
+        border: 0px solid;
+        margin: 0;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        row-gap: 30px;
+
+        visibility: hidden;
+        opacity: 0;
+
+        transform: translateY(-40px);
+        transition: background-color 0.5s, visibility allow-discrete 0.5s, transform 0.5s, opacity 0.5s;
+
+        overflow-y: auto;
+    }
+    #inspiration .sidebar.open {
+        transform: translateY(0px);
+        visibility: visible;
+        background-color: var(--background);
+        opacity: 1;
+    }
+    #inspiration .sidebar .sidebar-wrapper {
+        min-width: 200px;
+        max-width: 400px;
+    }
+}
+
+#inspiration > div > .content {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+#inspiration .content > .websites {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+}
+#inspiration .content > .websites .website-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 3px 0px;
+}
+
+
+/* + ======================================================================== +
+/* | Inspiration popover                                                      |
+/* + ========================================================================*/
+#inspiration-popover:not(:has(.middle, .left, .right)) {
+    max-width: 800px;
+    padding: 15px 25px;
+}
+#inspiration-popover .middle .top {
+    max-width: 800px;
+    padding: 15px 25px;
+}
+#inspiration-popover .comparable {
+    margin: 10px 0;
+}
+#inspiration-popover .labels {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    gap: 3px;
+}
+#inspiration-popover .labels .label {
+    color: var(--prominent-text);
+}
+#inspiration-popover .labels .label::before {
+    color: var(--prominent-text);
+}
+#inspiration-popover .split-window {
+    grid-template-columns: auto 1fr;
+    padding: 0;
+    justify-content: center;
+}
+#inspiration-popover .split-window :first-child .website {
+    margin-left: 15px;
+}
+#inspiration-popover .split-window > :not(button, input) {
+    padding: 0;
+}
+#inspiration-popover .description {
+    margin: 20px;
+    margin-left: 40px;
+}
+#inspiration-popover .description p {
+    margin: 0;
+}
 
 
 /* + ======================================================================== +
@@ -1343,6 +1540,6 @@ label:has(+ #project-link2, + #project-link3) {
 /* + ======================================================================== +
 /* | Login popover                                                            |
 /* + ========================================================================*/
-#login-popover .content {
+#login-popover {
     overflow: visible;
 }

@@ -21,10 +21,13 @@ router.put('/vote', async (req, res) => {
     var result = undefined;
     if(data.type == 'project') {
         if(!(await DB.IsValidProject(data.uuid))) return Validator.ReturnError(res, 'Specificeer valide uuid');
-        result = await Voting.VoteProject(req, data.uuid, data.voteValue == 'accept', data.adminVote);
+        if(await DB.HasProjectVoteResult(data.uuid)) return Validator.ReturnError(res, 'Project kan geen votes meer ontvangen, stemming is klaar');
+        result = await Voting.VoteProject(req, data.uuid, data.voteValue, data.adminVote);
         if(result != 'nothing') await Projects.GenerateProjectJSON();
     } else if(data.type == 'inspiration') {
-
+        if(!(await DB.IsValidInspiration(data.uuid))) return Validator.ReturnError(res, 'Specificeer valide uuid');
+        if(await DB.HasInspirationVoteResult(data.uuid)) return Validator.ReturnError(res, 'Inspiration kan geen votes meer ontvangen, stemming is klaar');
+        result = await Voting.VoteInspiration(req, data.uuid, data.voteValue, data.adminVote);
     }
 
     res.send(JSON.stringify({result: result}));

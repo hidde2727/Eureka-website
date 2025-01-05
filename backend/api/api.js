@@ -10,7 +10,54 @@ import * as Validator from '../utils/validator.js';
 import * as Login from '../utils/login.js';
 import * as DB from '../utils/db.js';
 import * as INS from '../utils/inspiration.js';
+import * as Voting from '../utils/suggestion_voting.js';
+import { GenerateProjectJSON } from '../utils/projects.js';
 
+const pageSize = 25;
+router.get('/inspiration', async (req, res) => {
+    const labels = req.query.labels==''||req.query.labels==undefined ? []:req.query.labels.split(',');
+    for(let i = 0; i < labels.length; i++) {
+        try { parseInt(labels[i]) }
+        catch(err) { res.status(400).send('Invalide labels'); }
+    }
+
+    let returnAvailablePages = undefined;
+    let cursor = req.query.cursor;
+    if(req.query.cursor == undefined) {
+        const maxPages = Math.ceil((await DB.GetAmountInspiration(labels)) / pageSize);
+        const returningIndex = Math.floor(Math.random() * (maxPages - 1));
+        if(returningIndex == -1) return res.json({ availablePages: [], data: [] });
+        returnAvailablePages = Array.from({length: maxPages}, (thisArg, i) => i);
+        cursor = returnAvailablePages[returningIndex];
+        returnAvailablePages.splice(returningIndex, 1);
+    }
+    if(Validator.CheckInteger(res, cursor)) return;
+    
+    let inspirations = undefined;
+    if(labels.length == 0) inspirations = await DB.GetAllActiveInspiration(pageSize, pageSize*cursor);
+    else inspirations = await DB.GetAllActiveInspirationWithLabels(labels, pageSize, pageSize*cursor);
+
+    const response = inspirations.map((inspiration) => {
+        return {
+            uuid: inspiration.uuid,
+            original_id: inspiration.original_id,
+            type: inspiration.type,
+            name: inspiration.name,
+            description: inspiration.description,
+            ID: inspiration.ID,
+            url: inspiration.url,
+            recommendation1: JSON.parse(inspiration.recommendation1),
+            recommendation2: JSON.parse(inspiration.recommendation2),
+            additionInfo: JSON.parse(inspiration.additionInfo),
+            labels: inspiration.labels
+        }
+    });
+    if(returnAvailablePages != undefined) {
+        res.json({ availablePages: returnAvailablePages, returnedPage: cursor, data: response });
+    } else {
+        res.json(response);
+    }
+});
 router.post('/login', async (req, res) => {
 try {
     var data = req.body;
@@ -60,7 +107,7 @@ try {
     if(Validator.CheckSuggestorName(res, data.suggestorName)) return;
     if(Validator.CheckEmail(res, data.suggestorEmail)) return;
 
-    await DB.CreateProject(
+    const insertedID = await DB.CreateProject(
         'Origineel', 'Originele suggestie', data.suggestorName, null,
         data.name, data.description,
         links.length >= 1 ? JSON.stringify(await INS.GetURLInfo(links[0])) : null, 
@@ -68,6 +115,11 @@ try {
         links.length >= 3 ? JSON.stringify(await INS.GetURLInfo(links[2])) : null,
         data.suggestorName, '-', data.suggestorEmail
     );
+    if(await Login.CheckSession(req, res)) {
+        await Voting.VoteProject(req, insertedID, 1, await Login.HasUserPermission(req, 'admin'))
+    }
+
+    await GenerateProjectJSON();
 
     res.send('Project is aangevraagd!');
 } catch(err) {
@@ -93,27 +145,33 @@ try {
         return Validator.ReturnError(res, 'Specificeer labels');
     var error = false;
     data.labels.forEach((label, index) => {
-        if(Validator.CheckLabelID(res, label)) error = true;
+        if(Validator.CheckID(res, label)) error = true;
     });
     if(error) return true;
 
+    var loggedIn = await Login.CheckSession(req, res);
+    let username = loggedIn?Login.GetSessionUsername():'-';
+
     var urlInfo = await INS.GetURLInfo(data.url);
     if(await DB.DoesInspirationExist(urlInfo.type, urlInfo.ID)) return Validator.ReturnError(res, 'Inspiratie url zit al in onze database');
-    await DB.CreateInspiration(
-        'Origineel', 'Originele suggestie', '-', null,
+    const insertedID = await DB.CreateInspiration(
+        'Origineel', 'Originele suggestie', username, null,
         urlInfo.type, urlInfo.name, data.description, urlInfo.ID, data.url, 
         data.recommendations.length >= 1 ? JSON.stringify(await INS.GetURLInfo(data.recommendations[0])) : null, 
         data.recommendations.length >= 2 ? JSON.stringify(await INS.GetURLInfo(data.recommendations[1])) : null, 
-        JSON.stringify(urlInfo.json)
+        JSON.stringify(urlInfo),
+        data.labels
     );
-    await DB.AddLabelsToLastInsertedInspiration(data.labels);
+    if(loggedIn) {
+        await Voting.VoteInspiration(req, insertedID, 1, await Login.HasUserPermission(req, 'admin'))
+    }
 
     res.send('Inspiratie is aangevraagd!');
 } catch(err) {
+    console.error(err.message);
     if(err.message.includes('Illegale website string: ')) return Validator.ReturnError(res, 'Inspiratie url is incorrect');
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
-    console.error(err.message);
 }
 });
 router.get('/retrieve/url', async (req, res) => {

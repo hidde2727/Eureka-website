@@ -1,8 +1,10 @@
 import { TimeToString } from '../utils/utils';
+import Loading from './loading';
 
 import '/public/components/versioning_sidebar.css';
 
 export default function VersioningSidebar({ versions, selectedVersionUUID, setSelectedVersionUUID }) {
+    if(versions == undefined) return <Loading />;
     return (
         <>
             {versions.map((version) => {

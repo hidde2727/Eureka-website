@@ -1,0 +1,105 @@
+#inspiration .sidebar .management .category {
+    background-color: var(--prominent-background);
+    padding: 10px;
+    border-radius: var(--big-border-radius);
+
+    margin: 5px 0px 5px -10px;
+    display: inline-block;
+}
+#inspiration .sidebar .management .header {
+    display: grid;
+    grid-template-columns: auto 0.85rem;
+    align-items: center;
+}
+#inspiration .sidebar .management .header a {
+    color: var(--prominent-text);
+}
+#inspiration .sidebar .management .category:hover:not(:has(.inspiration-label:hover)) .header .fa-plus.fa-rotate-45 {
+    opacity: 1;
+}
+#inspiration .sidebar .management .category:hover:not(:has(.inspiration-label:hover)) .header .fa-plus.fa-rotate-45:hover {
+    color: var(--denial);
+}
+#inspiration .sidebar .management label {
+    display: inline;
+
+    line-height: calc(1rem + 3px);
+    font-size: 0.75rem;
+    color: var(--prominent-text);
+}
+#inspiration .sidebar .management .fa-grip-vertical {
+    margin-right: 10px;
+    font-size: 0.75rem;
+    line-height: calc(1rem + 3px);
+    color: var(--non-prominent-text);
+}
+#inspiration .sidebar .management .inspiration-label {
+    display: grid;
+    grid-template-columns: 1rem auto 1rem;
+    align-items: center;
+}
+#inspiration .sidebar .management .fa-plus.fa-rotate-45 {
+    color: var(--normal-text);
+    opacity: 0;
+    font-size: 1rem;
+    transition: opacity 0.5s, color 0.5s;
+}
+#inspiration .sidebar .management .inspiration-label:hover .fa-plus.fa-rotate-45 {
+    opacity: 1;
+}
+#inspiration .sidebar .management .inspiration-label:hover .fa-plus.fa-rotate-45:hover {
+    color: var(--denial);
+}
+
+#inspiration .sidebar .management .content {
+    overflow: visible;
+}
+#inspiration .sidebar .management .drop-zone {
+    position: relative;
+    height: 0;
+}
+#inspiration .sidebar .management .internal-drop-zone {
+    position: absolute;
+    width: 100%;
+    top: -10px;
+    left: -10px;
+    padding: 9px 0px;
+}
+#inspiration .sidebar .management .internal-drop-zone::after {
+    content: "";
+    display: block;
+    height: 2px;
+    width: 100%;
+    background-color: var(--prominent-text);
+
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+#inspiration .sidebar .management .internal-drop-zone.hovered::after {
+    opacity: 1;
+}
+
+#inspiration .sidebar .management .add-button {
+    display: grid;
+    grid-template-columns: 1rem auto;
+    align-items: center;
+
+    margin-top: 15px;
+}
+#inspiration .sidebar .management .add-button .fa-plus {
+    background-color: var(--accent);
+    border-radius: 100%;
+    width: 25px;
+    height: 25px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 8px 0 -15px;
+}
+#inspiration .sidebar .management .add-button input {
+    display: inline-block;
+    margin: 0;
+    width: 100%;
+    padding: 5px 10px;
+}

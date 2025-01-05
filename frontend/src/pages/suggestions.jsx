@@ -143,12 +143,11 @@ function LabelSelector({ inlineInputs, selectedLabels, setSelectedLabels }) {
     if(hasError || labels==undefined) return (<p>Error tijdens het ophalen van de labels</p>);
 
     return (<> {
-        Object.entries(labels.labels).map((label) => {
-            const [categoryName, values] = label;
-            return <Fragment key={categoryName}>
-                <label className={inlineInputs?'inline':''}>{categoryName}</label>
+        labels.labels.map((category) => {
+            return <Fragment key={category.name}>
+                <label className={inlineInputs?'inline':''}>{category.name}</label>
                 <div className="inline-input">
-                    {values.map((value, i) => {
+                    {category.labels.map((value, i) => {
                         return (
                         <p className={'label ' + value.id} key={i} 
                         onClick={() => { OnLabelClick(selectedLabels, setSelectedLabels, value.id); }} 
