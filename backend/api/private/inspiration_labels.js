@@ -7,8 +7,9 @@ import * as Validator from '../../utils/validator.js';
 import { RegenLabels } from '../../utils/inspiration_labels.js';
 import * as TreeListDB from '../../utils/adjancency_db_list.js';
 
-const fileTableInfo = TreeListDB.CreateTableInfo('labels', ',position', async () => {
-    return false;
+const fileTableInfo = TreeListDB.CreateTableInfo('labels', ',position', async (node) => {
+    console.log('isLeaf: ' + await DB.HasLabelChildren(node.id));
+    return !(await DB.HasLabelChildren(node.id));
 });
 
 router.use(async (req, res, next) => {
@@ -63,6 +64,9 @@ router.put('/move', async (req, res) => {
             removalPromises.push(DB.ReplaceLabelFromInspiration(from, to));
             if(from == newID) newID = to;
         },
+        onStartModifying: async () => {
+            await Promise.all(removalPromises);
+        },
         onComplete: async (conflicts, parentIDChanged) => {
             if (conflicts != undefined) return res.send(JSON.stringify(conflicts));
 
@@ -98,11 +102,15 @@ router.put('/rename', async (req, res) => {
             if(replacedBy == undefined) {
                 removalPromises.push(DB.DeleteLabelFromInspiration(node.id));
             } else {
+                console.log('replacing ' + node.id + ' with ' + replacedBy.id);
                 removalPromises.push(DB.ReplaceLabelFromInspiration(node.id, replacedBy.id));
             }
         },
         onIDChange: (from, to, nodeInfo) => {
             removalPromises.push(DB.ReplaceLabelFromInspiration(from, to));
+        },
+        onStartModifying: async () => {
+            await Promise.all(removalPromises);
         },
         onComplete: async (conflicts) => {
             if (conflicts != undefined) return res.send(JSON.stringify(conflicts));
@@ -127,6 +135,7 @@ router.put('/delete', async (req, res) => {
     await TreeListDB.DeleteNode(data.id, fileTableInfo, {
         onNodeDelete: (node, replacedBy) => {
             if(replacedBy == undefined) {
+                console.log('deleting ' + node.id);
                 removalPromises.push(DB.DeleteLabelFromInspiration(node.id));
             } else {
                 removalPromises.push(DB.ReplaceLabelFromInspiration(node.id, replacedBy.id));

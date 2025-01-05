@@ -16,6 +16,8 @@ export default function Inspiration({isActive}) {
     const [isEditing, setIsEditing] = useState(false);
     const [selectedLabels, setSelectedLabels] = useState([]);
 
+    const [isSidebarOpened, setSidebarOpen] = useState(false);
+
     return (
         <div className="window" id="inspiration" style={isActive ? {display: 'block'} : {display: 'none'}}>
             <div>
@@ -27,15 +29,16 @@ export default function Inspiration({isActive}) {
                         </Suspense>
                     </div>
                 </div>
-                <div className="sidebar" ref={sidebar}>
+                <div className="toggle-sidebar" onClick={() => setSidebarOpen(!isSidebarOpened)}><i className="fas fa-filter" /></div>
+                <div className={'sidebar' + (isSidebarOpened?' open':' closed')} ref={sidebar}>
                     <Suspense fallback={<Loading />}>
                         <Restricted notLoggedIn={true}>
-                            <Sidebar sidebar={sidebar} />
+                            <div className="sidebar-wrapper"><Sidebar sidebar={sidebar} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} /></div>
                         </Restricted>
                         <Restricted to="modify_inspiration_labels">
-                            <button onMouseDown={()=> {setIsEditing(!isEditing);}}/>
-                            <div style={{display:!isEditing?'block':'none'}}><Sidebar sidebar={sidebar} display={!isEditing} /></div>
-                            <ManagementSidebar display={isEditing} />
+                            <button onMouseDown={()=> {setIsEditing(!isEditing);}}>{isEditing?'Stop editen':'Start editen'}</button>
+                            <div className="sidebar-wrapper" style={{display:!isEditing?'block':'none'}}><Sidebar sidebar={sidebar} display={!isEditing} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} /></div>
+                            <div className="sidebar-wrapper"><ManagementSidebar display={isEditing} /></div>
                         </Restricted>
                     </Suspense>
                 </div>
@@ -79,7 +82,7 @@ export default function Inspiration({isActive}) {
                         <Fragment key={inspiration.pageParams[index]}>{
                             page.data.map((inspirationData, websiteIndex) => { 
                                 return (
-                                <div className="website-wrapper" ref={index+1==inspiration.pages.length&&websiteIndex==0? observeElement : undefined}>
+                                <div className="website-wrapper" ref={index+1==inspiration.pages.length&&websiteIndex==0? observeElement : undefined} key={inspirationData.uuid}>
                                     <Website data={inspirationData.additionInfo} key={inspirationData.uuid} onClick={() => {
                                         popoverContext.inspiration.current.open(inspirationData)
                                     }}></Website>
@@ -94,57 +97,56 @@ export default function Inspiration({isActive}) {
             </>
         )
     }
+}
 
-    function Sidebar({sidebar}) {
-        const { labels, isFetching, hasError } = useInspirationLabelsSus();
-        const amountCategories = Object.entries(labels.labels).length;
-        const [openedCategories, setOpenedCategories] = useState(Array(amountCategories).fill(true));
-        const [categoryHeights, setCategoryHeights] = useState(Array(amountCategories).fill('undefined'));
+function Sidebar({sidebar, selectedLabels, setSelectedLabels}) {
+    const { labels, isFetching, hasError } = useInspirationLabelsSus();
+    const amountCategories = Object.entries(labels.labels).length;
+    const [openedCategories, setOpenedCategories] = useState(Array(amountCategories).fill(true));
+    const [categoryHeights, setCategoryHeights] = useState(Array(amountCategories).fill('undefined'));
 
-        useEffect(() => {
-            setCategoryHeights(
-                [...sidebar.current.getElementsByClassName('category')].map((category) => {
-                return category.clientHeight;
-                })
-            );
-        }, []);
-
-        return (
-            <>
-                {
-                    labels.labels.map((category, index) => {
-                        return (
-                            <div className={'category' + (openedCategories[index]?' opened':' closed')} key={category.name}>
-                                <div className="header" onClick={() => {
-                                    let copiedCategories = [...openedCategories];
-                                    copiedCategories[index] = !copiedCategories[index];
-                                    setOpenedCategories(copiedCategories);
-                                }}>
-                                    <a>{category.name}</a>
-                                    <i className="fas fa-chevron-down" />
-                                </div>
-                                <div className="content" style={{height: openedCategories[index]?`${categoryHeights[index]}px`:'0px'}}>
-                                    {
-                                        category.labels.map(({ id, name }) => {
-                                            return (
-                                                <div className="inspiration-label" key={id}>
-                                                    <Checkbox name={id} label={name} checked={selectedLabels.includes(id)} onChange={() => {
-                                                        let selectedLabelsCopy = [...selectedLabels];
-                                                        const index = selectedLabelsCopy.indexOf(id);
-                                                        if(index == -1) selectedLabelsCopy.push(id)
-                                                        else selectedLabelsCopy.splice(index, 1);
-                                                        setSelectedLabels(selectedLabelsCopy);
-                                                    }} />
-                                                </div>
-                                            )
-                                        })
-                                    }
-                                </div>
+    useEffect(() => {
+        setCategoryHeights(
+            [...sidebar.current.getElementsByClassName('category')].map((category) => {
+            return category.clientHeight;
+            })
+        );
+    }, []);
+    return (
+        <>
+            {
+                labels.labels.map((category, index) => {
+                    return (
+                        <div className={'category' + (openedCategories[index]?' opened':' closed')} key={category.name}>
+                            <div className="header" onClick={() => {
+                                let copiedCategories = [...openedCategories];
+                                copiedCategories[index] = !copiedCategories[index];
+                                setOpenedCategories(copiedCategories);
+                            }}>
+                                <a>{category.name}</a>
+                                <i className="fas fa-chevron-down" />
                             </div>
-                        )
-                    })
-                }
-            </>
-        )
-    }
+                            <div className="content" style={{height: openedCategories[index]?`${categoryHeights[index]}px`:'0px'}}>
+                                {
+                                    category.labels.map(({ id, name }) => {
+                                        return (
+                                            <div className="inspiration-label" key={id}>
+                                                <Checkbox name={id} label={name} checked={selectedLabels.includes(id)} onChange={() => {
+                                                    let selectedLabelsCopy = [...selectedLabels];
+                                                    const index = selectedLabelsCopy.indexOf(id);
+                                                    if(index == -1) selectedLabelsCopy.push(id)
+                                                    else selectedLabelsCopy.splice(index, 1);
+                                                    setSelectedLabels(selectedLabelsCopy);
+                                                }} />
+                                            </div>
+                                        )
+                                    })
+                                }
+                            </div>
+                        </div>
+                    )
+                })
+            }
+        </>
+    )
 }

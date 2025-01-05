@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, startTransition } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import ConformationPopover from '../../popovers/conformation_popover';
@@ -15,11 +15,9 @@ export default function Sidebar({ display }) {
     useEffect(() => {
         let timeout = undefined;
         document.addEventListener('drag', () => {
-            console.log('drag')
             if(timeout != undefined) clearTimeout(timeout);
             timeout = setTimeout(() => {
                 setDraggedLabel(undefined);
-                console.log('undrag')
             }, 500);
         });
     }, []);
@@ -68,7 +66,7 @@ export default function Sidebar({ display }) {
         <div className="category" key={category.name} draggable={true}
             onDragStart={(ev) => {
                 ev.stopPropagation();
-                setDraggedLabel({ id: category.id, name: category.name, type: 'category' });
+                startTransition(() => setDraggedLabel({ id: category.id, name: category.name, type: 'category' }));
             } }
         >
             <div className="header">
@@ -116,9 +114,8 @@ export default function Sidebar({ display }) {
                         <Fragment key={name}>
                             <div className="inspiration-label" key={id} draggable={true}
                                 onDragStart={(ev) => {
-                                    console.log('dragstart')
                                     ev.stopPropagation();
-                                    setDraggedLabel({ id: id, name: name, type: 'label' });
+                                    startTransition(() => setDraggedLabel({ id: id, name: name, type: 'label' }));
                                 } }
                             >
                                 <i className="fas fa-grip-vertical" />
@@ -126,6 +123,7 @@ export default function Sidebar({ display }) {
                                     onDoubleClick={(ev) => {
                                         ev.target.contentEditable = true;
                                         ev.target.parentNode.draggable = false;
+                                        ev.target.parentNode.parentNode.parentNode.draggable = false;
                                         ev.target.oldName = ev.target.innerText;
                                     } }
                                     onKeyDown={(ev) => {
@@ -137,6 +135,7 @@ export default function Sidebar({ display }) {
                                     onBlur={async (ev) => {
                                         ev.target.contentEditable = false;
                                         ev.target.parentNode.draggable = true;
+                                        ev.target.parentNode.parentNode.parentNode.draggable = true;
                                         if (ev.target.oldName != ev.target.innerText) {
                                             const hasConflicts = await renameLabel(queryClient, category.id, id, ev.target.innerText, false);
                                             if (hasConflicts.hasConflicts) {

@@ -15,19 +15,20 @@ export function GetSemaphore(tableName) {
     }
     return semaphores[tableName];
 }
-async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableInfo, modificationAction, onNodeDelete, onIDChange }) {
+async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableInfo, modificationAction, onNodeDelete, onStartModifying, onIDChange }) {
     let toBeKept = [];
     let parentID = undefined;
     if (conflicts.length > 0) {
         // Go through all the conflicts and look at their respective matches in the override array
         conflicts.forEach((conflict) => {
-            if (resolveConflicts[conflict.child.id] == undefined) { return 'Incorrect override array'; }
+            if (resolveConflicts !== true && resolveConflicts[conflict.child.id] == undefined) { return 'Incorrect override array'; }
             if (resolveConflicts === true || resolveConflicts[conflict.child.id] === 'replace') {
                 onNodeDelete(conflict.with, conflict.child);
             } else if (resolveConflicts[conflict.child.id] === 'ignore') { parentID=true }
             else { return 'Incorrect override array'; }
         });
         if (parentID) { parentID = (await DB.GetNode(movingID, tableInfo)).parent_id; }
+        if(onStartModifying != undefined) await onStartModifying();
 
         let toBeRemoved = [];
         conflicts.forEach((conflict) => {
@@ -80,6 +81,7 @@ export async function DeleteNode(id, tableInfo, { onNodeDelete, onSephamoreActiv
         if (!(await tableInfo.isLeaf(node))) {
             const children = await DB.GetChildrenOfNode(id, tableInfo);
             children.forEach((child) => onNodeDelete(child, undefined));
+            onNodeDelete(node, undefined);
         } else {
             onNodeDelete(node, undefined);
         }
@@ -93,7 +95,7 @@ export async function DeleteNode(id, tableInfo, { onNodeDelete, onSephamoreActiv
     });
 }
 
-export async function RenameNode(id, newName, override, tableInfo, { onNodeDelete, onIDChange, onSephamoreActivate, onComplete, onInvalidInput, onError }) {
+export async function RenameNode(id, newName, override, tableInfo, { onNodeDelete, onIDChange, onSephamoreActivate, onComplete, onStartModifying, onInvalidInput, onError }) {
     await GetSemaphore(tableInfo.tableName).runExclusive(async (val) => {
         if(onSephamoreActivate != undefined) { const result = await onSephamoreActivate(); if(!result) return }
 
@@ -114,12 +116,13 @@ export async function RenameNode(id, newName, override, tableInfo, { onNodeDelet
                 let [failedNodes, changedIDs] = await DB.RenameNode(id, newName, tableInfo);
                 failedNodes.forEach((node) => {
                     onNodeDelete(node, undefined);
-                })
+                });
                 changedIDs.forEach(({ from, to, nodeInfo }) => {
                     onIDChange(from, to, nodeInfo);
                 });
             },
-            onNodeDelete: onNodeDelete
+            onNodeDelete: onNodeDelete,
+            onStartModifying: onStartModifying
         });
         if(result) return onInvalidInput(result);
 
@@ -130,7 +133,7 @@ export async function RenameNode(id, newName, override, tableInfo, { onNodeDelet
     });
 }
 
-export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDelete, onIDChange, onSephamoreActivate, onComplete, onInvalidInput, onError }) {
+export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDelete, onIDChange, onSephamoreActivate, onComplete, onStartModifying, onInvalidInput, onError }) {
     await GetSemaphore(tableInfo.tableName).runExclusive(async (val) => {
         if(onSephamoreActivate != undefined) { const result = await onSephamoreActivate(); if(!result) return }
 
@@ -156,7 +159,8 @@ export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDel
                     onIDChange(from, to, nodeInfo);
                 });
             },
-            onNodeDelete: onNodeDelete
+            onNodeDelete: onNodeDelete,
+            onStartModifying: onStartModifying
         });
         if(result) return onInvalidInput(result);
 

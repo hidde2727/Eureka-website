@@ -349,6 +349,10 @@ export async function GetLabel(id) {
     const result = await ExecutePreparedStatement('SELECT * FROM labels WHERE id=?', [id]);
     return result==undefined ? undefined : result[0];
 }
+export async function HasLabelChildren(id) {
+    const result = await ExecutePreparedStatement('SELECT CASE WHEN EXISTS(SELECT 1 FROM labels WHERE parent_id=?) THEN 1 ELSE 0 END AS result', [id]);
+    return result[0]['result'];
+}
 
 
 // + ======================================================================== +
@@ -619,7 +623,7 @@ export async function CreateNodeReturnID(parentID, otherValues, { tableName, tab
 }
 export async function RenameNode(id, newName, { tableName, tableFields, isLeaf }) {
     const currentFileInfo = await GetNode(id, {tableName});
-    if(currentFileInfo == undefined) return [];
+    if(currentFileInfo == undefined) return [[], []];
     if(!(await isLeaf(currentFileInfo))) {
         let changedIDs = [];
         // Make sure an empty folder doesn`t get removed:
@@ -637,7 +641,7 @@ export async function RenameNode(id, newName, { tableName, tableFields, isLeaf }
         return [failedNodes, changedIDs];
     }
     await ExecutePreparedStatement(`UPDATE ${tableName} SET name=? WHERE id=?`, [newName, id]);
-    return [];
+    return [[], []];
 }
 export async function MoveNode(id, newParentId, { tableName, tableFields, isLeaf }) {
     const currentFileInfo = await GetNode(id, {tableName});
