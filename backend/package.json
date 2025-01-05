@@ -16,7 +16,7 @@
     "eureka-website": "file:..",
     "express": "^4.21.1",
     "mysql": "^2.18.1",
-    "uploadthing": "^7.4.1",
+    "uploadthing": "^7.4.4",
     "validator": "^13.12.0"
   }
 }
