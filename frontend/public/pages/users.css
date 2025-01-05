@@ -46,11 +46,14 @@
     left: calc(50% - 22px);
 }
 
-#users .user-modification.content {
-    overflow: initial;
-    width: 300px;
+#users .user-creation {
+    overflow: visible;
 }
 
+#users .user-modification {
+    overflow: visible;
+    width: 300px;
+}
 #users .user-modification .header {
     background-color: var(--prominent-background);
     border-radius: var(--big-border-radius);

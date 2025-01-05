@@ -54,7 +54,7 @@ async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableIn
                 console.error('Failed to insert node ids');
                 onNodeDelete(toBekept[i], undefined);
             }
-            onIDChange(toBeKept[i].id, newID, toBeKept[i]);
+            if(onIDChange!=undefined) onIDChange(toBeKept[i].id, newID, toBeKept[i]);
         }
     }
 
@@ -118,7 +118,7 @@ export async function RenameNode(id, newName, override, tableInfo, { onNodeDelet
                     onNodeDelete(node, undefined);
                 });
                 changedIDs.forEach(({ from, to, nodeInfo }) => {
-                    onIDChange(from, to, nodeInfo);
+                    if(onIDChange!=undefined) onIDChange(from, to, nodeInfo);
                 });
             },
             onNodeDelete: onNodeDelete,
@@ -156,7 +156,7 @@ export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDel
                     onNodeDelete(node, undefined);
                 })
                 changedIDs.forEach(({ from, to, nodeInfo }) => {
-                    onIDChange(from, to, nodeInfo);
+                    if(onIDChange!=undefined) onIDChange(from, to, nodeInfo);
                 });
             },
             onNodeDelete: onNodeDelete,

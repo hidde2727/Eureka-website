@@ -88,7 +88,7 @@ async function OnUserSettingsSubmit(event, userData, setError, setSuccesMessage)
     var newPassword = event.target.settingsPassword.value;
     var repeatPassword = event.target.settingsPasswordRepeat.value;
     var previousPassword = event.target.settingsPasswordPrevious.value;
-    if(newPassword == '1234') newPassword = undefined;
+    if(previousPassword == '1234' || previousPassword=='') newPassword = undefined;
     else if(!newPassword) return SetFormErrorMessage(setError, 'Specificeer een wachtwoord', event.target.settingsPassword);
     else if(newPassword.length > 255) return SetFormErrorMessage(setError, 'Wachtwoord lengte is maximaal 255', event.target.settingsPassword);
     else if(!repeatPassword) return SetFormErrorMessage(setError, 'Herhaal het wachtwoord', event.target.settingsPasswordRepeat);
