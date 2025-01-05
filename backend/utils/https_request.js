@@ -1,8 +1,9 @@
 import https from 'https';
+import Config from './config.js';
 
 export default function SendRequest(options) {
     return new Promise((resolve, reject) => {
-        const req = https.request(options, (res) => {
+        const req = https.request({...options, headers:{...options?.headers, Referer: Config.hostURL }}, (res) => {
             res.setEncoding('utf8');
             
             var output = '';

@@ -16,7 +16,7 @@ export default function Website({ id, data, url, onClick, onDataLoad }) {
     
     useEffect(() => {
         if(isFetching || fetchedData==undefined) return;
-        onDataLoad(fetchedData);
+        if(onDataLoad!=undefined) onDataLoad(fetchedData);
     }, [fetchedData])
 
     if(data == undefined) data = fetchedData;
