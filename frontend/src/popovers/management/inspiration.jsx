@@ -312,7 +312,6 @@ export const InspirationPopover = forwardRef(({}, ref) => {
         } else {
             return (
                 <>
-                    <i className="fas fa-award fa-fw"><p className="tooltip bottom">Stel als inspiratie voor</p></i>
                     <i className="fas fa-edit fa-fw" onClick={() => { openEdit(userData) }}><p className="tooltip bottom">Stel aanpassing voor</p></i>
                     <i className="fas fa-trash-alt fa-fw"><p className="tooltip bottom">Stel verwijdering voor</p></i>
                 </>

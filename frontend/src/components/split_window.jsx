@@ -18,7 +18,7 @@ export function SplitWindow({ children, minColumnWidth, seperator, smallVertical
             return;
         }
         setHorizontal(true);
-    })
+    });
 
     return (
         <div ref={ref} className={'split-window' + (seperator?' seperator':'') + (horizontal?' horizontal':' vertical') + (smallVerticalGap?' small-gap':'')}>

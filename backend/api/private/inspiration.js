@@ -20,6 +20,7 @@ try {
     if(data.length > 1000000) return Validator.ReturnError(res, 'Aanvraag te groot');
 
     if(Validator.CheckID(res, data.originalID)) return;
+    if(await DB.HasInspirationPendingVotes(data.originalID))
     if(Validator.CheckSuggestionDescription(res, data.description)) return;
     if(Validator.CheckSuggestionDescription(res, data.versionDescription)) return;
     if(Validator.CheckSuggestionName(res, data.versionName)) return;

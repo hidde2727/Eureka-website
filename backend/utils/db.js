@@ -208,6 +208,29 @@ export async function GetInspiration(uuid) {
     var results = await ExecutePreparedStatement('SELECT * FROM inspiration WHERE uuid=?', [uuid]);
     return results.length == 0 ? undefined : results[0];
 }
+export async function GetAmountInspiration(filters) {
+    if(filters.length == 0) {
+        return (await ExecuteStatement(`
+            SELECT COUNT(*) AS count 
+            FROM inspiration
+            WHERE active_version=TRUE
+        `))[0]['count'];
+    }
+    const results = await ExecutePreparedStatement(`
+        WITH filtered_inspirations AS (
+            SELECT inspiration_id
+            FROM labels_to_inspiration
+            WHERE label_id IN (${'?,'.repeat(filters.length).slice(0, -1)})
+            GROUP BY inspiration_id
+            HAVING COUNT(DISTINCT label_id)=?
+        )
+        SELECT COUNT(*) AS count
+        FROM inspiration
+        WHERE 
+            active_version=TRUE AND uuid IN (SELECT inspiration_id FROM filtered_inspirations)
+    `, [...filters, filters.length]);
+    return results.length==0?0:results[0]['count'];
+}
 export async function GetAllActiveInspirationWithLabels(filters, limit=20, offset=0) {
     return await ExecutePreparedStatement(`
     WITH filtered_inspirations AS (
@@ -215,8 +238,7 @@ export async function GetAllActiveInspirationWithLabels(filters, limit=20, offse
         FROM labels_to_inspiration
         WHERE label_id IN (${'?,'.repeat(filters.length).slice(0, -1)})
         GROUP BY inspiration_id
-        HAVING COUNT(DISTINCT label_id)=?,
-        LIMIT ? OFFSET ?
+        HAVING COUNT(DISTINCT label_id)=?
     )
     SELECT 
         i.*,
@@ -229,6 +251,7 @@ export async function GetAllActiveInspirationWithLabels(filters, limit=20, offse
         i.active_version=TRUE AND i.uuid IN (SELECT inspiration_id FROM filtered_inspirations)
     GROUP BY 
         i.uuid
+    LIMIT ? OFFSET ?
     `, [...filters, filters.length, limit, offset]);
 }
 export async function GetAllActiveInspiration(limit=20, offset=0) {
@@ -273,6 +296,9 @@ export async function IsValidInspiration(uuid) {
 export async function HasInspirationVoteResult(uuid) {
     var results = await ExecutePreparedStatement('SELECT voting_result FROM inspiration WHERE uuid=?', [uuid]);
     return results.length==0? undefined : results[0]['voting_result'] !== null;
+}
+export async function HasInspirationPendingVotes(inspirationID) {
+    return (await ExecutePreparedStatement('SELECT CASE WHEN EXISTS(SELECT 1 FROM inspiration WHERE original_id=? AND voting_result<=>NULL) THEN 1 ELSE 0 END AS result', [inspirationID]))[0]['result'];
 }
 
 

@@ -1,4 +1,4 @@
-import { keepPreviousData, queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions, useInfiniteQuery, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { GetCookie, DeleteCookie, Prepend } from './utils.jsx';
 
 async function fetchInfo(url, method, body, { jsonResponse=true, includeCredentials=false }) {
@@ -87,9 +87,36 @@ export function useInspirationLabelsSus() {
     const { data, error, isFetching } = useSuspenseQuery(fetchOptions('/data/labels.json', undefined, 'GET', null));
     return { labels: data, hasError: error, isFetching: isFetching };
 }
-export function useInspirationSus() {
-    const { data, error, isFetching } = useSuspenseQuery(fetchOptions('/api/inspiration', undefined, 'GET', null));
-    return { inspiration: data, hasError: error, isFetching: isFetching };
+let remaining = [];
+export function useInspiration(selectedLabels) {
+    function getNextPage() {
+        let index = Math.floor(Math.random() * (remaining.length - 1));
+        if(index == -1) return undefined;
+        const cursor = remaining[index];
+        remaining.splice(index, 1);
+        console.log('Nextpage ' + cursor);
+        console.log(remaining);
+        return cursor;
+    }
+    const { data, error, isFetching, isPlaceholderData, fetchNextPage, hasNextPage } = useInfiniteQuery(queryOptions({
+        queryKey: ['inspiration', ...selectedLabels],
+        queryFn: async ({ pageParam }) => {
+            let cursor = pageParam==-1?'':'&cursor='+pageParam;
+            const data = await fetchInfo('/api/inspiration/?labels='+selectedLabels.join(',')+cursor, 'GET', undefined, {});
+            if(pageParam==-1) {
+                remaining = data.availablePages;
+                return { data: data.data, nextPage: getNextPage() };
+            }
+            return { data, nextPage: getNextPage() };
+        },
+        initialPageParam: -1,
+        getNextPageParam: (lastPage, pages) => {
+            return lastPage.nextPage;
+        },
+        placeholderData: keepPreviousData,
+        staleTime: Infinity
+    }));
+    return { inspiration: data, hasError: error, isFetching, isPlaceholderData, fetchNextPage, hasNextPage };
 }
 export async function suggestInspiration({ url, description, recommendations, labels }) {
     await fetchInfo('/api/suggest/inspiration/', 'POST', JSON.stringify(

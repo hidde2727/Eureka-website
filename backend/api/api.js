@@ -13,9 +13,30 @@ import * as INS from '../utils/inspiration.js';
 import * as Voting from '../utils/suggestion_voting.js';
 import { GenerateProjectJSON } from '../utils/projects.js';
 
+const pageSize = 25;
 router.get('/inspiration', async (req, res) => {
-    const inspirations = await DB.GetAllActiveInspiration();
-    res.json(inspirations.map((inspiration) => {
+    const labels = req.query.labels==''||req.query.labels==undefined ? []:req.query.labels.split(',');
+    for(let i = 0; i < labels.length; i++) {
+        try { parseInt(labels[i]) }
+        catch(err) { res.status(400).send('Invalide labels'); }
+    }
+    if(Validator.CheckInteger(res, req.query.cursor)) return;
+
+    let returnAvailablePages = undefined;
+    let cursor = req.query.cursor;
+    if(req.query.cursor == undefined) {
+        const maxPages = Math.ceil((await DB.GetAmountInspiration(labels)) / pageSize);
+        const returningIndex = Math.floor(Math.random() * (maxPages - 1));
+        if(returningIndex == -1) return res.json({ availablePages: [], data: [] });
+        returnAvailablePages = Array.from({length: maxPages}, (thisArg, i) => i);
+        cursor = returnAvailablePages[returningIndex];
+        returnAvailablePages.splice(returningIndex, 1);
+    }
+    let inspirations = undefined;
+    if(labels.length == 0) inspirations = await DB.GetAllActiveInspiration(pageSize, pageSize*cursor);
+    else inspirations = await DB.GetAllActiveInspirationWithLabels(labels, pageSize, pageSize*cursor);
+
+    const response = inspirations.map((inspiration) => {
         return {
             uuid: inspiration.uuid,
             original_id: inspiration.original_id,
@@ -29,7 +50,12 @@ router.get('/inspiration', async (req, res) => {
             additionInfo: JSON.parse(inspiration.additionInfo),
             labels: inspiration.labels
         }
-    }));
+    });
+    if(returnAvailablePages != undefined) {
+        res.json({ availablePages: returnAvailablePages, returnedPage: cursor, data: response });
+    } else {
+        res.json(response);
+    }
 });
 router.post('/login', async (req, res) => {
 try {

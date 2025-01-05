@@ -1,4 +1,4 @@
-import { lazy, Suspense, useContext, useEffect, useRef, useState } from 'react';
+import { Fragment, lazy, Suspense, useContext, useEffect, useRef, useState } from 'react';
 
 import Footer from '../components/footer.jsx';
 import { Checkbox } from '../components/inputs.jsx';
@@ -7,23 +7,25 @@ import Restricted from '../components/restricted.jsx';
 import Website from '../components/website.jsx';
 import PopoverContext from '../popovers/context.jsx'
 
-import { useInspirationSus, useInspirationLabelsSus } from '../utils/data_fetching.jsx';
+import { useInspiration, useInspirationLabelsSus } from '../utils/data_fetching.jsx';
 
 const ManagementSidebar = lazy(() => import('./management/inspiration_sidebar.jsx'));
 
 export default function Inspiration({isActive}) {
     const sidebar = useRef();
-    const managamentSidebar = useRef();
     const [isEditing, setIsEditing] = useState(false);
+    const [selectedLabels, setSelectedLabels] = useState([]);
 
     return (
         <div className="window" id="inspiration" style={isActive ? {display: 'block'} : {display: 'none'}}>
             <div>
                 <div className="content">
                     <h1>Inspiratie</h1>
-                    <Suspense fallback={<Loading />}>
-                        <InspirationSuspense />
-                    </Suspense>
+                    <div className="websites">
+                        <Suspense fallback={<Loading />}>
+                            <InspirationSuspense />
+                        </Suspense>
+                    </div>
                 </div>
                 <div className="sidebar" ref={sidebar}>
                     <Suspense fallback={<Loading />}>
@@ -41,20 +43,54 @@ export default function Inspiration({isActive}) {
             <Footer />
         </div>
     );
-
+    var requestedNextPage = false;
+    var hasNextPageGlobal = false;
     function InspirationSuspense({}) {
-        const { inspiration, isFetching, hasError } = useInspirationSus();
-        const popoverContext = useContext(PopoverContext)
+        const { inspiration, isFetching, hasError, hasNextPage, fetchNextPage } = useInspiration(selectedLabels);
+        hasNextPageGlobal = hasNextPage;
+        if(!isFetching) requestedNextPage=false;
 
-        if (hasError || inspiration == undefined) return <p>Error tijdens het ophalen van de projecten</p>;
+        const popoverContext = useContext(PopoverContext);
+
+        const observeElement = useRef();
+        const previousElement = useRef();
+        const visibilityObserver = useRef(
+            new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting){ if(!requestedNextPage && hasNextPageGlobal) fetchNextPage(); requestedNextPage=true; }
+                });
+            })
+        );
+        useEffect(() => {
+            if(previousElement.current != undefined) visibilityObserver.current.unobserve(previousElement.current);
+            previousElement.current = observeElement.current;
+            if(observeElement.current != undefined) visibilityObserver.current.observe(observeElement.current);
+        });
+
+        if (hasError) return <p>Error tijdens het ophalen van de inspiratie</p>;
+        if(inspiration == undefined) return <Loading />;
+        if(inspiration.pages[0].data.length == 0) return <p>Geen inspiratie gevonden met deze labels</p>;
 
         return (
             <>
                 {
-                    inspiration.map((inspirationData) => <Website data={inspirationData.additionInfo} key={inspirationData.uuid} onClick={() => {
-                        popoverContext.inspiration.current.open(inspirationData)
-                    }} ></Website>)
+                    inspiration.pages.map((page, index) => {
+                        return (
+                        <Fragment key={inspiration.pageParams[index]}>{
+                            page.data.map((inspirationData, websiteIndex) => { 
+                                return (
+                                <div className="website-wrapper" ref={index+1==inspiration.pages.length&&websiteIndex==0? observeElement : undefined}>
+                                    <Website data={inspirationData.additionInfo} key={inspirationData.uuid} onClick={() => {
+                                        popoverContext.inspiration.current.open(inspirationData)
+                                    }}></Website>
+                                </div>
+                                ); 
+                            })
+                        }</Fragment>
+                        );
+                    })
                 }
+
             </>
         )
     }
@@ -64,6 +100,7 @@ export default function Inspiration({isActive}) {
         const amountCategories = Object.entries(labels.labels).length;
         const [openedCategories, setOpenedCategories] = useState(Array(amountCategories).fill(true));
         const [categoryHeights, setCategoryHeights] = useState(Array(amountCategories).fill('undefined'));
+
         useEffect(() => {
             setCategoryHeights(
                 [...sidebar.current.getElementsByClassName('category')].map((category) => {
@@ -91,7 +128,13 @@ export default function Inspiration({isActive}) {
                                         category.labels.map(({ id, name }) => {
                                             return (
                                                 <div className="inspiration-label" key={id}>
-                                                    <Checkbox name={id} label={name} />
+                                                    <Checkbox name={id} label={name} checked={selectedLabels.includes(id)} onChange={() => {
+                                                        let selectedLabelsCopy = [...selectedLabels];
+                                                        const index = selectedLabelsCopy.indexOf(id);
+                                                        if(index == -1) selectedLabelsCopy.push(id)
+                                                        else selectedLabelsCopy.splice(index, 1);
+                                                        setSelectedLabels(selectedLabelsCopy);
+                                                    }} />
                                                 </div>
                                             )
                                         })

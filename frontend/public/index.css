@@ -1241,6 +1241,17 @@ form:has(.form-succes-screen) {
     overflow-y: auto;
     overflow-x: hidden;
 }
+#inspiration .content > .websites {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+}
+#inspiration .content > .websites .website-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 3px 0px;
+}
+
 
 /* + ======================================================================== +
 /* | Inspiration popover                                                      |
