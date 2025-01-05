@@ -20,7 +20,6 @@ router.get('/inspiration', async (req, res) => {
         try { parseInt(labels[i]) }
         catch(err) { res.status(400).send('Invalide labels'); }
     }
-    if(Validator.CheckInteger(res, req.query.cursor)) return;
 
     let returnAvailablePages = undefined;
     let cursor = req.query.cursor;
@@ -32,6 +31,8 @@ router.get('/inspiration', async (req, res) => {
         cursor = returnAvailablePages[returningIndex];
         returnAvailablePages.splice(returningIndex, 1);
     }
+    if(Validator.CheckInteger(res, cursor)) return;
+    
     let inspirations = undefined;
     if(labels.length == 0) inspirations = await DB.GetAllActiveInspiration(pageSize, pageSize*cursor);
     else inspirations = await DB.GetAllActiveInspirationWithLabels(labels, pageSize, pageSize*cursor);
