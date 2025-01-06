@@ -60,6 +60,15 @@ else {
 // Routing
 app.use(express.json());
 app.use(cookieParser());
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+    if(!Config.isDev && req.headers['cf-connecting-ip'] != undefined) { 
+        req.ip = req.headers['cf-connecting-ip'];
+        if(req.headers['cf-ipcountry'] != undefined) req.country = req.headers['cf-ipcountry']
+    }
+    else if(!Config.isDev) console.error('No ip defined on request');
+    next();
+})
 app.get('/', (req, res) => {
     if(Config.isDev) res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
     else res.sendFile('/frontend/index.html');
@@ -76,17 +85,6 @@ app.use((err, req, res, next) => {
     res.status(500).send('Er is iets fout gegaan op de server!');
     AddToAccessLog(accessUrgency.error, accessTypes.general, 'Unknown', null, { userAgent: req.headers['user-agent'], ip: req.ip, error: err.message });
 });
-
-// Prod
-app.disable('x-powered-by');
-const cloudflareIPs = await SendRequest({
-    host:'api.cloudflare.com',
-    path:'/client/v4/ips',
-    method:'GET',
-    headers: { Authorization: 'Bearer ' + Config.cloudflare.token }
-});
-if(!cloudflareIPs.success) console.error('Retrieving cloudflare ips failed: ' + JSON.stringify(cloudflareIPs?.errors));
-app.set('trust proxy', cloudflareIPs?.result?.ipv4_cidrs);
 
 // Start the server
 var connection = app.listen(port, () => {
