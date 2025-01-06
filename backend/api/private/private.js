@@ -8,7 +8,8 @@ router.use('/uploadthing', createRouteHandler({
     router: uploadRouter,
     config: { 
         token: Config.uploadthing.apiToken,
-        isDev: Config.isDev
+        isDev: Config.isDev,
+        callbackUrl: Config.isDev? undefined : 'https://' + Config.hostURL + '/api/private/uploadthing'
     }
 }));
 

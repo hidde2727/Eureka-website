@@ -88,6 +88,7 @@ export const uploadRouter = {
             throw new UploadThingError(err.message);
         }
     }).onUploadComplete(async ({ metadata, file }) => {
+        console.log('Upload complete');
         if(!(await DB.CreateFileAtPath(metadata.parentID, file.name, file.key))) { console.error('Failed to insert ' + file.name + ' with utid: ' + file.key); }
         fileRemaining--;
         if(fileRemaining == 0) {

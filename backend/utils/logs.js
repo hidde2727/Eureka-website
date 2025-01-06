@@ -34,28 +34,26 @@ export async function OverrideDefaultLogging() {
     await DeleteLogsOlderThen(1000*60*60*24*logRetentionDays);
     const logFile = fsSync.createWriteStream('./logs/debug.log', {flags : 'w'});
     const logFile2 = fsSync.createWriteStream('./logs/' + GetDateTimeString() + '.log');
-    const oldConsole = { ...console };
+    const oldStdout = process.stdout.write.bind(process.stdout);
 
-    let newConsole = {};
+    process.stdout.write = (message) => {
+        logFile.write(message);
+        logFile2.write(message);
+        oldStdout(message);
+    }
+
+    let newConsole = {...console};
     newConsole.log = function(message) {
-        oldConsole.log(message);
-        logFile.write(GetTimeString() + ' -> LOG: ' + message + '\n');
-        logFile2.write(GetTimeString() + ' -> LOG: ' + message + '\n');
+        process.stdout.write('[' + GetTimeString() + '] -> LOG : ' + message + '\n');
     };
     newConsole.info = function(message) {
-        oldConsole.info(message);
-        logFile.write(GetTimeString() + ' -> INFO: ' + message + '\n');
-        logFile2.write(GetTimeString() + ' -> INFO: ' + message + '\n');
+        process.stdout.write('[' + GetTimeString() + '] -> INFO: ' + message + '\n');
     };
     newConsole.warn = function(message) {
-        oldConsole.warn(message);
-        logFile.write(GetTimeString() + ' -> WARNING: ' + message + '\n');
-        logFile2.write(GetTimeString() + ' -> WARNING: ' + message + '\n');
+        process.stdout.write('[' + GetTimeString() + '] -> WARN: ' + message + '\n');
     };
     newConsole.error = function(message) {
-        oldConsole.error(message);
-        logFile.write(GetTimeString() + ' -> ERROR: ' + message + '\n');
-        logFile2.write(GetTimeString() + ' -> ERROR: ' + message + '\n');
+        process.stdout.write('[' + GetTimeString() + '] -> ERR : ' + message + '\n');
     };
     console = newConsole;
 }

@@ -29,17 +29,15 @@ await GenerateProjectJSON();
 await RegenFileIndices();
 await RegenLabels();
 
-// !!!! DELETE IN PRODUCTION !!!!!
 if(Config.isDev) {
-    console.log('In development mode!')
+    console.info('In development mode!');
     if(await DB.IsTableEmpty('users')) {
-        console.log('Regenerated the admin user')
+        console.info('Regenerated the admin user');
         // Generate default user (username: admin & password: password)
         await Login.GenerateUser('admin', await crypto.subtle.digest('SHA-256', Buffer.from('password')));
         await Login.GiveUserPermissions((await DB.GetUserByName('admin')).id, true, true, true, true, true, true);
     }
 }
-// !!!! DELETE IN PRODUCTION !!!!!
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 // Static content
