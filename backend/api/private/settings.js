@@ -4,6 +4,7 @@ const router = Router();
 import * as Login from '../../utils/login.js';
 import * as Settings from '../../utils/settings.js';
 import * as Validator from '../../utils/validator.js';
+import { accessTypes, accessUrgency, AddToAccessLogLoggedIn } from '../../utils/logs.js';
 
 router.use(async (req, res, next) => {
     if(!(await Login.HasUserPermission(req, 'modify_settings'))) {
@@ -38,10 +39,13 @@ router.put('/set', async (req, res) => {
         await Settings.CalculateSettingsPercentages();
         Settings.WriteSettingsFile();
     } catch (err) {
-        return Validator.ReturnError(res, 'Invalide error');
+        Validator.ReturnError(res, 'Server error');
+        AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.modifySettings, { error: err.message }, req);
+        return;
     }
 
     res.send("Succes!");
+    AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.modifySettings, { newSettings: Settings.GetSettings() }, req);
 });
 
 export default router;

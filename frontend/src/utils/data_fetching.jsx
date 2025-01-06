@@ -94,8 +94,6 @@ export function useInspiration(selectedLabels) {
         if(index == -1) return undefined;
         const cursor = remaining[index];
         remaining.splice(index, 1);
-        console.log('Nextpage ' + cursor);
-        console.log(remaining);
         return cursor;
     }
     const { data, error, isFetching, isPlaceholderData, fetchNextPage, hasNextPage } = useInfiniteQuery(queryOptions({

@@ -1,8 +1,11 @@
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
-import Config from './config.js';
 
-const logRetentionDays = Config.logRetention!=undefined?parseInt(Config.logRetention):14;
+import Config from './config.js';
+import * as DB from './db.js';
+import { GetSessionUserID, GetSessionUsername } from './login.js';
+
+const logRetentionDays = Config.logRetention!=undefined?parseFloat(Config.logRetention):14;
 
 function ToMinLength(number, length) {
     return number.toString().padStart(length, '0');
@@ -56,4 +59,52 @@ export async function OverrideDefaultLogging() {
         process.stdout.write('[' + GetTimeString() + '] -> ERR : ' + message + '\n');
     };
     console = newConsole;
+}
+
+export const accessUrgency = {
+    info: 1,
+    warning: 2,
+    error: 3
+}
+export const accessTypes = {
+    unknown: 0,
+
+    createUser: 101,
+    modifyUser: 102,
+    deleteUser: 103,
+
+    modifySelf: 201,
+
+    modifySettings: 301,
+
+    createProjectSuggestion: 401,
+    voteProjectSuggestion: 402,
+    denyProjectSuggestion: 403,
+    acceptProjectSuggestion: 404,
+    deleteProjectSuggestion: 405,
+
+    createInspirationSuggestion: 501,
+    voteInspirationSuggestion: 502,
+    denyInspirationSuggestion: 503,
+    acceptInspirationSuggestion: 504,
+    deleteInspirationSuggestion: 505,
+
+    createFile: 601,
+    renameFile: 602,
+    moveFile: 603,
+    deleteFile: 604,
+
+    failedLoginAttempt: 701,
+    login: 702,
+
+    createInspirationLabel: 801,
+    renameInspirationLabel: 802,
+    moveInspirationLabel: 803,
+    deleteInspirationLabel: 804
+}
+export async function AddToAccessLog(urgency, type, username, userId, jsonInfo) {
+    await DB.CreateLog(urgency, type, username, userId, JSON.stringify(jsonInfo));
+}
+export async function AddToAccessLogLoggedIn(urgency, type, jsonInfo, req) {
+    await AddToAccessLog(urgency, type, await GetSessionUsername(req), GetSessionUserID(req), jsonInfo);
 }

@@ -6,6 +6,7 @@ import * as Login from '../../utils/login.js';
 import * as Validator from '../../utils/validator.js';
 import * as INS from '../../utils/inspiration.js';
 import * as Voting from '../../utils/suggestion_voting.js';
+import { accessTypes, accessUrgency, AddToAccessLogLoggedIn } from '../../utils/logs.js';
 
 router.get('/versions', async (req, res) => {
     if(Validator.CheckID(res, req.query.id)) return false;
@@ -35,7 +36,7 @@ try {
     data.labels.forEach((label, index) => {
         if(Validator.CheckID(res, label)) error = true;
     });
-    if(error) return true;
+    if(error) return Validator.ReturnError(res, 'Invalide label id');
 
     const username = await Login.GetSessionUsername(req);
     const userID = Login.GetSessionUserID(req);
@@ -54,11 +55,13 @@ try {
     await Voting.VoteInspiration(req, insertedID, 1, await Login.HasUserPermission(req, 'admin'))
 
     res.send(insertedID.toString());
+    AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.createInspirationSuggestion, { initial: false, id: insertedID }, req);
 } catch(err) {
     console.error(err.message);
     if(err.message.includes('Illegale website string: ')) return Validator.ReturnError(res, 'Inspiratie url is incorrect');
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
+    AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createInspirationSuggestion, { initial: false, id: insertedID, error: err.message }, req);
 }
 });
 

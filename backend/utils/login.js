@@ -119,8 +119,8 @@ export async function CheckSession(req, res, repeatRequired = true) {
     return true;
 }
 export async function GetSessionUsername(req) {
-    if(req.username == undefined) req.username = (await DB.GetUser(GetSessionUserID(req))).username;
-    return req.username;
+    if(req.userData == undefined) req.userData = { ...(await DB.GetUser(GetSessionUserID(req))), password: undefined };
+    return req.userData.username;
 }
 export function GetSessionUserID(req) {
     if(req.user_ID == undefined) throw new Error('Not logged in, cant retrieve session user id');
@@ -134,8 +134,8 @@ export async function RemoveSession(req, res) {
 
 export async function HasUserPermission(req, permissionName) {
     try {
-        const userData = await DB.GetUser(GetSessionUserID(req));
-        return userData[permissionName];
+        if(req.userData == undefined) req.userData = { ...(await DB.GetUser(GetSessionUserID(req))), password: undefined };
+        return req.userData[permissionName];
     } catch(err) {
         console.error(err);
         return false;

@@ -7,6 +7,7 @@ import * as Login from '../../utils/login.js';
 import * as INS from '../../utils/inspiration.js';
 import * as Voting from '../../utils/suggestion_voting.js';
 import { GenerateProjectJSON } from '../../utils/projects.js';
+import { accessTypes, accessUrgency, AddToAccessLogLoggedIn } from '../../utils/logs.js';
 
 router.get('/versions', async (req, res) => {
     if(Validator.CheckID(res, req.query.id)) return false;
@@ -65,10 +66,12 @@ try {
     await GenerateProjectJSON();
 
     res.send(insertedID.toString());
+    AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.createProjectSuggestion, { initial: false, id: insertedID }, req);
 } catch(err) {
     console.error(err.message);
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
+    AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createProjectSuggestion, { initial: false, id: insertedID, error: err.message }, req);
 }
 });
 

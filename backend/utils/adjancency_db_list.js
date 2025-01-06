@@ -68,8 +68,7 @@ export async function CreateNode(parentId, otherValues, tableInfo, { onComplete,
         let newId = await DB.CreateNodeReturnID(parentId, otherValues, tableInfo);
         if(onComplete != undefined) await onComplete(newId);
     }).catch((err) => {
-        console.error('Error while adding node: ' + err.stack);
-        return onError('Server error');
+        return onError(err.stack);
     });
 }
 
@@ -90,8 +89,7 @@ export async function DeleteNode(id, tableInfo, { onNodeDelete, onSephamoreActiv
 
         if(onComplete != undefined) await onComplete();
     }).catch((err) => {
-        console.error('Error while deleting nodes: ' + err.stack);
-        return onError('Server error');
+        return onError(err.stack);
     });
 }
 
@@ -128,8 +126,7 @@ export async function RenameNode(id, newName, override, tableInfo, { onNodeDelet
 
         if(onComplete != undefined) await onComplete();
     }).catch((err) => {
-        console.error('Error while renaming nodes: ' + err.stack);
-        return onError('Server error');
+        return onError(err.stack);
     });
 }
 
@@ -166,7 +163,6 @@ export async function MoveNode(id, newParentId, override, tableInfo, { onNodeDel
 
         if(onComplete != undefined) await onComplete(undefined, true);
     }).catch((err) => {
-        console.error('Error while moving nodes: ' + err.stack);
-        return onError('Server error');
+        return onError(err.stack);
     });
 }

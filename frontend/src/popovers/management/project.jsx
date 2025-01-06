@@ -51,7 +51,6 @@ export const ProjectPopover = forwardRef(({}, ref) => {
         return versions
         .filter((version) => version.uuid === selectedVersionUUID )
         .map((version) => {
-            console.log('suggestion: ' + version.is_suggestion)
             if(version.is_suggestion) return version;
             return {...version, 
                 url1: JSON.parse(version.url1), 
@@ -149,7 +148,6 @@ export const ProjectPopover = forwardRef(({}, ref) => {
         return (
             <>
                 {editing && <input placeholder="youtube.com" defaultValue={websiteData?.url} onChange={(ev) => {
-                    console.log('url: ' + ev.target.value);
                     selectedVersion[partialName] = { url: ev.target.value };
                     localStorage.setItem('project-suggestion-' + selectedVersion.original_id, JSON.stringify(selectedVersion));
                     setForceUpdate(!forceUpdate);

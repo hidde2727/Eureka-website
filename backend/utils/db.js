@@ -394,7 +394,7 @@ export async function CreateProject(
             name, description, url1, url2, url3, requester, implementer, requestEmail, 0
         ]);
         insertedID = insertedID[0]['uuid'];
-        await ExecuteStatement('UPDATE projects SET original_id=uuid WHERE uuid=?', [insertedID]);
+        await ExecutePreparedStatement('UPDATE projects SET original_id=uuid WHERE uuid=?', [insertedID]);
 
     }
     return insertedID;
@@ -757,8 +757,8 @@ export async function GetAllFullNodePaths({ tableName, tableFields}) {
 // + ======================================================================== +
 // | Logs                                                                     |
 // + ======================================================================== +
-export async function CreateLog(urgency, type, message) {
-    await ExecutePreparedStatement('INSERT INTO logs (urgency, type, message) VALUES(?,?,?)', [urgency, type, message]);
+export async function CreateLog(urgency, type, username, userId, jsonInfo) {
+    await ExecutePreparedStatement('INSERT INTO logs (urgency, type, username, user_id, extra_info) VALUES(?,?,?,?,?)', [urgency, type, username, userId, jsonInfo]);
 }
 export async function GetAllLogs(limit, offset) {
     return await ExecutePreparedStatement('SELECT * FROM logs LIMIT ? OFFSET ?', [limit, offset]);

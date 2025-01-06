@@ -6,9 +6,9 @@ import * as Login from '../../utils/login.js';
 import * as Validator from '../../utils/validator.js';
 import { RegenLabels } from '../../utils/inspiration_labels.js';
 import * as TreeListDB from '../../utils/adjancency_db_list.js';
+import { accessTypes, accessUrgency, AddToAccessLogLoggedIn } from '../../utils/logs.js';
 
 const fileTableInfo = TreeListDB.CreateTableInfo('labels', ',position', async (node) => {
-    console.log('isLeaf: ' + await DB.HasLabelChildren(node.id));
     return !(await DB.HasLabelChildren(node.id));
 });
 
@@ -32,6 +32,11 @@ router.put('/add', async (req, res) => {
         await RegenLabels();
 
         res.send(JSON.stringify({ newId: id }));
+        AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.addInspirationLabel, { parentID: data.parentID, name: data.name }, req);
+    }).catch((err) => {
+        res.status(500).send('Server error');
+        console.error(err.stack);
+        AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.addInspirationLabel, { parentID: data.parentID, name: data.name, err: err.stack }, req);
     });
 });
 router.put('/move', async (req, res) => {
@@ -81,12 +86,15 @@ router.put('/move', async (req, res) => {
 
             await RegenLabels();
             res.send('succes!');
+            AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.moveInspirationLabel, { id: data.id, newParentID: data.newParentID, newPosition: data.atPosition, override: data.override }, req);
         },
         onInvalidInput: (message) => {
             res.status(400).send(message);
         },
         onError: (err) => {
             res.status(500).send('Server error');
+            console.error(err.message);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.moveInspirationLabel, { id: data.id, newParentID: data.newParentID, newPosition: data.atPosition, override: data.override, error: err.message }, req);
         }
     });
 });
@@ -102,7 +110,6 @@ router.put('/rename', async (req, res) => {
             if(replacedBy == undefined) {
                 removalPromises.push(DB.DeleteLabelFromInspiration(node.id));
             } else {
-                console.log('replacing ' + node.id + ' with ' + replacedBy.id);
                 removalPromises.push(DB.ReplaceLabelFromInspiration(node.id, replacedBy.id));
             }
         },
@@ -118,12 +125,15 @@ router.put('/rename', async (req, res) => {
             await Promise.all(removalPromises);
             await RegenLabels();
             res.send('succes!');
+            AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.renameInspirationLabel, { id: data.id, newName: data.newName, override: data.override, error: err.message }, req);
         },
         onInvalidInput: (message) => {
             res.status(400).send(message);
         },
         onError: (err) => {
             res.status(500).send('Server error');
+            console.error(err.message);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.renameInspirationLabel, { id: data.id, newName: data.newName, override: data.override, error: err.message }, req);
         }
     });
 });
@@ -135,7 +145,6 @@ router.put('/delete', async (req, res) => {
     await TreeListDB.DeleteNode(data.id, fileTableInfo, {
         onNodeDelete: (node, replacedBy) => {
             if(replacedBy == undefined) {
-                console.log('deleting ' + node.id);
                 removalPromises.push(DB.DeleteLabelFromInspiration(node.id));
             } else {
                 removalPromises.push(DB.ReplaceLabelFromInspiration(node.id, replacedBy.id));
@@ -147,12 +156,15 @@ router.put('/delete', async (req, res) => {
             await Promise.all(removalPromises);
             await RegenLabels();
             res.send('succes!');
+            AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.deleteInspirationLabel, { id: data.id }, req);
         },
         onInvalidInput: (message) => {
             res.status(400).send(message);
         },
         onError: (err) => {
             res.status(500).send('Server error');
+            console.error(err.message);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.deleteInspirationLabel, { id: data.id, error: err.message }, req);
         }
     });
 });

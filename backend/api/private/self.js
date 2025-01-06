@@ -4,6 +4,7 @@ const router = Router();
 import * as DB from '../../utils/db.js';
 import * as Login from '../../utils/login.js';
 import * as Validator from '../../utils/validator.js';
+import { accessTypes, accessUrgency, AddToAccessLogLoggedIn } from '../../utils/logs.js';
 
 router.get('/permissions', async (req, res) => {
     const userInfo = await DB.GetUser(Login.GetSessionUserID(req));
@@ -41,6 +42,7 @@ router.put('/update', async (req, res) => {
     else if(password != undefined) Login.UpdatePassword(req, Buffer.from(data.password, 'base64'));
 
     res.send("Succes");
+    AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.modifySelf, { newUsername: username, newEmail: email, newPassword: password!=undefined }, req);
 });
 
 router.get('/vote', async (req, res) => {

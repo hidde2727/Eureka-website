@@ -5,6 +5,7 @@ import * as DB from '../../utils/db.js';
 import * as Login from '../../utils/login.js';
 import * as Validator from '../../utils/validator.js';
 import { CalculateSettingsPercentages, WriteSettingsFile } from '../../utils/settings.js';
+import { accessTypes, accessUrgency, AddToAccessLogLoggedIn } from '../../utils/logs.js';
 
 router.use(async (req, res, next) => {
     if(!(await Login.HasUserPermission(req, 'modify_users'))) {
@@ -29,11 +30,11 @@ router.put('/add', async (req, res) => {
     if(Validator.CheckPassword(res, data.password)) return;
 
     try {
-        console.log(data.password);
-        console.log(Buffer.from(data.password, 'base64'));
         await Login.GenerateUser(data.username, Buffer.from(data.password, 'base64'));
     } catch(err) {
-        return Validator.ReturnError(res, 'Server error', 500);
+        Validator.ReturnError(res, 'Server error', 500);
+        AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createUser, { username: data.username, error: err.message }, req);
+        return;
     }
 
     // Recalculate the settings
@@ -41,6 +42,7 @@ router.put('/add', async (req, res) => {
     WriteSettingsFile();
 
     res.send('Gebruiker aangemaakt!');
+    AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.createUser, { username: data.username }, req);
 });
 
 router.put('/delete', async (req, res) => {
@@ -56,6 +58,7 @@ router.put('/delete', async (req, res) => {
     WriteSettingsFile();
 
     res.send('Gebruiker verwijdert!');
+    AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.deleteUser, { id: data.id }, req);
 });
 
 router.put('/modify', async (req, res) => {
@@ -86,6 +89,7 @@ router.put('/modify', async (req, res) => {
     WriteSettingsFile();
     
     res.send('Permissies aangepast');
+    AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.modifyUser, { id: data.id, admin: data.admin, labels: data.labels, users: data.users, settings: data.settings, files: data.files, logs: data.logs }, req);
 });
 
 export default router;

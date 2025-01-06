@@ -12,7 +12,8 @@ import { GenerateProjectJSON } from './utils/projects.js';
 import { RegenFileIndices } from './utils/files.js';
 import { RegenLabels } from './utils/inspiration_labels.js';
 import Config from './utils/config.js';
-import { OverrideDefaultLogging } from './utils/logs.js';
+import { OverrideDefaultLogging, accessTypes, accessUrgency, AddToAccessLog } from './utils/logs.js';
+import SendRequest from './utils/https_request.js';
 
 const app = express();
 const port = Config.isDev ? 3000 : process.env.PORT;
@@ -66,8 +67,6 @@ app.get('/', (req, res) => {
 app.use('/api', API);
 
 // Error handeling
-app.disable('x-powered-by');
-
 app.use((req, res, next) => {
     res.status(404).send("Sorry, die konden we niet vinden!")
 })
@@ -75,7 +74,19 @@ app.use((err, req, res, next) => {
     console.error('Error ontvangen tijdens uitvoeren server:\n')
     console.error(err.stack);
     res.status(500).send('Er is iets fout gegaan op de server!');
-})
+    AddToAccessLog(accessUrgency.error, accessTypes.general, 'Unknown', null, { userAgent: req.headers['user-agent'], ip: req.ip, error: err.message });
+});
+
+// Prod
+app.disable('x-powered-by');
+const cloudflareIPs = await SendRequest({
+    host:'api.cloudflare.com',
+    path:'/client/v4/ips',
+    method:'GET',
+    headers: { Authorization: 'Bearer ' + Config.cloudflare.token }
+});
+if(!cloudflareIPs.success) console.error('Retrieving cloudflare ips failed: ' + JSON.stringify(cloudflareIPs?.errors));
+app.set('trust proxy', cloudflareIPs?.result?.ipv4_cidrs);
 
 // Start the server
 var connection = app.listen(port, () => {

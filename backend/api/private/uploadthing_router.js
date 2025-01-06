@@ -3,9 +3,10 @@ import { createUploadthing } from "uploadthing/express";
 
 import Config from '../../utils/config.js';
 import * as DB from '../../utils/db.js';
-import { CheckSession, HasUserPermission } from '../../utils/login.js';
+import { CheckSession, HasUserPermission, GetSessionUserID, GetSessionUsername } from '../../utils/login.js';
 import { RegenFileIndices } from '../../utils/files.js';
 import { GetSemaphore } from '../../utils/adjancency_db_list.js';
+import { accessTypes, accessUrgency, AddToAccessLogLoggedIn } from '../../utils/logs.js';
 
 const f = createUploadthing();
 
@@ -79,23 +80,30 @@ export const uploadRouter = {
             }
             console.log('Uploading');
             return { 
-                parentID: parentID, 
+                parentID: parentID,
+                userID: GetSessionUserID(req),
+                username: GetSessionUsername(req),
                 [UTFiles]: fileOverrides 
             };
         } catch(err) {
             GetSemaphore('files').release();
             console.log('released');
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.addFile, { names: files.map((file) => file.name), err: err.message }, req);
             throw new UploadThingError(err.message);
         }
     }).onUploadComplete(async ({ metadata, file }) => {
         console.log('Upload complete');
-        if(!(await DB.CreateFileAtPath(metadata.parentID, file.name, file.key))) { console.error('Failed to insert ' + file.name + ' with utid: ' + file.key); }
+        if(!(await DB.CreateFileAtPath(metadata.parentID, file.name, file.key))) { 
+            console.error('Failed to insert ' + file.name + ' with utid: ' + file.key);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.addFile, { name: file.name, utid: file.key, err: 'Failed to insert ' + file.name + ' with utid: ' + file.key }, req);
+        }
         fileRemaining--;
         if(fileRemaining == 0) {
             await RegenFileIndices();
             GetSemaphore('files').release();
             console.log('released');
         }
+        AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.addFile, { name: file.name, utid: file.key }, req);
     })
 };
 export default uploadRouter;
