@@ -62,8 +62,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.disable('x-powered-by');
 app.use((req, res, next) => {
+    req.cfIP = req.ip;
     if(!Config.isDev && req.headers['cf-connecting-ip'] != undefined) { 
-        req.ip = req.headers['cf-connecting-ip'];
+        req.cfIP = req.headers['cf-connecting-ip'];
         if(req.headers['cf-ipcountry'] != undefined) req.country = req.headers['cf-ipcountry']
     }
     else if(!Config.isDev) console.error('No ip defined on request');
@@ -83,7 +84,7 @@ app.use((err, req, res, next) => {
     console.error('Error ontvangen tijdens uitvoeren server:\n')
     console.error(err.stack);
     res.status(500).send('Er is iets fout gegaan op de server!');
-    AddToAccessLog(accessUrgency.error, accessTypes.general, 'Unknown', null, { userAgent: req.headers['user-agent'], ip: req.ip, error: err.message });
+    AddToAccessLog(accessUrgency.error, accessTypes.general, 'Unknown', null, { userAgent: req.headers['user-agent'], ip: req.cfIP, country: req.country, error: err.message });
 });
 
 // Start the server

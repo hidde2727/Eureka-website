@@ -71,7 +71,7 @@ try {
     if (!isValid) {
         res.status(401);
         res.send('Verkeerde credentials');
-        AddToAccessLog(accessUrgency.info, accessTypes.failedLoginAttempt, data.username, userID, { userAgent: req.headers['user-agent'], ip: req.ip, country: req.country });
+        AddToAccessLog(accessUrgency.info, accessTypes.failedLoginAttempt, data.username, userID, { userAgent: req.headers['user-agent'], ip: req.cfIP, country: req.country });
         return;
     }
     // Correct password - give user the correct cookies
@@ -83,7 +83,7 @@ try {
 
     await Login.CreateSession(res, userID);
     res.send('Correct!!!');
-    AddToAccessLog(accessUrgency.info, accessTypes.login, data.username, userID, { userAgent: req.headers['user-agent'], ip: req.ip, country: req.country });
+    AddToAccessLog(accessUrgency.info, accessTypes.login, data.username, userID, { userAgent: req.headers['user-agent'], ip: req.cfIP, country: req.country });
 } catch(err) {
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
@@ -125,12 +125,12 @@ try {
     await GenerateProjectJSON();
 
     res.send('Project is aangevraagd!');
-    AddToAccessLog(accessUrgency.info, accessTypes.createProjectSuggestion, data.suggestorName, null, { initial: true, id: insertedID, userAgent: req.headers['user-agent'], ip: req.ip, country: req.country });
+    AddToAccessLog(accessUrgency.info, accessTypes.createProjectSuggestion, data.suggestorName, null, { initial: true, id: insertedID, userAgent: req.headers['user-agent'], ip: req.cfIP, country: req.country });
 } catch(err) {
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
     console.error(err.message);
-    AddToAccessLog(accessUrgency.error, accessTypes.createProjectSuggestion, 'Unknown', null, { initial: true, userAgent: req.headers['user-agent'], ip: req.ip, country: req.country, error: err.message });
+    AddToAccessLog(accessUrgency.error, accessTypes.createProjectSuggestion, 'Unknown', null, { initial: true, userAgent: req.headers['user-agent'], ip: req.cfIP, country: req.country, error: err.message });
 }
 });
 
@@ -172,13 +172,13 @@ try {
     }
 
     res.send('Inspiratie is aangevraagd!');
-    AddToAccessLog(accessUrgency.info, accessTypes.createInspirationSuggestion, 'Unknown', null, { initial: true, id: insertedID, userAgent: req.headers['user-agent'], ip: req.ip, country: req.country });
+    AddToAccessLog(accessUrgency.info, accessTypes.createInspirationSuggestion, 'Unknown', null, { initial: true, id: insertedID, userAgent: req.headers['user-agent'], ip: req.cfIP, country: req.country });
 } catch(err) {
     console.error(err.message);
     if(err.message.includes('Illegale website string: ')) return Validator.ReturnError(res, 'Inspiratie url is incorrect');
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
-    AddToAccessLog(accessUrgency.error, accessTypes.createInspirationSuggestion, 'Unknown', null, { initial: true, userAgent: req.headers['user-agent'], ip: req.ip, country: req.country, error: err.message });
+    AddToAccessLog(accessUrgency.error, accessTypes.createInspirationSuggestion, 'Unknown', null, { initial: true, userAgent: req.headers['user-agent'], ip: req.cfIP, country: req.country, error: err.message });
 }
 });
 router.get('/retrieve/url', async (req, res) => {
@@ -192,7 +192,7 @@ try {
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
     console.error(err.message);
-    AddToAccessLog(accessUrgency.error, accessTypes.unknown, 'Unknown', null, { userAgent: req.headers['user-agent'], ip: req.ip, country: req.country, error: err.message });
+    AddToAccessLog(accessUrgency.error, accessTypes.unknown, 'Unknown', null, { userAgent: req.headers['user-agent'], ip: req.cfIP, country: req.country, error: err.message });
 }
 });
 
