@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Robotica USG</title>
 
+    <link rel="icon" href="/favicon.dark.png"/>
+    <script>
+        const favicon = document.querySelector('link[rel="icon"]');
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', (ev) => {
+            if (event.matches) favicon.setAttribute('href', '/favicon.dark.png');
+            else favicon.setAttribute('href', '/favicon.light.png')
+        });
+        console.log(mediaQuery.matches);
+        if(mediaQuery.matches) favicon.setAttribute('href', '/favicon.dark.png');
+        else favicon.setAttribute('href', '/favicon.light.png');
+    </script>
+
     <link rel="stylesheet" href="/fontawesome/css/all.min.css">
 
     <style>
