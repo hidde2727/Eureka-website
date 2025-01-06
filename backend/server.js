@@ -12,12 +12,14 @@ import { GenerateProjectJSON } from './utils/projects.js';
 import { RegenFileIndices } from './utils/files.js';
 import { RegenLabels } from './utils/inspiration_labels.js';
 import Config from './utils/config.js';
+import { OverrideDefaultLogging } from './utils/logs.js';
 
 const app = express();
 const port = Config.isDev ? 3000 : process.env.PORT;
 
 (async () => {
 
+await OverrideDefaultLogging();
 Settings.LoadSettings();
 await DB.CreateConnection();
 Login.SetupLoginSystem();

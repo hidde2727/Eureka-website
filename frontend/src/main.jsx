@@ -51,8 +51,10 @@ export default function App() {
     );
 }
 
+const isDev = import.meta.env.DEV;
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <StrictMode>
-        <App />
-    </StrictMode>
+    (() => {
+        if(isDev) return <StrictMode><App /></StrictMode>;
+        else return <App />;
+    })()
 );

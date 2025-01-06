@@ -1,6 +1,7 @@
 export const Config = {
     isDev: process.env.NODE_ENV === 'development',
     hostURL: process.env.HOST_URL,
+    logRetention: process.env.LOG_RETENTION,
     db: {
         host:       process.env.DB_HOST,
         user:       process.env.DB_USER,

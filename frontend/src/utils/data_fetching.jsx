@@ -8,7 +8,8 @@ async function fetchInfo(url, method, body, { jsonResponse=true, includeCredenti
         headers.append("sessionCredentialRepeat", decodeURI(GetCookie("sessionCredential")));
 
     const response = await fetch(url, { 
-        credentials: 'same-origin', 
+        credentials: 'same-origin',
+        mode: 'no-cors', 
         headers: headers, 
         method: method, 
         body: body

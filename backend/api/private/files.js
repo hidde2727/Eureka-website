@@ -61,7 +61,8 @@ router.put('/rename', async (req, res) => {
             if(conflicts != undefined) return res.send(JSON.stringify(conflicts));
 
             await Files.RegenFileIndices();
-
+            if(toBeRemovedUT.length == 0) return res.send('succes!');
+            
             const { success, deletedCount } = await utapi.deleteFiles(toBeRemovedUT, { keyType: 'fileKey' });
             if(!success) { console.error('Failed to delete\n' + toBeRemovedUT); return res.status(500).send('Server error'); }
             if(deletedCount != toBeRemovedUT.length) { console.error('Deleted and to be deleted counts do not match'); return res.status(500).send('Server error'); }
@@ -93,6 +94,7 @@ router.put('/move', async (req, res) => {
             if(conflicts != undefined) return res.send(JSON.stringify(conflicts));
 
             await Files.RegenFileIndices();
+            if(toBeRemovedUT.length == 0) return res.send('succes!');
 
             const { success, deletedCount } = await utapi.deleteFiles(toBeRemovedUT, { keyType: 'fileKey' });
             if(!success) { console.error('Failed to delete\n' + toBeRemovedUT); return res.status(500).send('Server error'); }
@@ -121,6 +123,7 @@ router.put('/delete', async (req, res) => {
         },
         onComplete: async () => {
             await Files.RegenFileIndices();
+            if(toBeRemovedUT.length == 0) return res.send('succes!');
 
             const { success, deletedCount } = await utapi.deleteFiles(toBeRemovedUT, { keyType: 'fileKey' });
             if(!success) { console.error('Failed to delete\n' + toBeRemovedUT); return res.status(500).send('Server error'); }

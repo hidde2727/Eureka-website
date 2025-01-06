@@ -34,7 +34,7 @@ jobs:
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_USER: ${{ secrets.SSH_USERNAME }}
           REMOTE_PORT: ${{ secrets.SSH_PORT }}
-          EXCLUDE: "/data/, .env, /node_modules/"
+          EXCLUDE: "/data/, .env, /node_modules/, /logs/"
           SCRIPT_BEFORE: |
             cloudlinux-selector --interpreter nodejs --app-root ${{ secrets.FOLDER_NAME }} --json stop
           SCRIPT_AFTER: |

@@ -2,6 +2,7 @@ node_modules/
 
 /backend/data/private/
 /backend/data/
+/backend/logs/
 .env
 
 /frontend/dist/
