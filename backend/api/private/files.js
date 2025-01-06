@@ -41,11 +41,11 @@ router.put('/add', async (req, res) => {
     await TreeListDB.CreateNode(data.parentID, [null], fileTableInfo, {
         onComplete: (newId) => {
             res.send(JSON.stringify({name: 'new'+ newId, id: newId}));
-            AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.addFile, { parentID: data.parentID, name: 'new'+newId }, req);
+            AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.createFile, { parentID: data.parentID, name: 'new'+newId }, req);
         }, onError: (err) => {
             res.status(500).send('Server error');
             console.error(err.message);
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.addFile, { id: data.id, newName: data.newName, err: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createFile, { id: data.id, newName: data.newName, err: err.message }, req);
         }
     });
 });

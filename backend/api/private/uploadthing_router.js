@@ -88,14 +88,14 @@ export const uploadRouter = {
         } catch(err) {
             GetSemaphore('files').release();
             console.log('released');
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.addFile, { names: files.map((file) => file.name), err: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createFile, { names: files.map((file) => file.name), err: err.message }, req);
             throw new UploadThingError(err.message);
         }
     }).onUploadComplete(async ({ metadata, file }) => {
         console.log('Upload complete');
         if(!(await DB.CreateFileAtPath(metadata.parentID, file.name, file.key))) { 
             console.error('Failed to insert ' + file.name + ' with utid: ' + file.key);
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.addFile, { name: file.name, utid: file.key, err: 'Failed to insert ' + file.name + ' with utid: ' + file.key }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createFile, { name: file.name, utid: file.key, err: 'Failed to insert ' + file.name + ' with utid: ' + file.key }, req);
         }
         fileRemaining--;
         if(fileRemaining == 0) {
@@ -103,7 +103,7 @@ export const uploadRouter = {
             GetSemaphore('files').release();
             console.log('released');
         }
-        AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.addFile, { name: file.name, utid: file.key }, req);
+        AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.createFile, { name: file.name, utid: file.key }, req);
     })
 };
 export default uploadRouter;

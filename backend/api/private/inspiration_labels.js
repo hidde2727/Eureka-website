@@ -32,11 +32,11 @@ router.put('/add', async (req, res) => {
         await RegenLabels();
 
         res.send(JSON.stringify({ newId: id }));
-        AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.addInspirationLabel, { parentID: data.parentID, name: data.name }, req);
+        AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.createInspirationLabel, { parentID: data.parentID, name: data.name }, req);
     }).catch((err) => {
         res.status(500).send('Server error');
         console.error(err.stack);
-        AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.addInspirationLabel, { parentID: data.parentID, name: data.name, err: err.stack }, req);
+        AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createInspirationLabel, { parentID: data.parentID, name: data.name, err: err.stack }, req);
     });
 });
 router.put('/move', async (req, res) => {
