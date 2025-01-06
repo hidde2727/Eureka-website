@@ -68,6 +68,11 @@ app.get('/', (req, res) => {
 app.use('/api', API);
 
 // Error handeling
+app.disable('x-powered-by');
+
+app.use((req, res, next) => {
+    res.status(404).send("Sorry, die konden we niet vinden!")
+})
 app.use((err, req, res, next) => {
     console.error('Error ontvangen tijdens uitvoeren server:\n')
     console.error(err.stack);
