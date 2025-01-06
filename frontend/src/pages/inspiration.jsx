@@ -111,7 +111,7 @@ function Sidebar({sidebar, selectedLabels, setSelectedLabels}) {
             return category.clientHeight;
             })
         );
-    }, []);
+    }, [labels]);
     return (
         <>
             {

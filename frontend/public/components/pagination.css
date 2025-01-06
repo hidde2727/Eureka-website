@@ -2,7 +2,7 @@
     position: relative;
 
     display: grid;
-    grid-template-columns: 32px 2.5fr 16px 170px 2fr 150px;
+    grid-template-columns: 32px 2.5fr 16px 210px 2fr 150px;
     align-items: center;
 
     margin-bottom: 5px;
