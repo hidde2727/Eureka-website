@@ -29,7 +29,7 @@ export default function Suggestions({ isActive }) {
             return;
         }
         setInlineInputs(true);
-    })
+    });
 
     const [url, setURL] = useState();
     const [selectedLabels, setSelectedLabels] = useState({});
@@ -42,9 +42,10 @@ export default function Suggestions({ isActive }) {
     const [inspirationError, setInspirationError] = useState();
     const [inspirationSucces, setInspirationSucces] = useState("");
 
+    // Using isActive as boolean to force a rerender of the splitwindows when this window is shown
     return (
         <div className={'window' + (inlineInputs?'':' small')} id="suggestions" style={isActive ? {display: 'block'} : {display: 'none'}} ref={windowRef}>
-            <SplitWindow minColumnWidth={750} seperator={true} >
+            <SplitWindow minColumnWidth={750} seperator={isActive} >
                 <form onSubmit={(event) => { OnProjectSubmit(event, setProjectError, setProjectSucces); }}>
                     <h2>Suggereer een project</h2>
                     <p>Wat is het project?</p>
@@ -93,7 +94,7 @@ export default function Suggestions({ isActive }) {
                     </div>
 
                     <p>Suggesties om na afloop te bekijken?</p>
-                    <SplitWindow minColumnWidth={312} smallVerticalGap={true}>
+                    <SplitWindow minColumnWidth={312} smallVerticalGap={isActive}>
                         <div>
                             <Input type="text" placeholder="www.youtube.com" label="Suggestie 1" name="inspirationSuggestion1" onChange={(event) => { setSuggestion1(event.target.value); }} />
                             <div className="center-content">

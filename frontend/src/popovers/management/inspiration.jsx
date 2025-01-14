@@ -64,7 +64,8 @@ export const InspirationPopover = forwardRef(({}, ref) => {
             return {...version, 
                 additionInfo: JSON.parse(version.additionInfo), 
                 recommendation1: JSON.parse(version.recommendation1), 
-                recommendation2: JSON.parse(version.recommendation2)
+                recommendation2: JSON.parse(version.recommendation2),
+                labels: version.labels==null?'':version.labels
             }
         })[0];
     }, [selectedVersionUUID, isFetching]);
@@ -90,7 +91,7 @@ export const InspirationPopover = forwardRef(({}, ref) => {
     if(labels == undefined || mappedLabels.current==undefined || hasError) return <Popover ref={internalRef} id="inspiration-popover" />;
 
     const editing = selectedVersion?.is_suggestion;
-    
+
     return (
         <Popover ref={internalRef} id="inspiration-popover">
             <Left>
@@ -114,6 +115,7 @@ export const InspirationPopover = forwardRef(({}, ref) => {
                             <div className="labels">
                                 {
                                     (selectedVersion?.labels ?? '-1,-2').split(',').map((labelID) => {
+                                        if(labelID == '') return;
                                         return (
                                             <p className="label" key={labelID}>{mappedLabels.current[labelID]}</p>
                                         )
@@ -182,7 +184,7 @@ export const InspirationPopover = forwardRef(({}, ref) => {
                         url: selectedVersion.url, 
                         description: selectedVersion.description, 
                         recommendations: suggestions,
-                        labels: selectedVersion.labels.split(',').map((label) => parseInt(label)),
+                        labels: selectedVersion.labels.split(',').map((label) => label==''?-1:parseInt(label)).filter((label) => label!=-1),
                         versionName: ev.target.suggestionName.value,
                         versionDescription: ev.target.suggestionDescription.value,
                         originalID: selectedVersion.original_id
@@ -213,7 +215,6 @@ export const InspirationPopover = forwardRef(({}, ref) => {
         return (
             <>
                 {editing && <input placeholder="youtube.com" defaultValue={websiteData?.url} onChange={(ev) => {
-                    console.log('url: ' + ev.target.value);
                     selectedVersion[partialName] = { url: ev.target.value };
                     localStorage.setItem('inspiration-suggestion-' + selectedVersion.original_id, JSON.stringify(selectedVersion));
                     setForceUpdate(!forceUpdate);

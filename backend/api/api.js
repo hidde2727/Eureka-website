@@ -88,6 +88,7 @@ try {
     res.status(500);
     res.send('Er is iets fout gegaan op de server');
     console.error(err.message);
+    AddToAccessLog(accessUrgency.error, accessTypes.login, data.username, userID, { userAgent: req.headers['user-agent'], ip: req.cfIP, country: req.country, error: err.message });
 }
 });
 router.post('/suggest/project', async (req, res) => {

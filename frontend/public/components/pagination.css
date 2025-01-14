@@ -33,3 +33,22 @@
 .pagination-top .align-names p:nth-child(3) {
     margin-left: 20px;
 }
+
+.pagination-bottom {
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+}
+.pagination-bottom a {
+    margin: 0px 7px;
+    font-size: 0.85rem;
+    color: var(--prominent-text);
+    user-select: none;
+    cursor: pointer;
+}
+.pagination-bottom .selected {
+    font-weight: 900;
+    text-decoration: underline var(--prominent-text);
+}

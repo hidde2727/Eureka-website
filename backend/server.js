@@ -13,7 +13,7 @@ import { RegenFileIndices } from './utils/files.js';
 import { RegenLabels } from './utils/inspiration_labels.js';
 import Config from './utils/config.js';
 import { OverrideDefaultLogging, accessTypes, accessUrgency, AddToAccessLog } from './utils/logs.js';
-import SendRequest from './utils/https_request.js';
+import VersionUpgrades from './utils/version_upgrades.js';
 
 const app = express();
 const port = Config.isDev ? 3000 : process.env.PORT;
@@ -29,6 +29,7 @@ await DB.SetupTables();
 await GenerateProjectJSON();
 await RegenFileIndices();
 await RegenLabels();
+await VersionUpgrades();
 
 if(Config.isDev) {
     console.info('In development mode!');

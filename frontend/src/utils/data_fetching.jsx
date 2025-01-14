@@ -588,6 +588,17 @@ export async function deleteUser(queryClient, id) {
     }
 }
 
+export function useLogs(cursor, windowSize, urgencyFilters, typeFilters, userFilters) {
+    let searchParams = [['cursor', cursor],['window', windowSize]];
+    if(urgencyFilters!==undefined) searchParams.push(['urgency', urgencyFilters]);
+    if(typeFilters!==undefined) searchParams.push(['type', typeFilters]);
+    if(userFilters!==undefined) searchParams.push(['user', userFilters]);
+
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/logs/get', searchParams, 'GET', null, { includeCredentials: true }));
+
+    return { logs: data?.data, amountPages: data?.amountPages, hasError: error, isFetching: isFetching };
+}
+
 export async function signOut() {
     await fetchInfo('/api/private/self/logout/', 'POST', null, { includeCredentials:true, jsonResponse:false });
 }

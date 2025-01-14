@@ -22,9 +22,11 @@ async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableIn
         // Go through all the conflicts and look at their respective matches in the override array
         conflicts.forEach((conflict) => {
             if (resolveConflicts !== true && resolveConflicts[conflict.child.id] == undefined) { return 'Incorrect override array'; }
-            if (resolveConflicts === true || resolveConflicts[conflict.child.id] === 'replace') {
+
+            if(conflict.with.id == conflict.child.id) return;
+            else if (resolveConflicts === true || resolveConflicts[conflict.child.id] === 'replace') {
                 onNodeDelete(conflict.with, conflict.child);
-            } else if (resolveConflicts[conflict.child.id] === 'ignore') { parentID=true }
+            } else if (resolveConflicts[conflict.child.id] === 'ignore') { parentID=true; }
             else { return 'Incorrect override array'; }
         });
         if (parentID) { parentID = (await DB.GetNode(movingID, tableInfo)).parent_id; }
@@ -32,6 +34,7 @@ async function ResolveConflicts(conflicts, resolveConflicts, movingID, { tableIn
 
         let toBeRemoved = [];
         conflicts.forEach((conflict) => {
+            if(conflict.with.id == conflict.child.id) return;
             if (resolveConflicts === true || resolveConflicts[conflict.child.id] === 'replace') {
                 // Remove the file at the new location
                 toBeRemoved.push(DB.DeleteNode(conflict.with.id, tableInfo));
@@ -100,9 +103,22 @@ export async function RenameNode(id, newName, override, tableInfo, { onNodeDelet
         if (override == undefined) return onInvalidInput('Please specify the overrides');
         if (id == null) return onInvalidInput("Can't rename the root");
 
-        const currentName = (await DB.GetNode(id, tableInfo)).name;
-        if (currentName === undefined) { console.error('Current name is undefined'); return onInvalidInput('Incorrect file id') }
-        if (newName == currentName) { await onComplete(); return; }
+        const currentNode = await DB.GetNode(id, tableInfo);
+        if (currentNode === undefined) { console.error('Current name is undefined'); return onInvalidInput('Incorrect file id') }
+        if (newName == currentNode.name) { await onComplete(); return; }
+
+        if(currentNode.name.toLowerCase()==newName.toLowerCase() && await tableInfo.isLeaf(currentNode)) {
+            if(onIDChange!=undefined) onIDChange(id, 0, currentNode);
+            await onStartModifying();
+            await DB.DeleteNode(id, tableInfo);
+            const insertedID = await DB.ExecutePreparedStatement(
+                `INSERT INTO ${tableInfo.tableName} (parent_id, name${tableInfo.tableFields}) VALUES (?,?${',?'.repeat(tableInfo.tableFields.split(',').length - 1)}) RETURNING id`, 
+                [currentNode.parent_id, newName, ...DB.GetExtraFieldsOfNode(currentNode, tableInfo)]
+            );
+            if(onIDChange!=undefined) onIDChange(0, insertedID[0]['id'], currentNode);
+            if(onComplete != undefined) await onComplete();
+            return;
+        }
 
         const conflicts = await DB.CheckNodeRenamingConflicts(id, newName, tableInfo);
         if (!override && conflicts.length > 0) {

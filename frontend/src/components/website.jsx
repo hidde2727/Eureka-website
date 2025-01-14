@@ -40,6 +40,7 @@ export default function Website({ id, data, url, onClick, onDataLoad }) {
                 <div className="website-author-icon" style={{backgroundImage: `url(${data.json.channelThumbnails.medium.url})`}}></div>
                 <p className="website-author-name" style={{backgroundColor: 'rgba(0,0,0,0)'}}>{data.name}</p>
                 <p className="website-extra-info" style={{backgroundColor: 'rgba(0,0,0,0)'}}></p>
+                <a className="website-clickable" href={onClick==undefined?data.url:undefined}></a>
             </div>
         );
     } else if(data.type == InspirationTypes.YT_Channel) {

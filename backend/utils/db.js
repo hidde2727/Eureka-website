@@ -22,7 +22,9 @@ export async function SetupTables() {
     await ExecuteStatement(fs.readFileSync('./utils/schemas/labels_to_inspiration.schema', { encoding:'ascii' }));
     await ExecuteStatement(fs.readFileSync('./utils/schemas/suggestion_votes.schema', { encoding:'ascii' }));
     await ExecuteStatement(fs.readFileSync('./utils/schemas/logs.schema', { encoding:'ascii' }));
-    await ExecuteStatement(fs.readFileSync('./utils/schemas/files.schema', { encoding:'ascii' }));    
+    await ExecuteStatement(fs.readFileSync('./utils/schemas/files.schema', { encoding:'ascii' }));
+
+    await ExecuteStatement(`INSERT IGNORE INTO labels (parent_id, name, position) VALUES(null, 'Placeholder should not display on frontend', null)`);
 }
 export async function ExecuteStatement(statement) {
     return new Promise((resolve, reject)=>{
@@ -308,7 +310,6 @@ export async function HasInspirationPendingVotes(inspirationID) {
 export async function CreateLabel(parentID, name) {
     const doesExists = await ExecutePreparedStatement('SELECT id FROM labels WHERE parent_id<=>? AND name=?', [parentID, name]);
     if(doesExists.length > 0) return doesExists[0]['id'];
-    console.log(name);
 
     const id = (await ExecutePreparedStatement(
         'INSERT INTO labels (parent_id, name) VALUES(?,?) RETURNING id', 
@@ -321,6 +322,12 @@ export async function DeleteLabelFromInspiration(id) {
     await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id=?', [id]);
 }
 export async function ReplaceLabelFromInspiration(id, replacementId) {
+    if(replacementId == 0) {
+        replacementId = (await ExecutePreparedStatement('SELECT id FROM labels WHERE name="Placeholder should not display on frontend" AND parent_id<=>NULL AND position<=>NULL'))[0]['id'];
+    }
+    if(id == 0) {
+        id = (await ExecutePreparedStatement('SELECT id FROM labels WHERE name="Placeholder should not display on frontend" AND parent_id<=>NULL AND position<=>NULL'))[0]['id'];
+    }
     await ExecutePreparedStatement('UPDATE IGNORE labels_to_inspiration SET label_id=? WHERE label_id=?', [replacementId, id]);
     await ExecutePreparedStatement('DELETE FROM labels_to_inspiration WHERE label_id=?', [id]);
 }
@@ -635,10 +642,18 @@ export async function RenameNode(id, newName, { tableName, tableFields, isLeaf }
         for(let i = 0; i < children.length; i++) {
             const id = await CreateNodeAtPath(currentFileInfo.parent_id, newName + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields});
             if(!id) failedNodes.push(children[i]);
-            changedIDs.push({from: children[i].id, to: id, nodeInfo: children[i].id });
+            changedIDs.push({from: children[i].id, to: id, nodeInfo: children[i] });
         }
         await DeleteNode(id, {tableName, tableFields});
         return [failedNodes, changedIDs];
+    }
+    if(currentFileInfo.name.toLowerCase() == newName.toLowerCase()) {
+        await DeleteNode(id, {tableName, tableFields});
+        const insertedID = await ExecutePreparedStatement(
+            `INSERT INTO ${tableName} (parent_id, name${',?'.repeat(tableFields.split(',').length - 1)})`, 
+            [currentFileInfo.parent_id, currentFileInfo.name, GetExtraFieldsOfNode(currentFileInfo, {tableFields})]
+        );
+        return [[], [{from: currentFileInfo.id, to: insertedID, nodeInfo: currentFileInfo}]]
     }
     await ExecutePreparedStatement(`UPDATE ${tableName} SET name=? WHERE id=?`, [newName, id]);
     return [[], []];
@@ -658,7 +673,7 @@ export async function MoveNode(id, newParentId, { tableName, tableFields, isLeaf
         for(let i = 0; i < children.length; i++) {
             const id = await CreateNodeAtPath(newParentId, currentFileInfo.name + '/' + children[i].path, GetExtraFieldsOfNode(children[i], {tableFields}), {tableName, tableFields})
             if(!id) failedNodes.push(children[i]);
-            changedIDs.push({from: children[i].id, to: id, nodeInfo: children[i].id});
+            changedIDs.push({from: children[i].id, to: id, nodeInfo: children[i]});
         }
         await DeleteNode(id, {tableName, tableFields});
         return [failedNodes, changedIDs];
@@ -760,11 +775,34 @@ export async function GetAllFullNodePaths({ tableName, tableFields}) {
 export async function CreateLog(urgency, type, username, userId, jsonInfo) {
     await ExecutePreparedStatement('INSERT INTO logs (urgency, type, username, user_id, extra_info) VALUES(?,?,?,?,?)', [urgency, type, username, userId, jsonInfo]);
 }
-export async function GetAllLogs(limit, offset) {
-    return await ExecutePreparedStatement('SELECT * FROM logs LIMIT ? OFFSET ?', [limit, offset]);
-}
-export async function GetFilteredLogs(includedString, limit, offset) {
-    return await ExecutePreparedStatement('SELECT * FROM logs WHERE MATCH (message) AGAINST (? IN NATURAL LANGUAGE MODE) LIMIT ? OFFSET ?', [includedString, limit, offset]);
+export async function GetAllLogs(limit, offset, urgency, type, userId) {
+    let extraString = '';
+    let extraVariables = [];
+    if(urgency != undefined && urgency!=null) {
+        extraString +='WHERE urgency=?';
+        extraVariables.push(parseInt(urgency));
+    }
+    if(type != undefined && type!=null) {
+        extraString += (extraString.length==0?'WHERE ':' AND ') + 'type=?';
+        extraVariables.push(parseInt(type));
+    }
+    if(userId != undefined && userId!=null) {
+        extraString += (extraString.length==0?'WHERE ':' AND ') + 'user_id<=>?';
+        if(userId == 'null') extraVariables.push('NULL');
+        else extraVariables.push(parseInt(userId));
+    }
+    
+    return { 
+    data: await ExecutePreparedStatement(`
+        SELECT * FROM logs
+        ${extraString}
+        ORDER BY id DESC
+        LIMIT ? OFFSET ?`, [...extraVariables, limit, offset]),
+    amountPages: Math.ceil((await ExecutePreparedStatement(`
+        SELECT COUNT(*) AS count FROM logs
+        ${extraString}
+        `, [...extraVariables]))[0]['count'] / limit)
+    };
 }
 
 export const InspirationTypes = Object.freeze({

@@ -43,9 +43,9 @@ router.put('/add', async (req, res) => {
             res.send(JSON.stringify({name: 'new'+ newId, id: newId}));
             AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.createFile, { parentID: data.parentID, name: 'new'+newId }, req);
         }, onError: (err) => {
+            console.error(err);
             res.status(500).send('Server error');
-            console.error(err.message);
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createFile, { id: data.id, newName: data.newName, err: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createFile, { id: data.id, newName: data.newName, err: err }, req);
         }
     });
 });
@@ -82,9 +82,9 @@ router.put('/rename', async (req, res) => {
             res.status(400).send(message);
         },
         onError: (err) => {
+            console.error(err);
             res.status(500).send('Server error');
-            console.error(err.message);
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.renameFile, { id: data.id, newName: data.newName, err: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.renameFile, { id: data.id, newName: data.newName, err: err }, req);
         }
     });
 });
@@ -122,9 +122,9 @@ router.put('/move', async (req, res) => {
             res.status(400).send(message);
         },
         onError: (err) => {
+            console.error(err);
             res.status(500).send('Server error');
-            console.error(err.message);
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.moveFile, { id: data.id, newParentId: data.newParentId, err: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.moveFile, { id: data.id, newParentId: data.newParentId, err: err }, req);
         }
     });
 });
@@ -149,9 +149,9 @@ router.put('/delete', async (req, res) => {
             res.send('succes!');
         },
         onError: (err) => {
+            console.error(err);
             res.status(500).send('Server error');
-            console.error(err.message);
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.deleteFile, { id: data.id, err: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.deleteFile, { id: data.id, err: err }, req);
         }
     });
 });

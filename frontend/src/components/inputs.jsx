@@ -58,8 +58,8 @@ export function Textarea({ inline, id=undefined, className, label, placeholder, 
 }
 
 export function Select({ items, defaultActive, onChange }) {
-    function OnChange() {
-        if(onChange) onChange(selected);
+    function OnChange(item) {
+        if(onChange) onChange(item);
     }
     const [selected, setSelected] = useState(defaultActive);
     const [opened, setOpened] = useState(false);
@@ -80,7 +80,7 @@ export function Select({ items, defaultActive, onChange }) {
         <div className={`select${opened?' open':''}`} onClick={() => {setOpened(!opened);}} ref={ref}>
             <div className="active">{ selected }</div>
             <div className="dropdown">
-                { items.map((item) => <div onClick={() => {setOpened(false); setSelected(item); OnChange()}} key={item}>{item}</div>) }
+                { items.map((item) => <div onClick={() => {setOpened(false); setSelected(item); OnChange(item)}} key={item}>{item}</div>) }
             </div>
         </div>
     );

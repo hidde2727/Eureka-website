@@ -34,9 +34,9 @@ router.put('/add', async (req, res) => {
         res.send(JSON.stringify({ newId: id }));
         AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.createInspirationLabel, { parentID: data.parentID, name: data.name }, req);
     }).catch((err) => {
+        console.error(err);
         res.status(500).send('Server error');
-        console.error(err.stack);
-        AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createInspirationLabel, { parentID: data.parentID, name: data.name, err: err.stack }, req);
+        AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createInspirationLabel, { parentID: data.parentID, name: data.name, err: err }, req);
     });
 });
 router.put('/move', async (req, res) => {
@@ -92,9 +92,9 @@ router.put('/move', async (req, res) => {
             res.status(400).send(message);
         },
         onError: (err) => {
+            console.error(err);
             res.status(500).send('Server error');
-            console.error(err.message);
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.moveInspirationLabel, { id: data.id, newParentID: data.newParentID, newPosition: data.atPosition, override: data.override, error: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.moveInspirationLabel, { id: data.id, newParentID: data.newParentID, newPosition: data.atPosition, override: data.override, error: err }, req);
         }
     });
 });
@@ -125,15 +125,15 @@ router.put('/rename', async (req, res) => {
             await Promise.all(removalPromises);
             await RegenLabels();
             res.send('succes!');
-            AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.renameInspirationLabel, { id: data.id, newName: data.newName, override: data.override, error: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.renameInspirationLabel, { id: data.id, newName: data.newName, override: data.override }, req);
         },
         onInvalidInput: (message) => {
             res.status(400).send(message);
         },
         onError: (err) => {
+            console.error(err);
             res.status(500).send('Server error');
-            console.error(err.message);
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.renameInspirationLabel, { id: data.id, newName: data.newName, override: data.override, error: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.renameInspirationLabel, { id: data.id, newName: data.newName, override: data.override, error: err }, req);
         }
     });
 });
@@ -162,9 +162,9 @@ router.put('/delete', async (req, res) => {
             res.status(400).send(message);
         },
         onError: (err) => {
+            console.error(err);
             res.status(500).send('Server error');
-            console.error(err.message);
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.deleteInspirationLabel, { id: data.id, error: err.message }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.deleteInspirationLabel, { id: data.id, error: err }, req);
         }
     });
 });

@@ -33,6 +33,7 @@ import Inspiration from './inspiration.js';
 import Project from './project.js';
 import Self from './self.js';
 import Settings from './settings.js';
+import Logs from './logs.js';
 router.use('/users', User);
 router.use('/suggestion', Suggestion);
 router.use('/files', Files);
@@ -41,5 +42,6 @@ router.use('/inspiration', Inspiration);
 router.use('/project', Project);
 router.use('/self', Self);
 router.use('/settings', Settings);
+router.use('/logs', Logs);
 
 export default router;

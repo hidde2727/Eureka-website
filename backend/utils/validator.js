@@ -47,7 +47,7 @@ export function CheckInteger(res, int, canBeString=false) {
         return ReturnError(res, 'Specificeer integer');
     else if(!canBeString && !Number.isInteger(int))
         return ReturnError(res, 'Integer moet een volledig getal zijn');
-    else if(!Number.isInteger(int) && !validator.isInteger(int))
+    else if(!Number.isInteger(int) && !validator.isInt(int))
         return ReturnError(res, 'Integer moet een volledig getal zijn');
 
     return false;
@@ -178,7 +178,7 @@ export function CheckID(res, id, canBeNull=false) {
     else if(typeof id == 'number') return false;
     else if(!(typeof id === 'string') && !(id instanceof String))
         return ReturnError(res, 'ID moet een string of number zijn');
-    else if(!validator.isInt(id))
+    else if(!validator.isInt(id) || id<0)
         return ReturnError(res, 'Specifier valide ID');
 
     return false;
@@ -189,7 +189,7 @@ export function CheckUUID(res, uuid) {
     else if(typeof uuid == 'number') return false;
     else if(!(typeof uuid === 'string') && !(uuid instanceof String))
         return ReturnError(res, 'ID moet een string of number zijn');
-    else if(!validator.isInt(uuid)) 
+    else if(!validator.isInt(uuid) || uuid<0) 
         return ReturnError(res, 'Specifier valide uuid');
 
     return false;

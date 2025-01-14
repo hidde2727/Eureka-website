@@ -37,7 +37,8 @@ export const InspirationPopover = forwardRef(({}, ref) => {
                     <p>{data.description}</p>
                     <div className="labels">
                         {
-                            data.labels.split(',').map((labelID) => {
+                            (data.labels ?? '').split(',').map((labelID) => {
+                                if(labelID == '') return;
                                 return (
                                     <p className="label" key={labelID}>{mappedLabels.current[labelID]}</p>
                                 )

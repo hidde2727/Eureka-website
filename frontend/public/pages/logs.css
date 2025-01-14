@@ -1,0 +1,37 @@
+#management-logs .pagination-top {
+    grid-template-columns: 32px 2.5fr 150px 150px 150px 200px;
+}
+#management-logs .pagination-top .align-names {
+    grid-template-columns: 32px 64px 145px 128px 2fr 32px;
+}
+#management-logs .select {
+    margin: 0 10px;
+    width: 100%;
+}
+#management-logs .select .dropdown {
+    width: fit-content;
+}
+#management-logs .content .log {
+    display: grid;
+    grid-template-columns: 32px 80px 128px 128px 2fr 32px;
+    align-items: center;
+
+    background-color: var(--prominent-background);
+    border-radius: var(--small-border);
+    margin-bottom: 5px;
+    padding: 5px;
+}
+#management-logs .content .log i {
+    font-size: 1.5rem;
+    justify-self: center;
+    color: var(--non-prominent-text);
+}
+#management-logs .content .log i.error {
+    color: var(--denial);
+}
+#management-logs .content .log p {
+    margin: 0;
+}
+#management-logs .content .log .time {
+    color: var(--prominent-text);
+}

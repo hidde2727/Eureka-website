@@ -7,6 +7,7 @@ export async function RegenLabels() {
     const fullPaths = await DB.GetAllFullLabelPaths();
     let labels = {};
     fullPaths.forEach(path => {
+        if(path.name == 'Placeholder should not display on frontend') return;
         const split = path.path.split('/');
         if(split.length == 1) labels[split[0]] = { id: path.id, name:path.name, labels: [] };
         else labels[split[0]].labels.push({ id: path.id, name: path.name });

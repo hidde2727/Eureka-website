@@ -4,9 +4,10 @@ import { useSuggestions } from '../../utils/data_fetching.jsx';
 
 import Pagination from '../../components/pagination.jsx';
 import Footer from '../../components/footer.jsx';
+import PopoverContext from '../../popovers/context.jsx';
+import { Checkbox, Select } from '../../components/inputs.jsx';
 
 import '/public/pages/suggestions.css';
-import PopoverContext from '../../popovers/context.jsx';
 
 export default function SuggestionVoting({isActive}) {
     const popoverContext = useContext(PopoverContext);
@@ -23,8 +24,16 @@ export default function SuggestionVoting({isActive}) {
             <div>
                 <h1>Suggesties</h1>
                 <Pagination 
-                    columns={['', 'Type', 'Naam', 'Omschrijving']} history={true} 
-                    setHistory={setShowHistory} setSearch={setSearch} setItemsPerPage={setItemsPerPage}
+                    columns={['', 'Type', 'Naam', 'Omschrijving']} 
+                    header={<>
+                        <Checkbox label="Laat geschiedenis zien" checked={false} onChange={(ev) => { setShowHistory(ev.target.checked) }} />
+                        <input type="text" id="search-suggstions" placeholder="search" onChange={(ev) => { setSearch(ev.target.value) }} />
+                        <Select 
+                            items={['10 items per pagina', '25 items per pagina', '50 items per pagina']} 
+                            defaultActive="25 items per pagina" 
+                            onChange={ (selected) => { setItemsPerPage(Number.parseInt(selected)) } } 
+                        />
+                    </>}
                 >
                     {
                         suggestions.map((suggestion) => {

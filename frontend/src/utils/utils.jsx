@@ -34,6 +34,7 @@ export function IsValidURL(url) {
 // Just don't open the website outside the european timezone
 export function TimeToString(time) {
     var date = new Date(time);
+    date = Date(date.getTime() - date.getTimezoneOffset());
     var now = new Date();
     var difference = (now - date) / 1000;
 

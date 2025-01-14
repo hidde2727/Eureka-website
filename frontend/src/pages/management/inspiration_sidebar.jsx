@@ -7,7 +7,7 @@ import { moveLabel, renameLabel, useInspirationLabelsSus, addLabel, deleteLabel 
 
 import '/public/pages/inspiration_sidebar.css';
 
-export default function Sidebar({ display }) {
+export default function Sidebar({  }) {
     const queryClient = useQueryClient();
     const { labels, isFetching, hasError } = useInspirationLabelsSus();
 
@@ -25,7 +25,7 @@ export default function Sidebar({ display }) {
     const conformationPopover = useRef();
 
     return (
-        <div className="management" style={{display: display?'block':'none'}}>
+        <div className="management">
             <DropZone show={draggedLabel != undefined} type="category" onDrop={OnLabelDrop} onDropData={{position: 0, parentID: null}} />
             {
                 labels.labels.map((category, categoryIndex) => {

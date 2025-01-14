@@ -103,7 +103,11 @@ export const accessTypes = {
     deleteInspirationLabel: 804
 }
 export async function AddToAccessLog(urgency, type, username, userId, jsonInfo) {
-    await DB.CreateLog(urgency, type, username, userId, JSON.stringify(jsonInfo));
+    try {
+        await DB.CreateLog(urgency, type, username, userId, JSON.stringify(jsonInfo));
+    } catch(err) {
+        console.error(err.stack);
+    }
 }
 export async function AddToAccessLogLoggedIn(urgency, type, jsonInfo, req) {
     await AddToAccessLog(urgency, type, await GetSessionUsername(req), GetSessionUserID(req), jsonInfo);

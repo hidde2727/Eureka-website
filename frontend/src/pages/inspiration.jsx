@@ -33,12 +33,12 @@ export default function Inspiration({isActive}) {
                 <div className={'sidebar' + (isSidebarOpened?' open':' closed')} ref={sidebar}>
                     <Suspense fallback={<Loading />}>
                         <Restricted notLoggedIn={true}>
-                            <div className="sidebar-wrapper"><Sidebar sidebar={sidebar} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} /></div>
+                            <div className="sidebar-wrapper"><Sidebar sidebar={sidebar} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} isActive={isActive} /></div>
                         </Restricted>
                         <Restricted to="modify_inspiration_labels">
                             <button onMouseDown={()=> {setIsEditing(!isEditing);}}>{isEditing?'Stop editen':'Start editen'}</button>
-                            <div className="sidebar-wrapper" style={{display:!isEditing?'block':'none'}}><Sidebar sidebar={sidebar} display={!isEditing} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} /></div>
-                            <div className="sidebar-wrapper"><ManagementSidebar display={isEditing} /></div>
+                            <div className="sidebar-wrapper" style={{display:!isEditing?'block':'none'}}><Sidebar sidebar={sidebar} display={isActive&&isEditing} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} isActive={isActive} /></div>
+                            <div className="sidebar-wrapper" style={{display:isEditing?'block':'none'}}><ManagementSidebar /></div>
                         </Restricted>
                     </Suspense>
                 </div>
@@ -46,7 +46,9 @@ export default function Inspiration({isActive}) {
             <Footer />
         </div>
     );
+    // DO NOT DELETE, THESE ARE USED
     var requestedNextPage = false;
+    // DO NOT DELETE, THESE ARE USED
     var hasNextPageGlobal = false;
     function InspirationSuspense({}) {
         const { inspiration, isFetching, hasError, hasNextPage, fetchNextPage } = useInspiration(selectedLabels);
@@ -99,19 +101,27 @@ export default function Inspiration({isActive}) {
     }
 }
 
-function Sidebar({sidebar, selectedLabels, setSelectedLabels}) {
+function Sidebar({sidebar, selectedLabels, setSelectedLabels, isActive}) {
     const { labels, isFetching, hasError } = useInspirationLabelsSus();
     const amountCategories = Object.entries(labels.labels).length;
     const [openedCategories, setOpenedCategories] = useState(Array(amountCategories).fill(true));
     const [categoryHeights, setCategoryHeights] = useState(Array(amountCategories).fill('undefined'));
 
+    const needsRerender = useRef(!isActive);
+    if(isActive && needsRerender.current) needsRerender.current = false;
+
     useEffect(() => {
+        if(!isActive) return;
         setCategoryHeights(
             [...sidebar.current.getElementsByClassName('category')].map((category) => {
             return category.clientHeight;
             })
         );
-    }, [labels]);
+    }, [labels, needsRerender.current]);
+    useEffect(() => {
+        if(!isActive) needsRerender.current = true;
+    }, [isActive, labels]);
+
     return (
         <>
             {
