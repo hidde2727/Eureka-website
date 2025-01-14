@@ -190,7 +190,7 @@ export async function CreateInspiration(
         preparedValues.push(parseInt(labels[i]));
         preparedValues.push(insertedID);
     }
-    await ExecutePreparedStatement(query, preparedValues);
+    if(preparedValues.length > 0) await ExecutePreparedStatement(query, preparedValues);
     return insertedID;
 }
 export async function DoesInspirationExist(type, ID) {
