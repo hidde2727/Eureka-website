@@ -30,14 +30,14 @@ export default function Inspiration({isActive}) {
                     </div>
                 </div>
                 <div className="toggle-sidebar" onClick={() => setSidebarOpen(!isSidebarOpened)}><i className="fas fa-filter" /></div>
-                <div className={'sidebar' + (isSidebarOpened?' open':' closed')} ref={sidebar}>
+                <div className={'sidebar' + (isSidebarOpened?' open':' closed')}>
                     <Suspense fallback={<Loading />}>
                         <Restricted notLoggedIn={true}>
                             <div className="sidebar-wrapper"><Sidebar sidebar={sidebar} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} isActive={isActive} /></div>
                         </Restricted>
                         <Restricted to="modify_inspiration_labels">
                             <button onMouseDown={()=> {setIsEditing(!isEditing);}}>{isEditing?'Stop editen':'Start editen'}</button>
-                            <div className="sidebar-wrapper" style={{display:!isEditing?'block':'none'}}><Sidebar sidebar={sidebar} display={isActive&&isEditing} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} isActive={isActive} /></div>
+                            <div className="sidebar-wrapper" style={{display:!isEditing?'block':'none'}} ref={sidebar}><Sidebar sidebar={sidebar} isActive={isActive&&(!isEditing)} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} /></div>
                             <div className="sidebar-wrapper" style={{display:isEditing?'block':'none'}}><ManagementSidebar /></div>
                         </Restricted>
                     </Suspense>
@@ -105,22 +105,26 @@ function Sidebar({sidebar, selectedLabels, setSelectedLabels, isActive}) {
     const { labels, isFetching, hasError } = useInspirationLabelsSus();
     const amountCategories = Object.entries(labels.labels).length;
     const [openedCategories, setOpenedCategories] = useState(Array(amountCategories).fill(true));
-    const [categoryHeights, setCategoryHeights] = useState(Array(amountCategories).fill('undefined'));
+    const [categoryHeights, setCategoryHeights] = useState(Array(amountCategories).fill('auto'));
 
     const needsRerender = useRef(!isActive);
     if(isActive && needsRerender.current) needsRerender.current = false;
-
+    
     useEffect(() => {
         if(!isActive) return;
         setCategoryHeights(
             [...sidebar.current.getElementsByClassName('category')].map((category) => {
-            return category.clientHeight;
+            return category.clientHeight + 'px';
             })
         );
     }, [labels, needsRerender.current]);
     useEffect(() => {
-        if(!isActive) needsRerender.current = true;
-    }, [isActive, labels]);
+        if(!isActive) {
+            needsRerender.current = true;
+            setCategoryHeights(Array(amountCategories).fill('auto'));
+            setOpenedCategories(Array(amountCategories).fill(true));
+        }
+    }, [labels]);
 
     return (
         <>
@@ -136,7 +140,7 @@ function Sidebar({sidebar, selectedLabels, setSelectedLabels, isActive}) {
                                 <a>{category.name}</a>
                                 <i className="fas fa-chevron-down" />
                             </div>
-                            <div className="content" style={{height: openedCategories[index]?`${categoryHeights[index]}px`:'0px'}}>
+                            <div className="content" style={{height: openedCategories[index]?categoryHeights[index]:'0px'}}>
                                 {
                                     category.labels.map(({ id, name }) => {
                                         return (
