@@ -156,7 +156,7 @@ try {
     if(error) return Validator.ReturnError(res, 'Invalide label id');
 
     var loggedIn = await Login.CheckSession(req, res);
-    let username = loggedIn?Login.GetSessionUsername():'-';
+    let username = loggedIn?Login.GetSessionUsername(req):'-';
 
     var urlInfo = await INS.GetURLInfo(data.url);
     if(await DB.DoesInspirationExist(urlInfo.type, urlInfo.ID)) return Validator.ReturnError(res, 'Inspiratie url zit al in onze database');
