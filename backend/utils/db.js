@@ -9,7 +9,8 @@ export async function CreateConnection() {
         host: Config.db.host,
         user: Config.db.user,
         password: Config.db.password,
-        database: Config.db.database
+        database: Config.db.database,
+        charset: 'utf8mb4'
     });
     await connection.connect();
 }

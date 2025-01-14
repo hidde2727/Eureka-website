@@ -11,4 +11,4 @@ CREATE TABLE IF NOT EXISTS labels (
     UNIQUE INDEX (u_parent_id, name),
 
     FOREIGN KEY (parent_id) REFERENCES labels(id) ON DELETE CASCADE
-)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

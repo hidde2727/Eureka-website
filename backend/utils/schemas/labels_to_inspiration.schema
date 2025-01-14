@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS labels_to_inspiration (
     FOREIGN KEY (inspiration_id) REFERENCES inspiration(uuid),
 
     INDEX (label_id)
-)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

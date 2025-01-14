@@ -28,4 +28,4 @@ CREATE TABLE IF NOT EXISTS projects (
 
     INDEX (active_version),
     INDEX (original_id)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

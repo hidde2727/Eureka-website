@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS files (
     FOREIGN KEY (parent_id) REFERENCES files(id) ON DELETE CASCADE,
     INDEX(parent_id),
     INDEX(name)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

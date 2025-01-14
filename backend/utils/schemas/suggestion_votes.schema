@@ -21,4 +21,4 @@ CREATE TABLE IF NOT EXISTS suggestion_votes (
 
     INDEX (inspiration_id),
     INDEX (project_id)
-)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

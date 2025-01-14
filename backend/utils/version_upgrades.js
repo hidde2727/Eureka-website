@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 
 import * as DB from './db.js';
+import Config from './config.js';
 
 function IsLaterVersion(timepoint, version) {
     const timepointSplit = timepoint.split('.').map((part) => parseInt(part));
@@ -31,6 +32,19 @@ export default async function Upgrade() {
     }
 
     if(IsLaterVersion('1.0.1', version)) version = [1,0,1];
+    if(IsLaterVersion('1.1.0', version)) {
+        DB.ExecuteStatement(`ALTER DATABASE ${Config.db.database} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        DB.ExecuteStatement(`ALTER TABLE files CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        DB.ExecuteStatement(`ALTER TABLE inspiration CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        DB.ExecuteStatement(`ALTER TABLE labels_to_inspiration CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        DB.ExecuteStatement(`ALTER TABLE labels CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        DB.ExecuteStatement(`ALTER TABLE logs CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        DB.ExecuteStatement(`ALTER TABLE projects CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        DB.ExecuteStatement(`ALTER TABLE sessions CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        DB.ExecuteStatement(`ALTER TABLE suggestion_votes CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        DB.ExecuteStatement(`ALTER TABLE users CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        version = [1,1,0];
+    }
 
     if(currentSoftwareVersion != version.join('.')) throw new Error('Versie upgrade mislukt!');
     fs.writeFileSync('./data/private/version.txt', version.join('.'));
