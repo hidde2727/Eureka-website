@@ -809,6 +809,19 @@ form:has(.form-succes-screen) {
     left: 0;
 }
 
+.website.channel .website-content {
+    border-radius: 100%;
+    width: 175px;
+    align-self: center;
+    justify-self: center;
+}
+.website.channel .website-author-name {
+    font-size: 1rem;
+    justify-self: center;
+    margin: 3px 0;
+    width: fit-content;
+}
+
 
 /* + ======================================================================== +
 /* | Inspiration labels                                                       |

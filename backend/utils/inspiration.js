@@ -27,6 +27,10 @@ export async function GetURLInfo(urlString) {
         await SetYoutubeVideoInfo(url.searchParams.get('v'), info);
     else if((url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' ) && url.searchParams.has('vi'))
         await SetYoutubeVideoInfo(url.searchParams.get('vi'), info);
+    else if((url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' ) && url.pathname.split('/')[1][0] == '@')
+        await SetYoutubeChannelInfo(undefined, url.pathname.substring(1), info);
+    else if((url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' ) && url.pathname.indexOf('/channel') == 0)
+        await SetYoutubeChannelInfo(url.pathname.substring(url.pathname.indexOf('/')), undefined, info);
     else
         throw new Error('Illegale website string: ' + urlString);
     return info;
@@ -58,4 +62,24 @@ async function SetYoutubeVideoInfo(videoID, info) {
     info.json.thumbnails = videoSnippet.thumbnails;
     info.json.channelTitle = videoSnippet.channelTitle;
     info.json.channelThumbnails = channelSnippet.thumbnails
+}
+
+async function SetYoutubeChannelInfo(channelID, channelHandle, info) {
+    var channelSnippet = await SendRequest({
+        host:'www.googleapis.com',
+        path:`/youtube/v3/channels?part=snippet${channelID==undefined?`&forHandle=${channelHandle}`:`&id=${channelID}`}&key=${Config.google.apiKey}`,
+        method:'GET'
+    });
+    if(channelSnippet.pageInfo.totalResults == 0) { console.error('0 results found for this id'); return ''; }
+    channelSnippet = channelSnippet.items[0];
+
+    info.type = DB.InspirationTypes.YT_Channel;
+    info.name = channelSnippet.snippet.title;
+    info.ID = channelSnippet.id;
+    info.url = 'https://www.youtube.com/channel/' + channelSnippet.id;
+
+    info.json.channelID = channelSnippet.id;
+    info.json.name = channelSnippet.snippet.title;
+    info.json.description = channelSnippet.snippet.description;
+    info.json.thumbnails = channelSnippet.snippet.thumbnails
 }

@@ -33,7 +33,7 @@ export default function Inspiration({isActive}) {
                 <div className={'sidebar' + (isSidebarOpened?' open':' closed')}>
                     <Suspense fallback={<Loading />}>
                         <Restricted notLoggedIn={true}>
-                            <div className="sidebar-wrapper"><Sidebar sidebar={sidebar} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} isActive={isActive} /></div>
+                            <div className="sidebar-wrapper" ref={sidebar}><Sidebar sidebar={sidebar} selectedLabels={selectedLabels} setSelectedLabels={setSelectedLabels} isActive={isActive} /></div>
                         </Restricted>
                         <Restricted to="modify_inspiration_labels">
                             <button onMouseDown={()=> {setIsEditing(!isEditing);}}>{isEditing?'Stop editen':'Start editen'}</button>
