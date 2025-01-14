@@ -41,6 +41,28 @@
 
     --app-height: 100vh;
 }
+:root.light {
+    --background: #EEE;
+    --prominent-background: #DDD;
+    --extra-prominent-background: #C5C5C5;
+    --prominent-text: #000;
+    --normal-text: #444;
+    --non-prominent-text: #777;
+    --seperator: #BBB;
+    --border: #BBB;
+    --label: #333;
+    --prominent-label: #000;
+    --yt-video: rgba(0, 0, 0, 0.2);
+    --yt-description: rgba(0, 0, 0, 0.1);
+    --input-border: #888;
+    --conformation: #00712D;
+    --denial: #B90E0A;
+    --checkbox: #D7D7D7;
+    --checkbox-hover: #BBB;
+    --popover-background: rgba(0,0,0,0.1);
+    --accent: #0f4d92;
+}
+
 input, textarea, button {
     font-family: "Roboto Serif", serif;
     font-optical-sizing: auto;
@@ -56,9 +78,14 @@ input, textarea, button {
     box-sizing: border-box;
     z-index: auto;
 }
+@media (prefers-reduced-motion: no-preference) {
+    *, ::after, ::before {
+        transition: color 0.5s, background-color 0.5s, border 0.5s;
+    }
+}
 body {
     margin: 0;
-    background-color:#111;
+    background-color:var(--background);
 }
 
 
@@ -66,7 +93,7 @@ body {
 /* | Text                                                                     |
 /* + ========================================================================*/
 h1 {
-    color: #CCC;
+    color: var(--label);
     font-size: 3rem;
     padding: 2px 30px;
     margin: 0 0 5px 0;

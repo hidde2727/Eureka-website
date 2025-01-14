@@ -18,12 +18,12 @@ export default function Sidebar({ setWindow }) {
         </div>
         <div id="sidebar-middle">
             <Restricted>
-                <i className="fas fa-sun fa-fw"><p className="tooltip right">Licht&nbsp;thema</p></i>
+                <i className="fas fa-sun fa-fw" onClick={() => {toggleColorTheme()}}><p className="tooltip right">Licht&nbsp;thema</p></i>
             </Restricted>
         </div>
         <div id="sidebar-bottom">
             <Restricted notLoggedIn={true}>
-                <i className="fas fa-sun fa-fw"><p className="tooltip right">Licht&nbsp;thema</p></i>
+                <i className="fas fa-sun fa-fw" onClick={() => {toggleColorTheme()}}><p className="tooltip right">Licht&nbsp;thema</p></i>
             </Restricted>
             <Restricted>
                 <i className="fas fa-thumbs-up fa-fw" onClick={() => { startTransition(() => { setWindow('management-suggestions'); setOpen(false); }); }}><p className="tooltip right">Suggesties</p></i>
@@ -47,4 +47,13 @@ export default function Sidebar({ setWindow }) {
 async function SignOut() {
     await signOut();
     window.location.reload();
+}
+//var currentMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+var currentMode = true;
+document.documentElement.classList.add(currentMode?'dark':'light');
+
+function toggleColorTheme() {
+    document.documentElement.classList.remove(currentMode?'dark':'light');
+    document.documentElement.classList.add(currentMode?'light':'dark');
+    currentMode = !currentMode;
 }
