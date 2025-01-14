@@ -807,6 +807,10 @@ form:has(.form-succes-screen) {
     border: 0;
 
     background-size: contain;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .website .website-author-icon {
     grid-area: icon;

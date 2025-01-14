@@ -32,7 +32,16 @@ export default function Website({ id, data, url, onClick, onDataLoad }) {
         );
     }
 
-    if(data.type == InspirationTypes.None) throw new Error("Invalid website data");
+    if(data.type == InspirationTypes.None) {
+        return (
+            <div className="website" id={id} onClick={onClick}>
+                <div className="website-content">Invalide url</div>
+                <div className="website-author-icon"></div>
+                <p className="website-author-name"></p>
+                <p className="website-extra-info"></p>
+            </div>
+        );
+    }
     else if(data.type == InspirationTypes.YT_Video) {
         return (
             <div className="website video" id={id} onClick={onClick}>
