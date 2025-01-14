@@ -181,6 +181,13 @@ button {
 
     font-size: 0.75rem;
 }
+@media (prefers-reduced-motion: no-preference) {
+    input:not(.iconed *),
+    textarea,
+    button {
+        transition: color 0.5s, background-color 0.5s, border 0.5s, z-index 0.5s;
+    }
+}
 input::placeholder,
 textarea::placeholder {
     color: var(--non-prominent-text);
@@ -227,6 +234,11 @@ button:hover {
     padding: 5px 10px;
 
     transition: border 0.5s;
+}
+@media (prefers-reduced-motion: no-preference) {
+    .iconed {
+        transition: color 0.5s, background-color 0.5s, border 0.5s;
+    }
 }
 .iconed:has(> input:focus) {
     border: var(--border-width) solid var(--normal-text);
