@@ -12,7 +12,13 @@ export default function SendRequest(options) {
             });
             
             res.on('end', () => {
+                try {
                 var returnValue = JSON.parse(output);
+                } catch(err) {
+                    console.error('Result is not JSON:\n\n' + output);
+                    reject(err);
+                    return;
+                }
                 if(returnValue.error != undefined) { console.error(returnValue); reject(); }
                 resolve(returnValue);
             });

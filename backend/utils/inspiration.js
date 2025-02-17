@@ -20,23 +20,25 @@ export async function GetURLInfo(urlString) {
     }
     // Youtube based on: https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
     if(url.hostname === 'youtube.be' || url.hostname === 'www.youtube.be')
-        await SetYoutubeVideoInfo(url.pathname, info);
+        await SetYoutubeVideoInfo(url.pathname, info, url.searchParams.get('list'));
     else if((url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' ) && (url.pathname.indexOf('/embed') == 0 || url.pathname.indexOf('/shorts') == 0))
-        await SetYoutubeVideoInfo(url.pathname.substring(url.pathname.indexOf('/')), info);
+        await SetYoutubeVideoInfo(url.pathname.substring(url.pathname.indexOf('/')), info, url.searchParams.get('list'));
     else if((url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' ) && url.searchParams.has('v'))
-        await SetYoutubeVideoInfo(url.searchParams.get('v'), info);
+        await SetYoutubeVideoInfo(url.searchParams.get('v'), info, url.searchParams.get('list'));
     else if((url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' ) && url.searchParams.has('vi'))
-        await SetYoutubeVideoInfo(url.searchParams.get('vi'), info);
+        await SetYoutubeVideoInfo(url.searchParams.get('vi'), info, url.searchParams.get('list'));
     else if((url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' ) && url.pathname.split('/')[1][0] == '@')
         await SetYoutubeChannelInfo(undefined, url.pathname.split('/')[1], info);
     else if((url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' ) && url.pathname.indexOf('/channel') == 0)
         await SetYoutubeChannelInfo(url.pathname.split('/')[2], undefined, info);
+    else if((url.hostname === 'youtube.com' || url.hostname === 'www.youtube.com' ) && url.pathname.indexOf('/playlist') == 0 && url.searchParams.has('list'))
+        await SetYoutubePlaylistInfo(url.searchParams.get('list'), info)
     else
         throw new Error('Illegale website string: ' + urlString);
     return info;
 }
 
-async function SetYoutubeVideoInfo(videoID, info) {
+async function SetYoutubeVideoInfo(videoID, info, playlist) {
     var videoSnippet = await SendRequest({
         host:'www.googleapis.com',
         path:'/youtube/v3/videos?part=snippet&id=' + videoID + '&key=' + Config.google.apiKey,
@@ -56,12 +58,14 @@ async function SetYoutubeVideoInfo(videoID, info) {
     info.name = videoSnippet.title;
     info.ID = videoID;
     info.url = 'https://www.youtube.com/watch?v=' + videoID;
+    if(playlist) info.url += '&list=' + playlist;
 
     info.json.videoID = videoID;
     info.json.title = videoSnippet.title;
     info.json.thumbnails = videoSnippet.thumbnails;
     info.json.channelTitle = videoSnippet.channelTitle;
     info.json.channelThumbnails = channelSnippet.thumbnails
+    info.json.playlistID = playlist;
 }
 
 async function SetYoutubeChannelInfo(channelID, channelHandle, info) {
@@ -82,4 +86,33 @@ async function SetYoutubeChannelInfo(channelID, channelHandle, info) {
     info.json.name = channelSnippet.snippet.title;
     info.json.description = channelSnippet.snippet.description;
     info.json.thumbnails = channelSnippet.snippet.thumbnails
+}
+
+async function SetYoutubePlaylistInfo(playlistID, info) {
+    var playListInfo = await SendRequest({
+        host:'www.googleapis.com',
+        path:'/youtube/v3/playlists?part=snippet&part=contentDetails&id=' + playlistID + '&key=' + Config.google.apiKey,
+        method:'GET'
+    });
+    if(playListInfo.pageInfo.totalResults == 0) { console.error('0 results found for this id'); return ''; }
+    var playListSnippet = playListInfo.items[0].snippet;
+    var channelSnippet = await SendRequest({
+        host:'www.googleapis.com',
+        path:'/youtube/v3/channels?part=snippet&id=' + playListSnippet.channelId + '&key=' + Config.google.apiKey,
+        method:'GET'
+    });
+    if(channelSnippet.pageInfo.totalResults == 0) { console.error('0 results found for this id'); return ''; }
+    channelSnippet = channelSnippet.items[0].snippet;
+
+    info.type = DB.InspirationTypes.YT_Playlist;
+    info.name = playListSnippet.title;
+    info.ID = playlistID;
+    info.url = 'https://www.youtube.com/playlist?list=' + playlistID;
+
+    info.json.playlistID = playlistID;
+    info.json.title = playListSnippet.title;
+    info.json.thumbnails = playListSnippet.thumbnails;
+    info.json.channelTitle = playListSnippet.channelTitle;
+    info.json.channelThumbnails = channelSnippet.thumbnails
+    info.json.amountVideos = playListInfo.items[0].contentDetails.itemCount;
 }

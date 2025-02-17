@@ -6,9 +6,10 @@ const InspirationTypes = Object.freeze({
     None: -1,
     YT_Video: 0,
     YT_Channel: 1,
-    Github_account: 2,
-    Github_repository: 3,
-    Website: 4,
+    YT_Playlist: 2,
+    Github_account: 3,
+    Github_repository: 4,
+    Website: 5,
 });
 
 export default function Website({ id, data, url, onClick, onDataLoad }) {
@@ -57,6 +58,16 @@ export default function Website({ id, data, url, onClick, onDataLoad }) {
             <div className="website channel" id={id} onClick={onClick}>
                 <div className="website-content" style={{backgroundImage: `url(${data.json.thumbnails.medium.url})`}}></div>
                 <p className="website-author-name" style={{backgroundColor: 'rgba(0,0,0,0)'}}>{data.name}</p>
+                <a className="website-clickable" href={onClick==undefined?data.url:undefined}></a>
+            </div>
+        );
+    } else if(data.type == InspirationTypes.YT_Playlist) {
+        return (
+            <div className="website video" id={id} onClick={onClick}>
+                <div className="website-content" style={{backgroundImage: `url(${data.json.thumbnails.medium.url})`}}></div>
+                <div className="website-author-icon" style={{backgroundImage: `url(${data.json.channelThumbnails.medium.url})`}}></div>
+                <p className="website-author-name" style={{backgroundColor: 'rgba(0,0,0,0)'}}>{data.name}</p>
+                <p className="website-extra-info" style={{backgroundColor: 'rgba(0,0,0,0)'}}></p>
                 <a className="website-clickable" href={onClick==undefined?data.url:undefined}></a>
             </div>
         );

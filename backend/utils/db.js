@@ -810,7 +810,8 @@ export const InspirationTypes = Object.freeze({
     None: -1,
     YT_Video: 0,
     YT_Channel: 1,
-    Github_account: 2,
-    Github_repository: 3,
-    Website: 4,
+    YT_Playlist: 2,
+    Github_account: 3,
+    Github_repository: 4,
+    Website: 5,
 });
