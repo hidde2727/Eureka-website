@@ -22,6 +22,8 @@ export default function Website({ id, data, url, onClick, onDataLoad, autoGrow }
 
     if(data == undefined) data = fetchedData;
     if(typeof(data) == 'string') data=JSON.parse(data);
+    
+    if(data==undefined&&url==undefined) return <div></div>;
     if(data ==undefined && (isFetching || hasError)) {
         return (
             <div className={"website loading"+(autoGrow?" auto-grow":"")} id={id} onClick={onClick}>

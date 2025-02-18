@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export function SplitWindow({ children, minColumnWidth, seperator, smallVerticalGap }) {
+export default function SplitWindow({ children, minColumnWidth, seperator=false, smallVerticalGap=false, reversedVertical=false }) {
     const ref = useRef();
     const [horizontal, setHorizontal] = useState(true);
     useEffect(() => {
@@ -21,7 +21,7 @@ export function SplitWindow({ children, minColumnWidth, seperator, smallVertical
     });
 
     return (
-        <div ref={ref} className={'split-window' + (seperator?' seperator':'') + (horizontal?' horizontal':' vertical') + (smallVerticalGap?' small-gap':'')}>
+        <div ref={ref} className={'split-window' + (seperator?' seperator':'') + (horizontal?' horizontal':' vertical') + (smallVerticalGap?' small-gap':'') + (reversedVertical?' reversed':'')}>
             {children}
         </div>
     );

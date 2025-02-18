@@ -9,7 +9,7 @@ import Loading from '../components/loading.jsx';
 import { FormErrorMessage, SetFormErrorMessage } from '../components/form_error_message.jsx';
 import FormSuccesScreen from '../components/form_succes_screen.jsx';
 import Footer from '../components/footer.jsx';
-import { SplitWindow } from '../components/split_window.jsx';
+import SplitWindow from '../components/split_window.jsx';
 
 export default function Suggestions({ isActive }) {
     const windowRef = useRef();

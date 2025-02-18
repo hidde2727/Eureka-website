@@ -516,12 +516,17 @@ span:has(>input[type="checkbox"]) + label {
 .split-window .horizontal {
     display: grid;
     grid-template-columns: calc(50% - 25px) calc(50% - 25px);
+    grid-template-areas: "left right"
 }
 .split-window .vertical {
     display: grid;
     grid-template-rows: auto auto;
     grid-template-columns: auto;
     grid-gap: 100px;
+    grid-template-areas: "left" "right";
+}
+.split-window .vertical.reversed {
+    grid-template-areas: "right" "left";
 }
 .split-window .vertical.small-gap {
     grid-gap: 20px;
@@ -551,6 +556,13 @@ span:has(>input[type="checkbox"]) + label {
 .split-window.seperator.vertical.small-gap > :first-child::after {
     bottom: -10px;
 }
+.split-window .left {
+    grid-area: left;
+}
+.split-window .right {
+    grid-area: right;
+}
+
 hr {
     color: var(--seperator);
     margin: 0px 10px;
@@ -1171,7 +1183,7 @@ form:has(.form-succes-screen) {
     column-gap: 5px;
     align-items: center;
 
-    margin-bottom: 2px;
+    margin-bottom: 7px;
 }
 .footer a {
     margin-left: 5px;
@@ -1203,6 +1215,119 @@ form:has(.form-succes-screen) {
 /* + ======================================================================== +
 /* | Home window                                                              |
 /* + ========================================================================*/
+#home h2 {
+    color: var(--prominent-text);
+}
+#home :has(> .text-center) {
+    display: flex;
+    align-items: center;
+}
+#home .split-window:not(.vertical) .text-center {
+    margin-left: 50px;
+    margin-top: -50px;
+}
+
+#home .right.projects {
+    position: relative;
+    height: 500px;
+}
+#home .project {
+    width: 450px;
+    position: absolute;
+    background-color: var(--background);
+}
+#home .project:nth-child(1) {
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+#home .project:nth-child(2) {
+    top: 100px;
+    left: 150px;
+    z-index: 100;
+}
+#home .project:nth-child(3) {
+    top: 50px;
+    left: 475px;
+    z-index: 0;
+}
+
+#home .left.inspiration {
+    position: relative;
+    height: 400px;
+}
+#home .website {
+    position: absolute;
+    background-color: var(--background);
+    border-radius: var(--big-border-radius);
+}
+#home .website:nth-child(1) {
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+#home .website:nth-child(2) {
+    top: 100px;
+    left: 150px;
+    z-index: 100;
+}
+#home .website:nth-child(3) {
+    top: 50px;
+    left: 400px;
+    z-index: 0;
+}
+
+
+#home .right.files {
+    position: relative;
+    height: 400px;
+}
+#home .right.files i {
+    font-size: 3rem;
+    color: var(--normal-text);
+    position: absolute;
+}
+#home .right.files i:nth-child(1) {
+    top: 20px;
+    left: 0;
+    rotate: -25deg;
+}
+#home .right.files i:nth-child(2) {
+    top: 0;
+    left: 100px;
+    rotate: -5deg;
+}
+#home .right.files i:nth-child(3) {
+    top: 50px;
+    left: 250px;
+    rotate: 20deg;
+}
+#home .right.files i:nth-child(4) {
+    top: 150px;
+    left: 300px;
+    rotate: 30deg;
+}
+#home .right.files i:nth-child(5) {
+    top: 100px;
+    left: 50px;
+    rotate: -15deg;
+}
+#home .right.files i:nth-child(6) {
+    top: 125px;
+    left: 150px;
+    rotate: -15deg;
+}
+#home .right.files i:nth-child(7) {
+    top: 150px;
+    left: 475px;
+    rotate: 15deg;
+}
+#home .right.files i:nth-child(8) {
+    top: 50px;
+    left: 400px;
+    rotate: 15deg;
+}
+
 
 
 
@@ -1217,10 +1342,6 @@ form:has(.form-succes-screen) {
 }
 #projects>div>div>.project:first-child {
     margin-top: 0px;
-}
-#projects h1 {
-    padding-top: 0px;
-    margin-top: -8px;
 }
 .project {
     break-inside: avoid;

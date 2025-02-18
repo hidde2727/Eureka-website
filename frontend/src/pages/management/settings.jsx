@@ -8,7 +8,7 @@ import Restricted from '../../components/restricted.jsx';
 import { SetFormErrorMessage, FormErrorMessage } from '../../components/form_error_message.jsx';
 import FormSuccesScreen from '../../components/form_succes_screen.jsx';
 import { useQueryClient } from '@tanstack/react-query';
-import { SplitWindow } from '../../components/split_window.jsx';
+import SplitWindow from '../../components/split_window.jsx';
 
 export default function Settings({isActive}) {
     const queryClient = useQueryClient();
