@@ -82,7 +82,7 @@ function ProjectsSus({}) {
                 choosenProjects.push({
                     name: 'Schimmel doolhof',
                     description: 'Een doolhof voor schimmels, simpel en doorzichtig. Dit willen we graag  hebben voor x en y omdat dit een voorstrevend doel is en Lorem ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo  consequat. Duis aute irure dolor in reprehenderit in voluptate velit  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat  cupidatat non proident, sunt in culpa qui officia deserunt mollit anim  id est laborum.',
-                    url1: { url: 'www.youtube.com' },
+                    url1: { url: 'https://www.youtube.com/watch?v=YdOXS_9_P4U' },
                     requester: 'Eureka',
                     implementer: '-',
                     uuid: -choosenProjects.lenght
