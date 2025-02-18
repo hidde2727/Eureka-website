@@ -87,7 +87,7 @@ export default function Inspiration({isActive}) {
                                 <div className="website-wrapper" ref={index+1==inspiration.pages.length&&websiteIndex==0? observeElement : undefined} key={inspirationData.uuid}>
                                     <Website data={inspirationData.additionInfo} key={inspirationData.uuid} onClick={() => {
                                         popoverContext.inspiration.current.open(inspirationData)
-                                    }}></Website>
+                                    }} autoGrow={true}></Website>
                                 </div>
                                 ); 
                             })

@@ -389,7 +389,7 @@ export async function CreateProject(
             previousID, originalID
         ]);
         insertedID = insertedID[0]['uuid'];
-        ExecutePreparedStatement('UPDATE projects SET next_version=? WHERE uuid=?', [insertedID, previousID]);
+        await ExecutePreparedStatement('UPDATE projects SET next_version=? WHERE uuid=?', [insertedID, previousID]);
 
     } else {
         insertedID = await ExecutePreparedStatement(

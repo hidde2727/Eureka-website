@@ -31,16 +31,19 @@ export const ProjectPopover = forwardRef(({}, ref) => {
                     <Website data={data.url3} />
                 </div>
             </Middle>
-            <Right>
-                <h2 className="card-title">Meld je aan!</h2>
-
-                <Input type="text" placeholder="Pietje jan" label="Naam*" name="projectExecutor" />
-                <Input type="text" placeholder="pietje.jan@gmail.com" label="Email*" name="projectExecutorEmail" />
-                <Checkbox label="Ik geef hierbij Eureka toestemming mij te mailen over dit project*" checked={false} />
-
-                <input type="submit" value="Aanmelden" />
-            </Right>
         </Popover>
     );
 });
 export default ProjectPopover;
+
+/*
+<Right>
+    <h2 className="card-title">Meld je aan!</h2>
+
+    <Input type="text" placeholder="Pietje jan" label="Naam*" name="projectExecutor" />
+    <Input type="text" placeholder="pietje.jan@gmail.com" label="Email*" name="projectExecutorEmail" />
+    <Checkbox label="Ik geef hierbij Eureka toestemming mij te mailen over dit project*" checked={false} />
+
+    <input type="submit" value="Aanmelden" />
+</Right>
+*/

@@ -120,7 +120,6 @@ export async function CheckSession(req, res, repeatRequired = true) {
 }
 export async function GetSessionUsername(req) {
     if(req.userData == undefined) req.userData = { ...(await DB.GetUser(GetSessionUserID(req))), password: undefined };
-    console.log(req.userData.username);
     return req.userData.username;
 }
 export function GetSessionUserID(req) {

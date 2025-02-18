@@ -107,9 +107,9 @@ export const ProjectPopover = forwardRef(({}, ref) => {
                 if (ev.target.suggestionDescription.value.length > 65535) return SetFormErrorMessage(setSubmitSuggestionError, 'Maximale lengte is 65535 karakters', ev.target.suggestionDescription);
 
                 let urls = [];
-                if(selectedVersion.url1 != '') urls.push(selectedVersion.url1.url);
-                if(selectedVersion.url2 != '') urls.push(selectedVersion.url2.url);
-                if(selectedVersion.url3 != '') urls.push(selectedVersion.url3.url);
+                if(selectedVersion.url1 != '' && selectedVersion.url1 != null) urls.push(selectedVersion.url1.url);
+                if(selectedVersion.url2 != '' && selectedVersion.url2 != null) urls.push(selectedVersion.url2.url);
+                if(selectedVersion.url3 != '' && selectedVersion.url3 != null) urls.push(selectedVersion.url3.url);
 
                 try {
                     const insertedUUID = await suggestProjectChange(queryClient, {

@@ -150,7 +150,7 @@ label {
 }
 label:has(+input),
 label:has(+textarea),
-label:has(+.auto-grow) {
+label:has(+.auto-grow:has(textarea)) {
     margin-left: 30px;
 }
 input:not(.iconed *),
@@ -267,11 +267,11 @@ button:hover {
 /* | Auto growing textareas                                                   |
 /* + ========================================================================*/
 /* https://css-tricks.com/the-cleanest-trick-for-autogrowing-textareas/ */
-.auto-grow {
+.auto-grow:has(textarea) {
     display: grid;
 }
 .auto-grow > textarea,
-.auto-grow::after {
+.auto-grow:has(textarea)::after {
     width: 100%; 
 
     grid-area: 1 / 1 / 2 / 2;
@@ -281,11 +281,11 @@ button:hover {
 
     font-size: 0.75rem;
 }
-label:not(.inline) + .auto-grow {
+label:not(.inline) + .auto-grow:has(textarea) {
     width: calc(100% - 40px);
     margin: 1px 20px 10px 20px;
 }
-.auto-grow::after {
+.auto-grow:has(textarea)::after {
     content: attr(data-replicated-value) " ";
     white-space: pre-wrap;
     visibility: hidden;
@@ -312,19 +312,19 @@ label.inline {
 label.inline + input,
 label.inline + textarea,
 label.inline + .iconed,
-label.inline + .auto-grow,
+label.inline + .auto-grow:has(textarea),
 label.inline + .inline-input {
     width: calc(70% - 65px);
     margin: 0px 20px 5px 0px;
     display: inline-block;
 }
-label.inline + .auto-grow {
+label.inline + .auto-grow:has(textarea) {
     display: inline-grid;
 }
 input,
 textarea,
 .iconed,
-.auto-grow,
+.auto-grow:has(textarea),
 .inline-input {
     vertical-align: top;
 }
@@ -784,17 +784,20 @@ form:has(.form-succes-screen) {
     display: inline-grid;
 
     width: 311.11px;
-    height: 217px;
+    min-width: 311.11px;
 
     grid-template-columns: auto 1fr;
     grid-template-rows: auto auto auto;
 
     grid-template-areas:
         "cont cont"
-        "icon info1"
-        "icon info2";
+        "extr extr"
+        "icon info";
 
     box-sizing: content-box;
+}
+.website.auto-grow {
+    width: 100%;
 }
 .website .website-content {
     grid-area: cont;
@@ -812,6 +815,9 @@ form:has(.form-succes-screen) {
     justify-content: center;
     align-items: center;
 }
+.website.auto-grow:not(.channel) .website-content {
+    height: 100%;
+}
 .website .website-author-icon {
     grid-area: icon;
 
@@ -826,23 +832,28 @@ form:has(.form-succes-screen) {
 
     margin-top: 6px;
 }
-.website .website-author-name,
-.website .website-extra-info {
-    grid-area: info1;
-
+.website .info {
+    grid-area: info;
+}
+.website .website-name,
+.website .website-author-name {
     background-color: var(--yt-description);
     color: var(--prominent-text);
     border-radius: var(--small-border-radius);
-    width: 200px;
-    height: 15px;
+    max-height: 38px;
 
     display: block;
 
     margin: 6px 0px 0px 15px;
+
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.website .website-extra-info {
-    grid-area: info2;
-    width: 150px;
+.website .website-author-name {
+    color: var(--normal-text);
+    margin: 5px 0 0 15px;
+    font-weight: 400;
 }
 .website .website-clickable {
     position: absolute;
@@ -858,11 +869,29 @@ form:has(.form-succes-screen) {
     align-self: center;
     justify-self: center;
 }
-.website.channel .website-author-name {
+.website.channel .website-name {
+    grid-area: extr;
     font-size: 1rem;
     justify-self: center;
     margin: 3px 0;
     width: fit-content;
+}
+
+
+.website.loading .website-name {
+    width: 225px;
+    height: 16px;
+}
+.website.loading .loader {
+    width: 150px;
+    height: 16px;
+    background-color: var(--yt-description);
+    border-radius: var(--small-border-radius);
+    margin: 5px 0px 0px 15px;
+}
+.website.loading .website-author-name {
+    width: 75px;
+    height: 16px;
 }
 
 
@@ -1180,11 +1209,14 @@ form:has(.form-succes-screen) {
 /* + ======================================================================== +
 /* | Projects window                                                          |
 /* + ========================================================================*/
-#projects>div:first-child {
+#projects>div>div:nth-child(2) {
     column-gap: 20px;
     column-width: 400px;
 
     padding-top: 10px;
+}
+#projects>div>div>.project:first-child {
+    margin-top: 0px;
 }
 #projects h1 {
     padding-top: 0px;
@@ -1405,13 +1437,15 @@ form:has(.form-succes-screen) {
 }
 #inspiration .content > .websites {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
 }
 #inspiration .content > .websites .website-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 3px 0px;
+    margin: 5px 20px;
+    margin-bottom: 30px;
+    align-self: start;
 }
 
 
@@ -1451,6 +1485,12 @@ form:has(.form-succes-screen) {
 }
 #inspiration-popover .split-window > :not(button, input) {
     padding: 0;
+}
+#inspiration-popover .split-window > .center-content {
+    margin: 0 15px;
+}
+#inspiration-popover .split-window {
+    align-items: start;
 }
 #inspiration-popover .description {
     margin: 20px;

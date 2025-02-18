@@ -12,9 +12,11 @@ export default function Projects({isActive}) {
         <div className="window" id="projects" style={isActive ? {display: 'block'} : {display: 'none'}}>
             <div>
                 <h1>Projecten</h1>
-                <Suspense fallback={<Loading />}>
-                    <ProjectsSuspense />
-                </Suspense>
+                <div>
+                    <Suspense fallback={<Loading />}>
+                        <ProjectsSuspense />
+                    </Suspense>
+                </div>
             </div>
             <Footer />
         </div>

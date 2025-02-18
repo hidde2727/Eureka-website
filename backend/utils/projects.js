@@ -2,7 +2,9 @@ import fs from 'node:fs';
 import * as DB from './db.js';
 
 export async function GenerateProjectJSON() {
+    console.log("Regenerating projects file")
     const projects = await DB.GetAllActiveProjects();
+    //console.log(JSON.stringify(projects));
     const fileInfo = [];
     for(var i = 0; i < projects.length; i++) {
         fileInfo.push({
@@ -14,7 +16,7 @@ export async function GenerateProjectJSON() {
             url2: JSON.parse(projects[i].url2),
             url3: JSON.parse(projects[i].url3),
             requester: projects[i].requester,
-            implementer: projects[i].requester
+            implementer: projects[i].implementer
         });
     }
     if (!fs.existsSync('./data/')) fs.mkdirSync('./data');
