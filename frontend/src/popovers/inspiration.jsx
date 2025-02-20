@@ -49,7 +49,7 @@ export const InspirationPopover = forwardRef(({}, ref) => {
             </div>
             <p className="comparable">Vergelijkbaar:</p>
             <div className="split-window">
-                <div className="center-content"><Website data={data.recommendation1} /></div>
+                <div className="center-content"><Website data={data.recommendation1} showIfNotLoaded={false} /></div>
                 <div className="center-content"><Website data={data.recommendation2} /></div>
             </div>
         </Popover>

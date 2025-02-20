@@ -12,7 +12,7 @@ const InspirationTypes = Object.freeze({
     Website: 5,
 });
 
-export default function Website({ id, data, url, onClick, onDataLoad, autoGrow }) {
+export default function Website({ id, data, url, onClick, onDataLoad, autoGrow=false, showIfNotLoaded=true }) {
     const {fetchedData, hasError, isFetching} = useWebsiteInfo(url, data==undefined && url!=undefined && url!=null && url != '' && IsValidURL(url));
     
     useEffect(() => {
@@ -23,7 +23,7 @@ export default function Website({ id, data, url, onClick, onDataLoad, autoGrow }
     if(data == undefined) data = fetchedData;
     if(typeof(data) == 'string') data=JSON.parse(data);
     
-    if(data==undefined&&url==undefined) return <div></div>;
+    if(showIfNotLoaded && data==undefined&&url==undefined) return <div></div>;
     if(data ==undefined && (isFetching || hasError)) {
         return (
             <div className={"website loading"+(autoGrow?" auto-grow":"")} id={id} onClick={onClick}>

@@ -75,7 +75,7 @@ export default function Suggestions({ isActive }) {
 
                     { inlineInputs && <label className="inline"></label> }
                     <div className="center-content inline-input" style={{display:'inline-flex'}}>
-                        <Website id="inspiration-preview" url={url} />
+                        <Website id="inspiration-preview" url={url} showIfNotLoaded={false} />
                     </div>
 
                     <p>Waar gaat het over?</p>
@@ -98,13 +98,13 @@ export default function Suggestions({ isActive }) {
                         <div>
                             <Input type="text" placeholder="www.youtube.com" label="Suggestie 1" name="inspirationSuggestion1" onChange={(event) => { setSuggestion1(event.target.value); }} />
                             <div className="center-content">
-                                <Website url={suggestion1} />
+                                <Website url={suggestion1} showIfNotLoaded={false} />
                             </div>
                         </div>
                         <div>
                             <Input type="text" placeholder="www.youtube.com" label="Suggestie 2" name="inspirationSuggestion2" onChange={(event) => { setSuggestion2(event.target.value); }} />
                             <div className="center-content">
-                                <Website url={suggestion2} />
+                                <Website url={suggestion2} showIfNotLoaded={false} />
                             </div>
                         </div>
                     </SplitWindow>

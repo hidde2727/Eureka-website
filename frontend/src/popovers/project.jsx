@@ -24,11 +24,11 @@ export const ProjectPopover = forwardRef(({}, ref) => {
             <Middle>
                 <div className="split-window">
                     <Project projectData={data} urls={false} />
-                    <Website data={data.url1} />
+                    <Website data={data.url1} showIfNotLoaded={false} />
                 </div>
                 <div className="split-window">
-                    <Website data={data.url2} />
-                    <Website data={data.url3} />
+                    <Website data={data.url2} showIfNotLoaded={false} />
+                    <Website data={data.url3} showIfNotLoaded={false} />
                 </div>
             </Middle>
         </Popover>
