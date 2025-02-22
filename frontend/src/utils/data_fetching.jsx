@@ -522,10 +522,14 @@ export function invalidateFiles(queryClient) {
     queryClient.invalidateQueries({ queryKey:['/api/private/files/usage', undefined, 'GET', null]});
 }
 
-
-export function useSuggestions(page, window, history) {
-    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/suggestion/get', [['page', page], ['window', window], ['history', history]], 'GET', null, { includeCredentials: true }));
-    return { suggestions: data, hasError: error, isFetching: isFetching };
+var amountSuggestionPages = 0;
+export function useSuggestions(page, limit, history) {
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/suggestion/get', [['page', page], ['window', limit], ['history', history], ['getAmountPages', page==0]], 'GET', null, { includeCredentials: true }));
+    if(page==0 && data!=undefined) {
+        if(data?.amount!=undefined) amountSuggestionPages = data.amount;
+        return { suggestions: data.data, amountPages: amountSuggestionPages, hasError: error, isFetching: isFetching };
+    }
+    return { suggestions: data?.data ?? data, amountPages: amountSuggestionPages, hasError: error, isFetching: isFetching };
 }
 
 export function useUsers() {

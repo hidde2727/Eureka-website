@@ -25,15 +25,20 @@ router.use(async (req, res, next) => {
 
 router.get('/usage', async (req, res) => {
     if(Config.uploadthing.apiKey == undefined) return Validator.ReturnError(res, 'Uploadthing API key is undefined', 500);
-    const { totalBytes, appTotalBytes, filesUploaded, limitBytes } = await SendRequest({
-        host:'api.uploadthing.com',
-        path:'/v6/getUsageInfo',
-        method:'POST',
-        headers: {
-            'X-Uploadthing-Api-Key': Config.uploadthing.apiKey
-        }
-    });
-    res.send(JSON.stringify({totalBytes, appTotalBytes, filesUploaded, limitBytes}));
+    try {
+        const { totalBytes, appTotalBytes, filesUploaded, limitBytes } = await SendRequest({
+            host:'api.uploadthing.com',
+            path:'/v6/getUsageInfo',
+            method:'POST',
+            headers: {
+                'X-Uploadthing-Api-Key': Config.uploadthing.apiKey
+            }
+        });
+        res.send(JSON.stringify({totalBytes, appTotalBytes, filesUploaded, limitBytes}));
+    } catch(err) {
+        console.error(err?.message);
+        return res.status(500).send('Internal server error');
+    }
 });
 router.put('/add', async (req, res) => {
     const data = req.body;

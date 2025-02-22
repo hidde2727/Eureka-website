@@ -8,7 +8,21 @@ import * as Voting from '../../utils/suggestion_voting.js';
 import * as Projects from '../../utils/projects.js';
 
 router.get('/get',  async (req, res) => {
-    res.send(await DB.GetAllSuggestionWithVotes(Login.GetSessionUserID(req)));
+    if(Validator.CheckInteger(res, req.query.page, true)) return;
+    req.query.page=Number.parseInt(req.query.page);
+    if(Validator.CheckInteger(res, req.query.window, true)) return;
+    req.query.window=Number.parseInt(req.query.window);
+    if(Validator.CheckBoolean(res, req.query.getAmountPages, true)) return;
+    if(Validator.CheckBoolean(res, req.query.history, true)) return;
+    req.query.history= req.query.history=='true';
+    if(req.query.getAmountPages) {
+        res.send({
+            data: await DB.GetAllSuggestionWithVotes(Login.GetSessionUserID(req), req.query.window, req.query.page*req.query.window, req.query.history),
+            amount: Math.ceil(await DB.GetAmountSuggestionWithVotes(Login.GetSessionUserID(req), req.query.history)/req.query.window)
+        });
+    } else {
+        res.send(await DB.GetAllSuggestionWithVotes(Login.GetSessionUserID(req), req.query.window, req.query.page*req.query.window, req.query.history));
+    }
 });
 
 router.put('/vote', async (req, res) => {

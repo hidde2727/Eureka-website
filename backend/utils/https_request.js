@@ -13,7 +13,7 @@ export default function SendRequest(options) {
             
             res.on('end', () => {
                 try {
-                var returnValue = JSON.parse(output);
+                    var returnValue = JSON.parse(output);
                 } catch(err) {
                     console.error('Result is not JSON:\n\n' + output);
                     reject(err);
@@ -24,7 +24,7 @@ export default function SendRequest(options) {
             });
         });
         req.on('error', (err) => {
-            reject();
+            reject(err);
         });
         req.end();
     });
