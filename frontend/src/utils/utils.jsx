@@ -94,3 +94,16 @@ export function IconByExtension({ extension, fw=false }) {
     else if(extension == "mp4") return <i className={"file-type fas fa-file-video"+additive}/>;
     else return <i className={"file-type fas fa-file-alt"+additive}/>;
 }
+
+// https://stackoverflow.com/questions/1462138/event-listener-for-when-element-becomes-visible
+export function AwaitVisibility(element, callback) {
+    new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if(entry.intersectionRatio > 0) {
+                callback(element);
+                observer.disconnect();
+            }
+        });
+    }).observe(element);
+    if(!callback) return new Promise(r => callback=r);
+}
