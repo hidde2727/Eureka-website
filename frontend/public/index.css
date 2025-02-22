@@ -995,6 +995,29 @@ form:has(.form-succes-screen) {
 /* + ======================================================================== +
 /* | Sidebar                                                                  |
 /* + ========================================================================*/
+.double-chevron {
+    width: 40px;
+    height: fit-content;
+    margin: 0px;
+}
+.double-chevron:hover > i {
+    color: var(--prominent-text)!important;
+}
+.double-chevron > :nth-child(2) {
+    position: relative;
+    left: -5px;
+}
+#sidebar .button {
+    display: flex;
+    align-items: center;
+
+    margin: 0;
+    color: var(--normal-text);
+    font-weight: 800;
+    p {
+        margin: 0 0 0 5px;
+    }
+}
 @media screen and (min-width: 1000px) {
     #body {
         overflow: hidden;
@@ -1010,17 +1033,21 @@ form:has(.form-succes-screen) {
 
         display: flex;
         flex-direction: column;
-        align-items: center;
+        
+        align-items: start;
+        padding-left: 9px;
 
         row-gap: 15px;
+        background-color: var(--prominent-background);
     }
     #toggle-sidebar {
         display: none !important;
     }
     #sidebar > * {
         row-gap: 15px;
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: auto;
+        align-items: center;
     }
     #sidebar-top {
         margin-top: 0;
@@ -1039,8 +1066,33 @@ form:has(.form-succes-screen) {
     #sidebar i:hover {
         color: var(--prominent-text);
     }
-    #sidebar .tooltip.right {
-        left: calc(100% + 15px);
+
+
+    /* If collapsed */
+    #body {
+        transition: grid-template-columns 0.25s;
+        transition-delay: 0.25s;
+    }
+    #sidebar.collapsed .button p {
+        transition: opacity 0.25s, visibility allow-discrete 0.25s;
+        visibility: hidden;
+        opacity: 0;
+    }
+
+    /* If not collapsed */
+    #body:has(#sidebar:not(.collapsed)) {
+        transition: grid-template-columns 0.25s;
+        grid-template-columns: 150px calc(100% - 150px) !important;
+    }
+
+    #sidebar:not(.collapsed) {
+        & .button p {
+            transition: opacity 0.25s;
+            transition-delay: 0.25s;
+        }
+        .double-chevron > i {
+            rotate: 180deg;
+        }
     }
 }
 @media screen and (max-width: 1000px) {
@@ -1120,9 +1172,16 @@ form:has(.form-succes-screen) {
     }
     #sidebar > * {
         row-gap: 15px;
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: auto;
+        align-items: center;
         width: 175px;
+    }
+    #sidebar .double-chevron {
+        display: none;
+    }
+    #sidebar .double-chevron + p {
+        display: none;
     }
     #sidebar.closed i {
         opacity: 0;
@@ -1133,31 +1192,12 @@ form:has(.form-succes-screen) {
         font-size: 2rem;
         color: var(--prominent-text);
     }
-    #sidebar p.tooltip {
-        opacity: 1;
-        transition: opacity 0.5s, visibility allow-discrete 0.5s!important;
-        cursor: pointer;
-        background-color: var(--background) !important;
-
-        font-size: 1rem;
-    }
-    #sidebar:not(.open) *:hover > .tooltip {
-        transition-delay: initial;
-        visibility: hidden!important;
-        opacity: 1!important;
-    }
-    #sidebar p.tooltip::before {
-        visibility: hidden;
-    }
-    #sidebar.open p.tooltip {
-        visibility: visible!important;
-        opacity: 1!important;
+    #sidebar.closed p {
+        transition: opacity 0.5s;
+        opacity: 0;
     }
     #sidebar i:hover {
         color: var(--prominent-text);
-    }
-    #sidebar .tooltip.right {
-        left: calc(100% + 15px);
     }
 }
 

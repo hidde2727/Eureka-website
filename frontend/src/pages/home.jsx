@@ -148,7 +148,6 @@ function InspirationSus({}) {
 
         {
             randInspiration.map((inspiration) => {
-                console.log(inspiration.name);
                 if(inspiration.isFiller) return <Website url="" key={inspiration.uuid} />
                 return <Website data={inspiration.additionInfo} key={inspiration.uuid} onClick={ () => { 
                     if(inspiration.uuid < 0) return;

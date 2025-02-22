@@ -36,7 +36,7 @@ export default function App() {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <div id="body" className="split-window seperator">
+            <div id="body" className="split-window">
                 <Sidebar currentWindow={currentWindow} setWindow={setWindow} />
                 <PageManager currentWindow={currentWindow} />
             </div>

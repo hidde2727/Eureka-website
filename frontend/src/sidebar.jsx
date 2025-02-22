@@ -6,38 +6,49 @@ import Restricted from "./components/restricted.jsx";
 
 export default function Sidebar({ setWindow }) {
     const [open, setOpen] = useState(false);
+    const [collapsed, setCollapsed] = useState(localStorage.getItem('default-collapse-sidebar')=='true');
     return (<>
-    <div id="sidebar" className={open?'open':'closed'}>
+    <div id="sidebar" className={(open?'open':'closed')+(collapsed?' collapsed':'')}>
         
         <div id="sidebar-top">
-            <i className="fas fa-home fa-fw" onClick={() => { startTransition(() => { setWindow('home') }); setOpen(false); }}><p className="tooltip right">Home</p></i>
-            <i className="fas fa-wrench fa-fw" onClick={() => { startTransition(() => { setWindow('projects'); setOpen(false); }); }}><p className="tooltip right">Projecten</p></i>
-            <i className="fas fa-lightbulb fa-fw" onClick={() => { startTransition(() => { setWindow('inspiration'); setOpen(false); }); }}><p className="tooltip right">Inspiratie</p></i>
-            <i className="far fa-file fa-fw" onClick={() => { startTransition(() => { setWindow('files'); }); setOpen(false); }}><p className="tooltip right">Tom's&nbsp;hoekje</p></i>
-            <i className="fas fa-comments fa-fw" onClick={() => { startTransition(() => { setWindow('suggestions'); setOpen(false); }); }}><p className="tooltip right">Suggesties</p></i>
+            <p className="button" onClick={() => { startTransition(() => { setWindow('home') }); setOpen(false); }} ><i className="fas fa-home fa-fw"/><p>Home</p></p>
+            <p className="button" onClick={() => { startTransition(() => { setWindow('projects'); setOpen(false); }); }} ><i className="fas fa-wrench fa-fw"/><p>Projecten</p></p>
+            <p className="button" onClick={() => { startTransition(() => { setWindow('inspiration'); setOpen(false); }); }} ><i className="fas fa-lightbulb fa-fw"/><p>Inspiratie</p></p>
+            <p className="button" onClick={() => { startTransition(() => { setWindow('files'); }); setOpen(false); }} ><i className="far fa-file fa-fw"/><p>Tom's&nbsp;hoekje</p></p>
+            <p className="button" onClick={() => { startTransition(() => { setWindow('suggestions'); setOpen(false); }); }} ><i className="fas fa-comments fa-fw"/><p>Suggesties</p></p>
         </div>
         <div id="sidebar-middle">
             <Restricted>
-                <i className="fas fa-sun fa-fw" onClick={() => {toggleColorTheme()}}><p className="tooltip right">Licht&nbsp;thema</p></i>
+                <p className="button" onClick={() => {toggleColorTheme()}} ><i className="fas fa-sun fa-fw"/><p>Licht&nbsp;thema</p></p>
             </Restricted>
         </div>
         <div id="sidebar-bottom">
             <Restricted notLoggedIn={true}>
-                <i className="fas fa-sun fa-fw" onClick={() => {toggleColorTheme()}}><p className="tooltip right">Licht&nbsp;thema</p></i>
+                <p className="button" onClick={() => {toggleColorTheme()}} ><i className="fas fa-sun fa-fw"/><p>Licht&nbsp;thema</p></p>
             </Restricted>
             <Restricted>
-                <i className="fas fa-thumbs-up fa-fw" onClick={() => { startTransition(() => { setWindow('management-suggestions'); setOpen(false); }); }}><p className="tooltip right">Suggesties</p></i>
+                <p className="button" onClick={() => { startTransition(() => { setWindow('management-suggestions'); setOpen(false); }); }} ><i className="fas fa-thumbs-up fa-fw"/><p>Suggesties</p></p>
             </Restricted>
             <Restricted to="modify_users">
-                <i className="fas fa-users-cog fa-fw" onClick={() => { startTransition(() => { setWindow('management-users'); setOpen(false); }); }}><p className="tooltip right">Gebruikers</p></i>
+                <p className="button" onClick={() => { startTransition(() => { setWindow('management-users'); setOpen(false); }); }} ><i className="fas fa-users-cog fa-fw"/><p>Gebruikers</p></p>
             </Restricted>
             <Restricted to="watch_logs">
-                <i className="fas fa-book fa-fw" onClick={() => { startTransition(() => { setWindow('management-logs'); }); setOpen(false); }}><p className="tooltip right">Logs</p></i>
+                <p className="button" onClick={() => { startTransition(() => { setWindow('management-logs'); }); setOpen(false); }} ><i className="fas fa-book fa-fw"/><p>Logs</p></p>
             </Restricted>
             <Restricted>
-                <i className="fas fa-cog fa-fw" onClick={() => { startTransition(() => { setWindow('management-settings'); setOpen(false); }); }}><p className="tooltip right">Instellingen</p></i>
-                <i className="fas fa-sign-out-alt fa-fw" onClick={() => { SignOut(); setOpen(false); }}><p className="tooltip right">Log uit</p></i>
+                <p className="button" onClick={() => { startTransition(() => { setWindow('management-settings'); setOpen(false); }); }} ><i className="fas fa-cog fa-fw"/><p>Instellingen</p></p>
+                <p className="button" onClick={() => { SignOut(); setOpen(false); }} ><i className="fas fa-sign-out-alt fa-fw"/><p>Log uit</p></p>
             </Restricted>
+            <p className="button" onClick={() => { 
+                setCollapsed(!collapsed);
+                localStorage.setItem('default-collapse-sidebar', !collapsed);
+            }}>
+                <span className="double-chevron">
+                    <i className="fas fa-chevron-right"/>
+                    <i className="fas fa-chevron-right" />
+                </span>
+                <p>Inklappen</p>
+            </p>
         </div>
     </div>
     <div id="toggle-sidebar" className={open?'open':'closed'} onClick={() => setOpen(!open)}><i className="fas fa-bars" /></div>
