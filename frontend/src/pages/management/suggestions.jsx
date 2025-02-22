@@ -17,7 +17,7 @@ export default function SuggestionVoting({isActive}) {
     const [itemsPerPage, setItemsPerPage] = useState(25);
     const [currentPage, setCurrentPage] = useState(0);
 
-    const { suggestions, amountPages } = useSuggestions(currentPage, itemsPerPage, showHistory);
+    const { suggestions, amountPages } = useSuggestions(currentPage, itemsPerPage, showHistory, search);
     if(suggestions == undefined) return <div style={isActive ? {display: 'block'} : {display: 'none'}} />;
 
     return (

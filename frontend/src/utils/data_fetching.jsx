@@ -523,8 +523,8 @@ export function invalidateFiles(queryClient) {
 }
 
 var amountSuggestionPages = 0;
-export function useSuggestions(page, limit, history) {
-    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/suggestion/get', [['page', page], ['window', limit], ['history', history], ['getAmountPages', page==0]], 'GET', null, { includeCredentials: true }));
+export function useSuggestions(page, limit, history, search) {
+    const { data, error, isFetching } = useQuery(fetchOptions('/api/private/suggestion/get', [['page', page], ['window', limit], ['history', history], ['getAmountPages', page==0], ['search', search]], 'GET', null, { includeCredentials: true }));
     if(page==0 && data!=undefined) {
         if(data?.amount!=undefined) amountSuggestionPages = data.amount;
         return { suggestions: data.data, amountPages: amountSuggestionPages, hasError: error, isFetching: isFetching };

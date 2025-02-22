@@ -495,7 +495,7 @@ export async function DenyProject(projectUUID) {
 // + ======================================================================== +
 // | Combined suggestions                                                     |
 // + ======================================================================== +
-export async function GetAllSuggestionWithVotes(userID, limit=20, offset=0, history=false) {
+export async function GetAllSuggestionWithVotes(userID, limit=20, offset=0, history=false, search='') {
     return await ExecutePreparedStatement(`
     SELECT * FROM (
         SELECT
@@ -508,6 +508,9 @@ export async function GetAllSuggestionWithVotes(userID, limit=20, offset=0, hist
         FROM inspiration i
         LEFT JOIN (SELECT inspiration_id, value FROM suggestion_votes WHERE user_id=?) AS sv ON i.uuid = sv.inspiration_id
         ${history?'':'WHERE i.voting_result IS NULL'}
+        ${history&&search!=undefined?'WHERE ':''}
+        ${!history&&search!=undefined?'AND ':''}
+        ${search!=undefined?'i.name LIKE ?':''}
 
         UNION
 
@@ -521,32 +524,43 @@ export async function GetAllSuggestionWithVotes(userID, limit=20, offset=0, hist
         FROM projects p
         LEFT JOIN (SELECT project_id, value FROM suggestion_votes WHERE user_id=?) AS sv ON p.uuid = sv.project_id
         ${history?'':'WHERE p.voting_result IS NULL'}
+        ${history&&search!=undefined?'WHERE ':''}
+        ${!history&&search!=undefined?'AND ':''}
+        ${search!=undefined?'p.name LIKE ?':''}
     ) AS suggestions
     ORDER BY uuid ASC
     LIMIT ? OFFSET ?
-    `, [userID, userID, limit, offset]);
+    `, [userID, ...(search!=undefined ? [search.concat('%')] : []), userID, ...(search!=undefined ? [search.concat('%')] : []), limit, offset]);
 }
-export async function GetAmountSuggestionWithVotes(userID, history=false) {
+export async function GetAmountSuggestionWithVotes(userID, history=false, search=undefined) {
     return (await ExecutePreparedStatement(`
     SELECT COUNT(*) AS count
     FROM (
         SELECT
             i.uuid AS uuid,
+            i.name,
             'inspiration' AS type
         FROM inspiration i
         LEFT JOIN (SELECT inspiration_id, value FROM suggestion_votes WHERE user_id=?) AS sv ON i.uuid = sv.inspiration_id
         ${history?'':'WHERE i.voting_result IS NULL'}
+        ${history&&search!=undefined?'WHERE ':''}
+        ${!history&&search!=undefined?'AND ':''}
+        ${search!=undefined?'i.name LIKE ?':''}
 
         UNION
 
         SELECT
             p.uuid AS uuid,
+            p.name,
             'project' AS type
         FROM projects p
         LEFT JOIN (SELECT project_id, value FROM suggestion_votes WHERE user_id=?) AS sv ON p.uuid = sv.project_id
         ${history?'':'WHERE p.voting_result IS NULL'}
+        ${history&&search!=undefined?'WHERE ':''}
+        ${!history&&search!=undefined?'AND ':''}
+        ${search!=undefined?'p.name LIKE ?':''}
     ) AS ign
-    `, [userID, userID]))[0]['count'];
+    `, [userID, ...(search!=undefined ? [search.concat('%')] : []), userID, ...(search!=undefined ? [search.concat('%')] : []) ]))[0]['count'];
 }
 export async function GetAllOpenSuggestions() {
     return await ExecuteStatement(`

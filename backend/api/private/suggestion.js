@@ -15,13 +15,16 @@ router.get('/get',  async (req, res) => {
     if(Validator.CheckBoolean(res, req.query.getAmountPages, true)) return;
     if(Validator.CheckBoolean(res, req.query.history, true)) return;
     req.query.history= req.query.history=='true';
+
+    if(req.query.search=='') req.query.search=undefined;
+
     if(req.query.getAmountPages) {
         res.send({
-            data: await DB.GetAllSuggestionWithVotes(Login.GetSessionUserID(req), req.query.window, req.query.page*req.query.window, req.query.history),
-            amount: Math.ceil(await DB.GetAmountSuggestionWithVotes(Login.GetSessionUserID(req), req.query.history)/req.query.window)
+            data: await DB.GetAllSuggestionWithVotes(Login.GetSessionUserID(req), req.query.window, req.query.page*req.query.window, req.query.history, req.query.search),
+            amount: Math.ceil(await DB.GetAmountSuggestionWithVotes(Login.GetSessionUserID(req), req.query.history, req.query.search)/req.query.window)
         });
     } else {
-        res.send(await DB.GetAllSuggestionWithVotes(Login.GetSessionUserID(req), req.query.window, req.query.page*req.query.window, req.query.history));
+        res.send(await DB.GetAllSuggestionWithVotes(Login.GetSessionUserID(req), req.query.window, req.query.page*req.query.window, req.query.history, req.query.search));
     }
 });
 
