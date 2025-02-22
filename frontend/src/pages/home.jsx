@@ -22,9 +22,7 @@ export default function Home({isActive}) {
                         </div>
                     </div>
                     <div className="right projects">
-                        <Suspense>
-                            <ProjectsSus />
-                        </Suspense>
+                        <ProjectsSus />
                     </div>
                 </SplitWindow>
                 <SplitWindow minColumnWidth={570} reversedVertical={true}>
