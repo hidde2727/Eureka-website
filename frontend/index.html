@@ -23,6 +23,61 @@
         html {
             color-scheme: light dark;
             background-color: light-dark(#eee, #111);
+            margin: 0;
+        }
+        #before-react-load {
+            display: none;
+        }
+        @keyframes first-dot {
+            25% {
+                opacity: 1;
+            }
+        }
+        @keyframes second-dot {
+            50% {
+                opacity: 1;
+            }
+        }
+        @keyframes third-dot {
+            75% {
+                opacity: 1;
+            }
+        }
+        #root:empty + #before-react-load {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+
+            & a {
+                color: light-dark(#111, #eee);
+                font-size: 2rem;
+                font-weight: 800;
+            }
+            & span {
+                display: inline-block;
+                width: 0.3em;
+                height: 0.3em;
+                border-radius: 100%;
+                background-color: light-dark(#111, #eee);
+                vertical-align: baseline;
+                position: relative;
+                top: 0.05em;
+                margin-left: 2px;
+
+                opacity: 0;
+            }
+            & span:nth-child(2) {
+                animation: first-dot 4s infinite;
+            }
+            & span:nth-child(3) {
+                animation: second-dot 4s infinite;
+            }
+            & span:nth-child(4) {
+                animation: third-dot 4s infinite;
+            }
+
         }
     </style>
 
@@ -34,6 +89,14 @@
 </head>
 <body>
     <div id="root"></div>
+    <div id="before-react-load">
+        <div>
+            <a>Loading</a>
+            <span className="dot" ></span>
+            <span className="dot" ></span>
+            <span className="dot" ></span>
+        </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
