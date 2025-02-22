@@ -14,7 +14,7 @@ export default function Home({isActive}) {
         <div className="window" id="home" style={isActive ? {display: 'block'} : {display: 'none'}}>
             <div>
                 <h1>WELKOM OP DE ROBOTICA SITE</h1>
-                <SplitWindow minColumnWidth={550}>
+                <SplitWindow minColumnWidth={570}>
                     <div className="left">
                         <div className="text-center">
                             <h2>EUREKA PROJECTEN</h2>
@@ -27,18 +27,18 @@ export default function Home({isActive}) {
                         </Suspense>
                     </div>
                 </SplitWindow>
-                <SplitWindow minColumnWidth={550} reversedVertical={true}>
+                <SplitWindow minColumnWidth={570} reversedVertical={true}>
                     <div className="left inspiration">
                         <InspirationSus />
                     </div>
-                    <div className="right">
+                    <div className="right inspiration">
                         <div className="text-center">
                             <h2>INSPIRATIE</h2>
                             <p>Voor al je inspiratie voor een nieuw robotica project</p>
                         </div>
                     </div>
                 </SplitWindow>
-                <SplitWindow minColumnWidth={550}>
+                <SplitWindow minColumnWidth={570}>
                     <div className="left">
                         <div className="text-center">
                             <h2>TOM ZIJN LESMATERIAAL</h2>
@@ -46,14 +46,16 @@ export default function Home({isActive}) {
                         </div>
                     </div>
                     <div className="right files">
-                        <i className="far fa-folder" />
-                        <i className="far fa-file-alt" />
-                        <i className="far fa-folder" />
-                        <i className="far fa-file" />
-                        <i className="far fa-folder" />
-                        <i className="far fa-file-pdf" />
-                        <i className="far fa-folder" />
-                        <i className="far fa-file-word" />
+                        <div>
+                            <i className="far fa-folder" />
+                            <i className="far fa-file-alt" />
+                            <i className="far fa-folder" />
+                            <i className="far fa-file" />
+                            <i className="far fa-folder" />
+                            <i className="far fa-file-pdf" />
+                            <i className="far fa-folder" />
+                            <i className="far fa-file-word" />
+                        </div>
                     </div>
                 </SplitWindow>
             </div>

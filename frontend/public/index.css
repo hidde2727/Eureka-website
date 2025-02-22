@@ -1218,18 +1218,30 @@ form:has(.form-succes-screen) {
 #home h2 {
     color: var(--prominent-text);
 }
-#home :has(> .text-center) {
+#home > div > .split-window.horizontal {
+    grid-template-columns: auto auto;
+}
+#home > div > .split-window.vertical {
+    grid-gap: 25px;
+}
+#home > div > .split-window > div {
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 100%;
 }
-#home .split-window:not(.vertical) .text-center {
+#home > div > .split-window:not(.vertical) .text-center {
     margin-left: 50px;
     margin-top: -50px;
 }
+#home > div > .split-window:not(.horizontal) :has(.text-center) {
+    display: block;
+}
 
-#home .right.projects {
+#home .right.projects > div {
     position: relative;
-    height: 500px;
+    height: 400px;
+    width: 925px;
 }
 #home .project {
     width: 450px;
@@ -1252,11 +1264,18 @@ form:has(.form-succes-screen) {
     z-index: 0;
 }
 
-#home .left.inspiration {
+#home .left.inspiration > div {
     position: relative;
-    height: 400px;
+    height: 350px;
+    width: 675px;
 }
-#home .website {
+#home .right.inspiration {
+    width: fit-content;
+}
+#home .right.inspiration .text-center {
+    margin-left: 0px!important;
+}
+#home .website:not(.channel) {
     position: absolute;
     background-color: var(--background);
     border-radius: var(--big-border-radius);
@@ -1278,9 +1297,10 @@ form:has(.form-succes-screen) {
 }
 
 
-#home .right.files {
+#home .right.files > div {
     position: relative;
-    height: 400px;
+    height: 250px;
+    width: 550px;
 }
 #home .right.files i {
     font-size: 3rem;
