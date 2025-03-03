@@ -1014,6 +1014,7 @@ form:has(.form-succes-screen) {
     margin: 0;
     color: var(--normal-text);
     font-weight: 800;
+    cursor: pointer;
     p {
         margin: 0 0 0 5px;
     }
@@ -1063,7 +1064,7 @@ form:has(.form-succes-screen) {
     
         transition: color 0.5s;
     }
-    #sidebar i:hover {
+    #sidebar .button:hover i {
         color: var(--prominent-text);
     }
 
