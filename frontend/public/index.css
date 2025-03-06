@@ -1513,6 +1513,15 @@ form:has(.form-succes-screen) {
     height: calc(var(--app-height) - 35px);
 }
 
+@media (pointer:fine) {
+    #inspiration > div > .content {
+        scrollbar-width: thin;
+    }
+    #inspiration .sidebar {
+        scrollbar-width: thin;
+    }
+}
+
 #inspiration .toggle-sidebar {
     display: none;
 }
