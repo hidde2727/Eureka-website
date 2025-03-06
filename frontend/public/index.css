@@ -807,6 +807,8 @@ form:has(.form-succes-screen) {
         "icon info";
 
     box-sizing: content-box;
+
+    cursor: pointer;
 }
 .website.auto-grow {
     width: 100%;
@@ -1279,6 +1281,10 @@ form:has(.form-succes-screen) {
     display: block;
 }
 
+#home .left.projects {
+    cursor: pointer;
+    user-select: none;
+}
 #home .right.projects > div {
     position: relative;
     height: 400px;
@@ -1288,6 +1294,8 @@ form:has(.form-succes-screen) {
     width: 450px;
     position: absolute;
     background-color: var(--background);
+    
+    cursor: pointer;
 }
 #home .project:nth-child(1) {
     top: 0;
@@ -1312,6 +1320,8 @@ form:has(.form-succes-screen) {
 }
 #home .right.inspiration {
     width: fit-content;
+    cursor: pointer;
+    user-select: none;
 }
 #home .right.inspiration .text-center {
     margin-left: 0px!important;
@@ -1338,6 +1348,11 @@ form:has(.form-succes-screen) {
 }
 
 
+#home .right.files,
+#home .left.files {
+    cursor: pointer;
+    user-select: none;
+}
 #home .right.files > div {
     position: relative;
     height: 250px;
@@ -1417,6 +1432,8 @@ form:has(.form-succes-screen) {
     overflow: hidden;
 
     margin-top: 20px;
+    
+    cursor: pointer;
 }
 .project p {
     margin: 0px 0px 5px 0px;
@@ -1457,6 +1474,9 @@ form:has(.form-succes-screen) {
 /* + ======================================================================== +
 /* | Projects window popover                                                  |
 /* + ========================================================================*/
+#project-popover .project {
+    cursor: initial;
+}
 #project-popover .right {
     max-width: 350px;
 }

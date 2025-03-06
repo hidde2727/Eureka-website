@@ -8,14 +8,14 @@ import SplitWindow from '../components/split_window.jsx';
 import { useInspiration, useProjectsSus } from '../utils/data_fetching.jsx';
 import PopoverContext from '../popovers/context.jsx';
 
-export default function Home({isActive}) {
+export default function Home({isActive, setCurrentWindow}) {
 
     return (
         <div className="window" id="home" style={isActive ? {display: 'block'} : {display: 'none'}}>
             <div>
                 <h1>WELKOM OP DE ROBOTICA SITE</h1>
                 <SplitWindow minColumnWidth={570}>
-                    <div className="left">
+                    <div className="left projects" onClick={() => setCurrentWindow('projects')}>
                         <div className="text-center">
                             <h2>EUREKA PROJECTEN</h2>
                             <p>Alle projecten waar Eureka momenteel mee bezig is en waar mensen voor worden gezocht</p>
@@ -29,7 +29,7 @@ export default function Home({isActive}) {
                     <div className="left inspiration">
                         <InspirationSus />
                     </div>
-                    <div className="right inspiration">
+                    <div className="right inspiration" onClick={() => setCurrentWindow('inspiration')}>
                         <div className="text-center">
                             <h2>INSPIRATIE</h2>
                             <p>Voor al je inspiratie voor een nieuw robotica project</p>
@@ -37,13 +37,13 @@ export default function Home({isActive}) {
                     </div>
                 </SplitWindow>
                 <SplitWindow minColumnWidth={570}>
-                    <div className="left">
+                    <div className="left files" onClick={() => setCurrentWindow('files')}>
                         <div className="text-center">
                             <h2>TOM ZIJN LESMATERIAAL</h2>
                             <p>Tom plaatst alle opdrachten van de Robotica lessen hier</p>
                         </div>
                     </div>
-                    <div className="right files">
+                    <div className="right files" onClick={() => setCurrentWindow('files')}>
                         <div>
                             <i className="far fa-folder" />
                             <i className="far fa-file-alt" />

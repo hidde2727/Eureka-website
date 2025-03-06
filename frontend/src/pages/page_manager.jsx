@@ -20,7 +20,7 @@ import Loading from '../components/loading.jsx';
 import ProjectPopover from '../popovers/project.jsx';
 import InspirationPopover from '../popovers/inspiration.jsx';
 
-export default function PageManager(props) {
+export default function PageManager({currentWindow, setCurrentWindow}) {
     const loginRef = useRef();
     const projectRef = useRef();
     const inspirationRef = useRef();
@@ -28,28 +28,28 @@ export default function PageManager(props) {
     return (
         <div className="content-windows">
         <PopoverContext.Provider value={{ login:loginRef, project:projectRef, inspiration: inspirationRef }}>
-            <Home isActive={ props.currentWindow == 'home' } />
-            <Projects isActive={ props.currentWindow == 'projects' } />
-            <Inspiration isActive={ props.currentWindow == 'inspiration' } />
-            <Files isActive={ props.currentWindow == 'files' } />
-            <Suggestions isActive={ props.currentWindow == 'suggestions' } />
+            <Home isActive={ currentWindow == 'home' } setCurrentWindow={setCurrentWindow} />
+            <Projects isActive={ currentWindow == 'projects' } />
+            <Inspiration isActive={ currentWindow == 'inspiration' } />
+            <Files isActive={ currentWindow == 'files' } />
+            <Suggestions isActive={ currentWindow == 'suggestions' } />
 
             <Restricted to="watch_logs">
-                <Suspense fallback={<div style={ props.currentWindow == 'management-logs' ? {display: 'block'} : {display: 'none'} }><Loading /></div>}>
-                    <ManagementLogs isActive={ props.currentWindow == 'management-logs' } />
+                <Suspense fallback={<div style={ currentWindow == 'management-logs' ? {display: 'block'} : {display: 'none'} }><Loading /></div>}>
+                    <ManagementLogs isActive={ currentWindow == 'management-logs' } />
                 </Suspense>
             </Restricted>
             <Restricted to="modify_users">
-                <Suspense fallback={<div style={ props.currentWindow == 'management-users' ? {display: 'block'} : {display: 'none'} }><Loading /></div>}>
-                    <ManagementUsers isActive={ props.currentWindow == 'management-users' } />
+                <Suspense fallback={<div style={ currentWindow == 'management-users' ? {display: 'block'} : {display: 'none'} }><Loading /></div>}>
+                    <ManagementUsers isActive={ currentWindow == 'management-users' } />
                 </Suspense>
             </Restricted>
             <Restricted>
-                <Suspense fallback={<div style={ props.currentWindow == 'management-suggestions' ? {display: 'block'} : {display: 'none'} }><Loading /></div>}>
-                    <ManagementSuggestions isActive={ props.currentWindow == 'management-suggestions' } />
+                <Suspense fallback={<div style={ currentWindow == 'management-suggestions' ? {display: 'block'} : {display: 'none'} }><Loading /></div>}>
+                    <ManagementSuggestions isActive={ currentWindow == 'management-suggestions' } />
                 </Suspense>
-                <Suspense fallback={<div style={ props.currentWindow == 'management-settings' ? {display: 'block'} : {display: 'none'} }><Loading /></div>}>
-                    <ManagementSettings isActive={ props.currentWindow == 'management-settings' } />
+                <Suspense fallback={<div style={ currentWindow == 'management-settings' ? {display: 'block'} : {display: 'none'} }><Loading /></div>}>
+                    <ManagementSettings isActive={ currentWindow == 'management-settings' } />
                 </Suspense>
             </Restricted>
 

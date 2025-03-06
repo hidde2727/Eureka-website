@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useWebsiteInfo } from "../utils/data_fetching.jsx";
 import { IsValidURL } from "../utils/utils.jsx";
 
-const InspirationTypes = Object.freeze({
+export const InspirationTypes = Object.freeze({
     None: -1,
     YT_Video: 0,
     YT_Channel: 1,
@@ -12,7 +12,7 @@ const InspirationTypes = Object.freeze({
     Website: 5,
 });
 
-export default function Website({ id, data, url, onClick, onDataLoad, autoGrow=false, showIfNotLoaded=true }) {
+export default function WebsiteInt({ id, data, url, onClick, onDataLoad, autoGrow=false, showIfNotLoaded=true }) {
     const {fetchedData, hasError, isFetching} = useWebsiteInfo(url, data==undefined && url!=undefined && url!=null && url != '' && IsValidURL(url));
     
     useEffect(() => {
@@ -91,3 +91,4 @@ export default function Website({ id, data, url, onClick, onDataLoad, autoGrow=f
     }
     return (<p>Failed to load website</p>)
 }
+export const Website = WebsiteInt;

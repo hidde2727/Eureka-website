@@ -42,6 +42,22 @@ try {
     const userID = Login.GetSessionUserID(req);
 
     const currentVersions = await DB.GetAllInspirationVersionsOfID(data.originalID);
+    if(data?.playlistID?.length!=undefined && currentVersions[0].type == DB.InspirationTypes.YT_Video) {
+        const currentData = JSON.parse(currentVersions[0].additionInfo);
+        if(data.playlistID == '') {
+            currentVersions[0].additionInfo = JSON.stringify({
+                ...currentData, 
+                json: { ...currentData.json, playlistID: undefined },
+                url: `https://www.youtube.com/watch?v=${currentVersions[0].ID}`
+            });
+        } else {
+            currentVersions[0].additionInfo = JSON.stringify({
+                ...currentData,
+                json: { ...currentData.json, playlistID: data.playlistID },
+                url: `https://www.youtube.com/watch?v=${currentVersions[0].ID}&list=${data.playlistID}`
+            });
+        }
+    }
 
     const insertedID = await DB.CreateInspiration(
         data.versionName, data.versionDescription, username, userID,

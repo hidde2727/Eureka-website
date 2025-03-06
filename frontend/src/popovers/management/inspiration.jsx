@@ -5,7 +5,7 @@ import { useInspirationLabels, useInspirationVersions, useInspirationVoteResult,
 import { IsObjectEmpty, Prepend } from '../../utils/utils.jsx';
 
 import { Left, Middle, MiddleTop, MiddleBottom, Right, Popover } from '../../components/popover.jsx';
-import Website from '../../components/website.jsx';
+import { Website, InspirationTypes } from '../../components/website.jsx';
 import VersioningSidebar from '../../components/versioning_sidebar.jsx';
 import Loading from '../../components/loading.jsx';
 import { Checkbox, Input, Textarea } from '../../components/inputs.jsx';
@@ -101,6 +101,14 @@ export const InspirationPopover = forwardRef(({}, ref) => {
                 <MiddleTop>
                     <div className="split-window">
                         <div className="center-content">
+                            { editing && (selectedVersion.type==InspirationTypes.YT_VIDEO) && <input name="playlistID" type="text" defaultValue={selectedVersion?.additionInfo?.json?.playlistID} placeholder="Playlist id" 
+                                onChange={(ev) => {
+                                    selectedVersion.additionInfo.json.playlistID = ev.target.value;
+                                    console.log(selectedVersion.additionInfo.json.playlistID)
+                                    localStorage.setItem('inspiration-suggestion-' + selectedVersion.original_id, JSON.stringify(selectedVersion));
+                                    setForceUpdate(!forceUpdate);
+                                }} ></input>
+                            }
                             <Website data={selectedVersion?.additionInfo} />
                         </div>
                         <div className="description">
@@ -187,7 +195,8 @@ export const InspirationPopover = forwardRef(({}, ref) => {
                         labels: selectedVersion.labels.split(',').map((label) => label==''?-1:parseInt(label)).filter((label) => label!=-1),
                         versionName: ev.target.suggestionName.value,
                         versionDescription: ev.target.suggestionDescription.value,
-                        originalID: selectedVersion.original_id
+                        originalID: selectedVersion.original_id,
+                        playlistID: selectedVersion.additionInfo.json.playlistID
                     });
 
                     localStorage.removeItem('inspiration-suggestion-' + selectedVersion.original_id);

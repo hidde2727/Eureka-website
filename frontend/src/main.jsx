@@ -38,7 +38,7 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
             <div id="body" className="split-window">
                 <Sidebar currentWindow={currentWindow} setWindow={setWindow} />
-                <PageManager currentWindow={currentWindow} />
+                <PageManager currentWindow={currentWindow} setCurrentWindow={setWindow} />
             </div>
 
             <ReactQueryDevtools initialIsOpen={false} />
