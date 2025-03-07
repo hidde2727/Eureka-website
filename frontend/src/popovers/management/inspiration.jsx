@@ -91,7 +91,7 @@ export const InspirationPopover = forwardRef(({}, ref) => {
     if(labels == undefined || mappedLabels.current==undefined || hasError) return <Popover ref={internalRef} id="inspiration-popover" />;
 
     const editing = selectedVersion?.is_suggestion;
-
+    
     return (
         <Popover ref={internalRef} id="inspiration-popover">
             <Left>
@@ -101,7 +101,7 @@ export const InspirationPopover = forwardRef(({}, ref) => {
                 <MiddleTop>
                     <div className="split-window">
                         <div className="center-content">
-                            { editing && (selectedVersion.type==InspirationTypes.YT_VIDEO) && <input name="playlistID" type="text" defaultValue={selectedVersion?.additionInfo?.json?.playlistID} placeholder="Playlist id" 
+                            { editing && (selectedVersion.type==InspirationTypes.YT_Video) && <input name="playlistID" type="text" defaultValue={selectedVersion?.additionInfo?.json?.playlistID} placeholder="Playlist id" 
                                 onChange={(ev) => {
                                     selectedVersion.additionInfo.json.playlistID = ev.target.value;
                                     console.log(selectedVersion.additionInfo.json.playlistID)
