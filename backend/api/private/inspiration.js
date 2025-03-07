@@ -42,29 +42,31 @@ try {
     const userID = Login.GetSessionUserID(req);
 
     const currentVersions = await DB.GetAllInspirationVersionsOfID(data.originalID);
+    currentVersions[0].additionInfo = JSON.parse(currentVersions[0].additionInfo);
     if(data?.playlistID?.length!=undefined && currentVersions[0].type == DB.InspirationTypes.YT_Video) {
-        const currentData = JSON.parse(currentVersions[0].additionInfo);
+        const currentData = currentVersions[0].additionInfo;
         if(data.playlistID == '') {
-            currentVersions[0].additionInfo = JSON.stringify({
+            currentVersions[0].additionInfo = {
                 ...currentData, 
                 json: { ...currentData.json, playlistID: undefined },
                 url: `https://www.youtube.com/watch?v=${currentVersions[0].ID}`
-            });
+            };
         } else {
-            currentVersions[0].additionInfo = JSON.stringify({
+            currentVersions[0].additionInfo = {
                 ...currentData,
                 json: { ...currentData.json, playlistID: data.playlistID },
                 url: `https://www.youtube.com/watch?v=${currentVersions[0].ID}&list=${data.playlistID}`
-            });
+            };
         }
     }
+    const inspirationData = await INS.GetURLInfo(currentVersions[0].additionInfo.url);
 
     const insertedID = await DB.CreateInspiration(
         data.versionName, data.versionDescription, username, userID,
-        currentVersions[0].type, currentVersions[0].name, data.description, currentVersions[0].ID, currentVersions[0].url, 
+        inspirationData.type, inspirationData.name, data.description, inspirationData.ID, inspirationData.url, 
         data.recommendations.length >= 1 ? JSON.stringify(await INS.GetURLInfo(data.recommendations[0])) : null, 
         data.recommendations.length >= 2 ? JSON.stringify(await INS.GetURLInfo(data.recommendations[1])) : null, 
-        currentVersions[0].additionInfo,
+        JSON.stringify(inspirationData),
         data.labels,
         data.originalID
     );
