@@ -184,9 +184,9 @@ try {
 });
 router.get('/retrieve/url', async (req, res) => {
 try {
-    if(Validator.CheckLink(res, req.query.url)) return;
+    if(Validator.CheckLink(res, decodeURIComponent(req.query.url))) return;
 
-    try { res.send(JSON.stringify(await INS.GetURLInfo(req.query.url))); } 
+    try { res.send(JSON.stringify(await INS.GetURLInfo(decodeURIComponent(req.query.url)))); } 
     catch(err) { console.log(err.message); return Validator.ReturnError(res, err.message); }
 
 } catch(err) {

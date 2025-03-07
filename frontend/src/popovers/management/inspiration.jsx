@@ -91,7 +91,7 @@ export const InspirationPopover = forwardRef(({}, ref) => {
     if(labels == undefined || mappedLabels.current==undefined || hasError) return <Popover ref={internalRef} id="inspiration-popover" />;
 
     const editing = selectedVersion?.is_suggestion;
-    
+
     return (
         <Popover ref={internalRef} id="inspiration-popover">
             <Left>
@@ -224,8 +224,9 @@ export const InspirationPopover = forwardRef(({}, ref) => {
         return (
             <>
                 {editing && <input placeholder="youtube.com" defaultValue={websiteData?.url} onChange={(ev) => {
-                    selectedVersion[partialName] = { url: ev.target.value };
-                    localStorage.setItem('inspiration-suggestion-' + selectedVersion.original_id, JSON.stringify(selectedVersion));
+                    let versionCopy = structuredClone(selectedVersion);
+                    versionCopy[partialName] = { url: ev.target.value };
+                    localStorage.setItem('inspiration-suggestion-' + versionCopy.original_id, JSON.stringify(versionCopy));
                     setForceUpdate(!forceUpdate);
                 }} />}
                 <Website
@@ -233,8 +234,10 @@ export const InspirationPopover = forwardRef(({}, ref) => {
                     url={(editing && websiteData?.type == undefined) ? websiteData?.url : undefined}
                     onDataLoad={(data) => {
                         if (!editing) return;
-                        selectedVersion[partialName] = data;
-                        localStorage.setItem('inspiration-suggestion-' + selectedVersion.original_id, JSON.stringify(selectedVersion));
+                        let versionCopy = structuredClone(selectedVersion);
+                        versionCopy[partialName] = data;
+                        localStorage.setItem('inspiration-suggestion-' + versionCopy.original_id, JSON.stringify(versionCopy));
+                        console.log(versionCopy);
                     }}
                 />
             </>
