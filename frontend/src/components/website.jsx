@@ -13,12 +13,12 @@ export const InspirationTypes = Object.freeze({
 });
 
 export default function WebsiteInt({ id, data, url, onClick, onDataLoad, autoGrow=false, showIfNotLoaded=true }) {
-    const {fetchedData, hasError, isFetching} = useWebsiteInfo(url, data==undefined && url!=undefined && url!=null && url != '' && IsValidURL(url));
+    const {fetchedData, hasError, isFetching, isPlaceholderData} = useWebsiteInfo(url, data==undefined && url!=undefined && url!=null && url != '' && IsValidURL(url));
     
     useEffect(() => {
-        if(isFetching || fetchedData==undefined) return;
+        if(isFetching || fetchedData==undefined || isPlaceholderData) return;
         if(onDataLoad!=undefined) onDataLoad(fetchedData);
-    }, [fetchedData])
+    }, [fetchedData]);
 
     if(data == undefined) data = fetchedData;
     if(typeof(data) == 'string') data=JSON.parse(data);

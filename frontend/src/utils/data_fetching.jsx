@@ -49,8 +49,8 @@ function fetchOptions(url, queryKeys, method, body, { jsonResponse=true, include
 
 
 export function useWebsiteInfo(url, enable) {
-    const { data, error, isPending } = useQuery(fetchOptions('api/retrieve/url/', [['url', encodeURIComponent(url)]], 'GET', null, {enable: enable}));
-    return { fetchedData: data, hasError: error, isFetching: isPending };
+    const { data, error, isPending, isPlaceholderData } = useQuery(fetchOptions('api/retrieve/url/', [['url', encodeURIComponent(url)]], 'GET', null, {enable: enable}));
+    return { fetchedData: data, hasError: error, isFetching: isPending, isPlaceholderData };
 }
 
 

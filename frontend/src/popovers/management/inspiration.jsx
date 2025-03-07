@@ -224,9 +224,9 @@ export const InspirationPopover = forwardRef(({}, ref) => {
         return (
             <>
                 {editing && <input placeholder="youtube.com" defaultValue={websiteData?.url} onChange={(ev) => {
-                    let versionCopy = structuredClone(selectedVersion);
-                    versionCopy[partialName] = { url: ev.target.value };
-                    localStorage.setItem('inspiration-suggestion-' + versionCopy.original_id, JSON.stringify(versionCopy));
+                    if(ev.target == websiteData.url) return;
+                    selectedVersion[partialName] = { url: ev.target.value };
+                    localStorage.setItem('inspiration-suggestion-' + selectedVersion.original_id, JSON.stringify(selectedVersion));
                     setForceUpdate(!forceUpdate);
                 }} />}
                 <Website
@@ -234,10 +234,9 @@ export const InspirationPopover = forwardRef(({}, ref) => {
                     url={(editing && websiteData?.type == undefined) ? websiteData?.url : undefined}
                     onDataLoad={(data) => {
                         if (!editing) return;
-                        let versionCopy = structuredClone(selectedVersion);
-                        versionCopy[partialName] = data;
-                        localStorage.setItem('inspiration-suggestion-' + versionCopy.original_id, JSON.stringify(versionCopy));
-                        console.log(versionCopy);
+                        selectedVersion[partialName] = data;
+                        localStorage.setItem('inspiration-suggestion-' + selectedVersion.original_id, JSON.stringify(selectedVersion));
+                        setForceUpdate(!forceUpdate);
                     }}
                 />
             </>
