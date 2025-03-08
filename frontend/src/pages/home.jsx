@@ -71,7 +71,7 @@ function ProjectsSus({}) {
         let choosenProjects = [];
         let choosenProjectIDs = [];
         while(projects.length-choosenProjects.length > 0 && choosenProjects.length < 3) {
-            let randomNum = Math.floor(Math.random() * (projects.length - 1));
+            let randomNum = Math.round(Math.random() * (projects.length - 1));
             if(!choosenProjectIDs.includes(randomNum)) {
                 choosenProjectIDs.push(randomNum);
                 choosenProjects.push(projects[randomNum]);
@@ -122,7 +122,7 @@ function InspirationSus({}) {
         let choosenInspiration = [];
         let choosenInspirationIDs = [];
         while(inspiration.pages[0].data.length-choosenInspiration.length > 0 && choosenInspiration.length < 3) {
-            let randomNum = Math.floor(Math.random() * (inspiration.pages[0].data.length - 1));
+            let randomNum = Math.round(Math.random() * (inspiration.pages[0].data.length - 1));
             if(!choosenInspirationIDs.includes(randomNum)) {
                 choosenInspirationIDs.push(randomNum);
                 choosenInspiration.push(inspiration.pages[0].data[randomNum]);
