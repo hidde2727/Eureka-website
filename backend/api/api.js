@@ -31,8 +31,9 @@ router.get('/inspiration', async (req, res) => {
     }
     if(req.query.cursor == undefined) {
         const maxPages = Math.ceil((await DB.GetAmountInspiration(labels)) / pageSize);
-        const returningIndex = Math.floor(Math.random() * (maxPages - 1));
-        if(returningIndex == -1) return res.json({ availablePages: [], data: [] });
+        let returningIndex = Math.floor(Math.random() * maxPages);
+        if(returningIndex>=maxPages) returningIndex=maxPages-1;
+        if(returningIndex == -1 || maxPages==0) return res.json({ availablePages: [], data: [] });
         returnAvailablePages = Array.from({length: maxPages}, (thisArg, i) => i);
         cursor = returnAvailablePages[returningIndex];
         returnAvailablePages.splice(returningIndex, 1);
