@@ -24,6 +24,11 @@ router.get('/inspiration', async (req, res) => {
 
     let returnAvailablePages = undefined;
     let cursor = req.query.cursor;
+    try {
+        cursor = Number.parseInt(cursor);
+    } catch(err) {
+        return Validator.ReturnError(res, 'Cursor must be an integer');
+    }
     if(req.query.cursor == undefined) {
         const maxPages = Math.ceil((await DB.GetAmountInspiration(labels)) / pageSize);
         const returningIndex = Math.floor(Math.random() * (maxPages - 1));
