@@ -818,7 +818,6 @@ form:has(.form-succes-screen) {
 
     aspect-ratio: 16/9;
     height: 175px;
-    background-color: var(--yt-video);
     border-radius: 12px;
     outline: none;
     border: 0;
@@ -892,6 +891,9 @@ form:has(.form-succes-screen) {
 }
 
 
+.website.loading .website-content {
+    background-color: var(--yt-video);
+}
 .website.loading .website-name {
     width: 225px;
     height: 16px;
