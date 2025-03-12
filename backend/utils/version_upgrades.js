@@ -33,8 +33,12 @@ export default async function Upgrade() {
         throw new Error('Current version is illegal!');
     }
 
-    if(IsLaterVersion('1.0.1', version)) version = [1,0,1];
+    if(IsLaterVersion('1.0.1', version)) {
+        console.log('Upgrading to version 1.0.1');
+        version = [1,0,1];
+    }
     if(IsLaterVersion('1.1.0', version)) {
+        console.log('Upgrading to version 1.2.0');
         DB.ExecuteStatement(`ALTER DATABASE ${Config.db.database} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
         DB.ExecuteStatement(`ALTER TABLE files CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
         DB.ExecuteStatement(`ALTER TABLE inspiration CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
@@ -48,6 +52,7 @@ export default async function Upgrade() {
         version = [1,1,0];
     }
     if(IsLaterVersion('1.2.0', version)) {
+        console.log('Upgrading to version 1.2.0');
         DB.ExecuteStatement(`ALTER TABLE files ADD website_url TINYTEXT DEFAULT NULL`);
         version = [1,2,0];
     }
