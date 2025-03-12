@@ -6,7 +6,9 @@ import Config from './config.js';
 function IsLaterVersion(timepoint, version) {
     const timepointSplit = timepoint.split('.').map((part) => parseInt(part));
     if(timepointSplit[0] < version[0]) return false;
+    if(timepointSplit[0] > version[0]) return true;
     if(timepointSplit[1] < version[1]) return false;
+    if(timepointSplit[1] > version[1]) return true;
     if(timepointSplit[2] <= version[2]) return false;
     return true;
 }

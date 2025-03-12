@@ -54,7 +54,7 @@ router.put('/add', async (req, res) => {
         }, onError: (err) => {
             console.error(err);
             res.status(500).send('Server error');
-            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createFile, { id: data.id, newName: data.newName, err: err }, req);
+            AddToAccessLogLoggedIn(accessUrgency.error, accessTypes.createFile, { id: data.id, newName: data.newName, url: data.websiteURL, err: err }, req);
         }
     });
 });
