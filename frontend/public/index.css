@@ -1245,6 +1245,9 @@ form:has(.form-succes-screen) {
     
     user-select: none;
 }
+#inspiration .footer .copyright {
+    margin-right: 5px;
+}
 @media screen and (min-width: 1000px) {
     div:has(+.footer) {
         min-height: calc(var(--app-height) - 35px);
@@ -1509,6 +1512,9 @@ form:has(.form-succes-screen) {
 /* + ======================================================================== +
 /* | Inspiration window                                                       |
 /* + ========================================================================*/
+#inspiration {
+    margin-right: -10px;
+}
 #inspiration > div:first-child {
     display: grid;
     grid-template-columns: auto 275px;
@@ -1531,9 +1537,9 @@ form:has(.form-succes-screen) {
     overflow-y: auto;
     overflow-x: hidden;
 
-    margin: 30px 10px 0 20px;
-    padding: 10px 0 0 30px;
-    border-left: var(--border-width) solid var(--seperator);
+    margin: 0 0 -35px 20px;
+    padding: 40px 20px 0 30px;
+    background-color: var(--prominent-background);
 }
 #inspiration .category {
     margin-bottom: 10px;
