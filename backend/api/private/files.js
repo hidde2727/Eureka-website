@@ -10,7 +10,7 @@ import SendRequest from '../../utils/https_request.js';
 import * as TreeListDB from '../../utils/adjancency_db_list.js';
 import { accessTypes, accessUrgency, AddToAccessLogLoggedIn } from '../../utils/logs.js';
 
-const fileTableInfo = TreeListDB.CreateTableInfo('files', ',uploadthing_id', async (node) => {
+const fileTableInfo = TreeListDB.CreateTableInfo('files', ',uploadthing_id,website_url', async (node) => {
     return node.uploadthing_id != null;
 });
 
@@ -43,7 +43,11 @@ router.get('/usage', async (req, res) => {
 router.put('/add', async (req, res) => {
     const data = req.body;
     if(Validator.CheckID(res, data.parentID, true)) return;
-    await TreeListDB.CreateNode(data.parentID, [null], fileTableInfo, {
+    else if(data.websiteURL!=undefined && Validator.CheckLink(res, data.websiteURL)) return;
+
+    if(data.websiteURL == undefined) data.websiteURL=null;
+
+    await TreeListDB.CreateNode(data.parentID, [null, data.websiteURL], fileTableInfo, {
         onComplete: (newId) => {
             res.send(JSON.stringify({name: 'new'+ newId, id: newId}));
             AddToAccessLogLoggedIn(accessUrgency.info, accessTypes.createFile, { parentID: data.parentID, name: 'new'+newId }, req);

@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS files (
     parent_id INT UNSIGNED DEFAULT NULL,
     name TINYTEXT NOT NULL,
     uploadthing_id TINYTEXT DEFAULT NULL,
+    website_url TINYTEXT DEFAULT NULL,
 
     -- Used to force uniqueness
     u_parent_id INT UNSIGNED GENERATED ALWAYS AS (COALESCE(parent_id, 0)) STORED,

@@ -5,10 +5,10 @@ import Config from './config.js';
 
 function IsLaterVersion(timepoint, version) {
     const timepointSplit = timepoint.split('.').map((part) => parseInt(part));
-    if(timepointSplit[0] > version[0]) return true;
-    if(timepointSplit[1] > version[1]) return true;
-    if(timepointSplit[2] > version[2]) return true;
-    return false;
+    if(timepointSplit[0] < version[0]) return false;
+    if(timepointSplit[1] < version[1]) return false;
+    if(timepointSplit[2] <= version[2]) return false;
+    return true;
 }
 
 export default async function Upgrade() {
@@ -44,6 +44,10 @@ export default async function Upgrade() {
         DB.ExecuteStatement(`ALTER TABLE suggestion_votes CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
         DB.ExecuteStatement(`ALTER TABLE users CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
         version = [1,1,0];
+    }
+    if(IsLaterVersion('1.2.0', version)) {
+        DB.ExecuteStatement(`ALTER TABLE files ADD website_url TINYTEXT DEFAULT NULL`);
+        version = [1,2,0];
     }
 
     if(currentSoftwareVersion != version.join('.')) throw new Error('Versie upgrade mislukt!');

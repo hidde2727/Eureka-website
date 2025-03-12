@@ -431,6 +431,19 @@ export async function createFolder(queryClient, parentID) {
         throw new Error('Failed to create a folder:\n' + err.message);
     }
 }
+export async function createWebsiteFile(queryClient, parentID, url) {
+    try {
+        // Request the folder creation
+        var response = await fetchInfo('/api/private/files/add', 'PUT', JSON.stringify({
+            parentID: parentID,
+            websiteURL: url
+        }), {includeCredentials: true});
+
+        return { name: response.name, id: response.id };
+    } catch(err) {
+        throw new Error('Failed to create a website file:\n' + err.message);
+    }
+}
 export async function changeFileName(queryClient, parentFolder, id, oldName, newName, override=false) {
     try {
         // Optimistic update

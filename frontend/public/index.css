@@ -1785,9 +1785,16 @@ form:has(.form-succes-screen) {
 
     transition: color 0.5s;
 }
+#files .files > .file svg {
+    transition: fill 0.5s;
+}
 #files .files > .file:hover i, 
 #files .folders > .folder:hover i {
     color: var(--label);
+}
+#files .files > .file:hover svg, 
+#files .folders > .folder:hover svg {
+    fill: var(--label);
 }
 #files .files > .file p, 
 #files .folders > .folder p {

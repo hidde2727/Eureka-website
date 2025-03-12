@@ -7,6 +7,7 @@ import Restricted from '../components/restricted.jsx';
 import Loading from '../components/loading.jsx';
 import Footer from '../components/footer.jsx';
 import { IconByExtension } from '../utils/utils.jsx';
+import { Link } from '../components/icon_replacements.jsx';
 
 export default function Files({isActive}) {
     return (
@@ -47,6 +48,7 @@ function FilesSuspense() {
         files.current = [];
         for(let [folderName, data] of Object.entries(currentFolderData)) {
             if(data.utid != undefined) files.current.push({ name: folderName, utid: data.utid });
+            else if(data.url != undefined) files.current.push({ name: folderName, url: data.url });
             else if(folderName != 'id') folders.current.push({ name: folderName });
         }
         setForceUpdate(!forceUpdate);
@@ -87,7 +89,15 @@ function FilesSuspense() {
                 </div>
                 <div className="files">
                     {
-                        files.current.map(({name, utid}) => {
+                        files.current.map(({name, utid, url}) => {
+                            if(url) {
+                                return (
+                                <a className="file" key={url} href={url}>
+                                    <Link className="file-type" style={{color:'var(--normal-text)', fontSize: '2.5rem', justifySelf: 'center', width:"2.5rem", height:"2.5rem"}} />
+                                    <p>{name}</p>
+                                </a>
+                                );
+                            }
                             return (
                             <a className="file" key={utid} href={'https://utfs.io/f/' + utid} download={name}>
                                 <IconByExtension extension={ name.split('.').pop() } />

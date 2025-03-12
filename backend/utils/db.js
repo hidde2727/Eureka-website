@@ -612,7 +612,7 @@ export async function GetUploadthingIDFromPath(parentID, path) {
     return results.length == 0 ? undefined : { ...results[0], path: path };
 }
 export async function GetChildrenOfFileID(id) {
-    return GetChildrenOfNode(id, {tableName: 'files', tableFields:',uploadthing_id'});
+    return GetChildrenOfNode(id, {tableName: 'files', tableFields:',uploadthing_id,website_url'});
 }
 export async function GetAllFullFilePaths() {
     return GetChildrenOfFileID(null);

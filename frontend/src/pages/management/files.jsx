@@ -1,15 +1,18 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useFilesSus, useFileStorageUsage, createFolder, changeFileName, changeFileParent, deleteFile } from '../../utils/data_fetching.jsx';
+import { useFilesSus, useFileStorageUsage, createFolder, createWebsiteFile, changeFileName, changeFileParent, deleteFile } from '../../utils/data_fetching.jsx';
 import { IconByExtension } from '../../utils/utils.jsx';
 
 import FileDropzone from '../../components/file_dropzone.jsx';
 import FilePopover from '../../popovers/management/files.jsx';
 import { FileConflictPopover } from '../../popovers/management/file_conflicts.jsx';
 import ConformationPopover from '../../popovers/conformation_popover.jsx';
+import { Popover } from '../../components/popover.jsx';
+import { Link, FileArrowUp } from '../../components/icon_replacements.jsx';
 
 import '/public/pages/files.css';
+import { Input } from '../../components/inputs.jsx';
 
 
 export default function Files() {
@@ -56,6 +59,7 @@ export default function Files() {
         let newFiles = [];
         for(let [folderName, data] of Object.entries(currentFolderData)) {
             if(data.utid != undefined) newFiles.push({ name: folderName, utid: data.utid, id: data.id });
+            else if(data.url != undefined) newFiles.push({ name: folderName, url: data.url, id: data.id });
             else if(folderName != 'id') newFolders.push({ name: folderName, id: data.id});
         }
         setFolders(newFolders);
@@ -69,6 +73,8 @@ export default function Files() {
     const [conflictParentName, setConflictParentName] = useState();
     const onRenamingConflictResolved = useRef();
     const fileConflictPopoverRef = useRef();
+
+    const addWebsiteURLPopoverRef = useRef();
 
     const draggedFile = useRef();
     const deleteWindow = useRef();
@@ -98,7 +104,7 @@ export default function Files() {
             fileConflictPopoverRef.current.open();
         }
     }
-    function CreateFile({ name, id, isFolder, onDoubleClick  }) {
+    function CreateFile({ name, id, isFolder, isURL, onDoubleClick  }) {
         const ref = useRef();
         useEffect(() => {
             if(id == 'noid') { 
@@ -130,8 +136,12 @@ export default function Files() {
                 ev.preventDefault();
             })}
             >
-                { isFolder ? <i className="file-type fas fa-folder"/> : <IconByExtension extension={ name.split('.').pop() } /> }
-                <p  
+                { (() => {
+                    if(isFolder) return <i className="file-type fas fa-folder"/>;
+                    else if(isURL) return <i className="file-type fas fa-link"/>;
+                    else return <IconByExtension extension={ name.split('.').pop() } />;
+                })() }
+                <p
                     ref={ref}
                     suppressContentEditableWarning={true}
                     contentEditable={true}
@@ -226,14 +236,10 @@ export default function Files() {
                             setFolders(newFolders); 
                         })(); 
                     }}/>
-                    {
-                    // <!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. -->
-                    // Below is a replacement for the not working <i className="fa-solid fa-file-arrow-up" />
-                    }
-                    <svg style={{ width:"1.5rem", height:"1.5rem", cursor:"pointer" }} viewBox="0 0 384 512" onClick={()=> {
-                        uploadPopoverRef.current.open();
-                    }}                 
-                    ><path fill="#EEE" d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-102.1-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31L216 408z"/></svg>
+
+                    <FileArrowUp style={{ width:"1.5rem", height:"1.5rem", cursor:"pointer", marginRight:"10px" }} viewBox="0 0 384 512" onClick={() => uploadPopoverRef.current.open()} />
+
+                    <Link style={{ width:"1.5rem", height:"1.5rem", cursor:"pointer", color:"var(--prominent-text)" }} onClick={() => addWebsiteURLPopoverRef.current.open()} />
 
                     <p className="storage-usage" onClick={(ev) => { ev.target.parentNode.classList.toggle('clicked'); }}> 
                         <a className="first">{(Math.ceil(storageUsage?.appTotalBytes / 100000000) / 10) + 'GB / 2GB'}</a>
@@ -247,7 +253,7 @@ export default function Files() {
                     {
                         folders.map(({name, id}) =>
                             <CreateFile 
-                                key={id} name={name} id={id} isFolder={true} 
+                                key={id} name={name} id={id} isFolder={true} isURL={false}
                                 onDoubleClick={() => { 
                                     if(id == 'noid') return;
                                     addToCurrentFolder({name: name, id: id}); 
@@ -258,9 +264,22 @@ export default function Files() {
                 </div>
                 <div className="files">
                     {
-                        files.map(({name, utid, id}) => 
+                        files.map(({name, utid, url, id}) => {
+                            if(url) {
+                                return (
+                                <CreateFile 
+                                    key={id} name={name} id={id} isFolder={false} isURL={true}
+                                    onDoubleClick={() => {
+                                        var link = document.createElement('a');
+                                        link.href = url;
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                }} />);
+                            }
+                            return (
                             <CreateFile 
-                                key={id} name={name} id={id} isFolder={false} 
+                                key={id} name={name} id={id} isFolder={false} isURL={false}
                                 onDoubleClick={() => {
                                     var link = document.createElement('a');
                                     link.href = 'https://utfs.io/f/' + utid;
@@ -268,8 +287,8 @@ export default function Files() {
                                     document.body.appendChild(link);
                                     link.click();
                                     document.body.removeChild(link);
-                            }} />
-                        )
+                            }} />);
+                        })
                     }
                 </div>
                 <FileDropzone />
@@ -283,6 +302,29 @@ export default function Files() {
                 nameProperty="path"                
                 />
                 <ConformationPopover ref={deleteConformationPopover} />
+                <Popover ref={addWebsiteURLPopoverRef} form={true} onSubmit={async (ev) => {
+                    ev.preventDefault();
+                    let url = '';
+                    try {
+                        url = new URL(ev.target.urlInput.value);
+                        url = ev.target.urlInput.value;
+                    } catch(err) {
+                        try {
+                            url = new URL('https://' + ev.target.urlInput.value);
+                            url = 'https://' + ev.target.urlInput.value;
+                        } catch(err) {
+                            return;
+                        }
+                    }
+                    addWebsiteURLPopoverRef.current.close();
+                    const {name,id} = await createWebsiteFile(queryClient, getCurrentFolder().id, url);
+                    await changeFileName(queryClient, getCurrentFolder(), id, name, (new URL(url)).host);
+                }}>
+                    <Input placeholder="website.url.com" name="urlInput" onEnter={(ev) => {
+                        ev.target.form.submit();
+                    }} />
+                    <input type="submit" />
+                </Popover>
             </div>
             <div 
             className="delete" ref={deleteWindow}

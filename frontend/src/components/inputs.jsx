@@ -1,6 +1,6 @@
 import { useId, useState, useRef, useEffect  } from 'react';
 
-export function Input({ inline, id=undefined, type, label, placeholder, value, name, noLabel=false, onChange=undefined }) {
+export function Input({ inline, id=undefined, type, label, placeholder, value, name, noLabel=false, onChange=undefined, onEnter=undefined }) {
     const labelClassName = inline ? 'inline' : '';
     const idInternal = id != undefined ? id : useId();
 
@@ -10,6 +10,8 @@ export function Input({ inline, id=undefined, type, label, placeholder, value, n
             if(event.key === 'Enter') {
                 event.preventDefault();
                 event.target.blur();
+
+                if(onEnter) onEnter(event);
             }
         };
     }
