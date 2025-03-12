@@ -26,10 +26,11 @@ await DB.CreateConnection();
 Login.SetupLoginSystem();
 await DB.SetupTables();
 
+await VersionUpgrades();
+
 await GenerateProjectJSON();
 await RegenFileIndices();
 await RegenLabels();
-await VersionUpgrades();
 
 if(Config.isDev) {
     console.info('In development mode!');
