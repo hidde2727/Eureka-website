@@ -59,7 +59,7 @@ export default function WebsiteInt({ id, data, url, onClick, onDataLoad, autoGro
                     <p className="website-name" style={{backgroundColor: 'rgba(0,0,0,0)'}}>{data.name}</p>
                     <p className="website-author-name" style={{backgroundColor: 'rgba(0,0,0,0)'}}>{data.json.channelTitle}</p>
                 </div>
-                <a className="website-clickable" href={onClick==undefined?data.url:undefined}></a>
+                <a className="website-clickable" href={onClick==undefined?data.url:undefined} target="_blank"></a>
             </div>
         );
     } else if(data.type == InspirationTypes.YT_Channel) {
@@ -67,7 +67,7 @@ export default function WebsiteInt({ id, data, url, onClick, onDataLoad, autoGro
             <div className={"website channel"+(autoGrow?" auto-grow":"")} id={id} onClick={onClick}>
                 <div className="website-content" style={{backgroundImage: `url(${data.json.thumbnails.medium.url})`}}></div>
                 <p className="website-name" style={{backgroundColor: 'rgba(0,0,0,0)'}}>{data.name}</p>
-                <a className="website-clickable" href={onClick==undefined?data.url:undefined}></a>
+                <a className="website-clickable" href={onClick==undefined?data.url:undefined} target="_blank"></a>
             </div>
         );
     } else if(data.type == InspirationTypes.YT_Playlist) {
@@ -79,7 +79,7 @@ export default function WebsiteInt({ id, data, url, onClick, onDataLoad, autoGro
                     <p className="website-name" style={{backgroundColor: 'rgba(0,0,0,0)'}}>{data.name}</p>
                     <p className="website-author-name" style={{backgroundColor: 'rgba(0,0,0,0)'}}>{data.json.channelTitle}</p>
                 </div>
-                <a className="website-clickable" href={onClick==undefined?data.url:undefined}></a>
+                <a className="website-clickable" href={onClick==undefined?data.url:undefined} target="_blank"></a>
             </div>
         );
     } else if(data.type == InspirationTypes.Github_account) {

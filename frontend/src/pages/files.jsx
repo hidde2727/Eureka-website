@@ -92,14 +92,14 @@ function FilesSuspense() {
                         files.current.map(({name, utid, url}) => {
                             if(url) {
                                 return (
-                                <a className="file" key={url} href={url}>
+                                <a className="file" key={url} href={url} target="_blank">
                                     <Link className="file-type" style={{color:'var(--normal-text)', fontSize: '2.5rem', justifySelf: 'center', width:"2.5rem", height:"2.5rem"}} />
                                     <p>{name}</p>
                                 </a>
                                 );
                             }
                             return (
-                            <a className="file" key={utid} href={'https://utfs.io/f/' + utid} download={name}>
+                            <a className="file" key={utid} href={'https://utfs.io/f/' + utid} target="_blank" download={name}>
                                 <IconByExtension extension={ name.split('.').pop() } />
                                 <p>{name}</p>
                             </a>
