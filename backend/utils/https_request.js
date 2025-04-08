@@ -19,7 +19,7 @@ export default function SendRequest(options) {
                     reject(err);
                     return;
                 }
-                if(returnValue.error != undefined) { console.error(returnValue); reject(); }
+                if(returnValue.error != undefined) { console.error(JSON.stringify(returnValue.error)); reject('Iets ging fout tijdens het fetchen'); }
                 resolve(returnValue);
             });
         });

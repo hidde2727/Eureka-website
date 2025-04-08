@@ -131,7 +131,7 @@ export default function Logs({isActive}) {
     );
     function getDescription(log) {
         const extraInfo = JSON.parse(log.extra_info);
-        if(log.type == accessTypes['Unknown']) return err.message;
+        if(log.type == accessTypes['Unknown']) return log.message;
 
         if(log.type == accessTypes['Add user'] && log.urgency==accessUrgency.Error) return `Error tijdens het toevoegen van een nieuwe gebruiker`;
         if(log.type == accessTypes['Add user']) return `Gebruiker met de naam ${extraInfo.username} toegevoegd`;
