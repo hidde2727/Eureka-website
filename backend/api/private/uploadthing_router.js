@@ -12,6 +12,7 @@ const f = createUploadthing();
 
 export const utapi = new UTApi({
     token: Config.uploadthing.apiToken,
+    apiKey: Config.uploadthing.apiKey,
     defaultKeyType: 'fileKey'
 });
 

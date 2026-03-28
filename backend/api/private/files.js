@@ -31,7 +31,8 @@ router.get('/usage', async (req, res) => {
             path:'/v6/getUsageInfo',
             method:'POST',
             headers: {
-                'X-Uploadthing-Api-Key': Config.uploadthing.apiKey
+                'X-Uploadthing-Api-Key': Config.uploadthing.apiKey,
+                'Referer': Config.hostURL
             }
         });
         res.send(JSON.stringify({totalBytes, appTotalBytes, filesUploaded, limitBytes}));

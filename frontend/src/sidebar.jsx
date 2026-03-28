@@ -37,7 +37,7 @@ export default function Sidebar({ setWindow }) {
             </Restricted>
             <Restricted>
                 <p className="button" onClick={() => { startTransition(() => { setWindow('management-settings'); setOpen(false); }); }} ><i className="fas fa-cog fa-fw"/><p>Instellingen</p></p>
-                <p className="button" onClick={() => { SignOut(); setOpen(false); }} ><i className="fas fa-sign-out-alt fa-fw"/><p>Log uit</p></p>
+                <p className="button" onClick={() => { SignOut(); setOpen(false); setWindow('home'); }} ><i className="fas fa-sign-out-alt fa-fw"/><p>Log uit</p></p>
             </Restricted>
             <p className="button" onClick={() => { 
                 setCollapsed(!collapsed);

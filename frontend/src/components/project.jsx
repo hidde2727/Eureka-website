@@ -8,7 +8,7 @@ export default function IntProject({ projectData, urls=true, onClick }) {
     if(typeof(url3) == 'string') url3 = JSON.parse(url3);
 
     return (
-        <div className="project" onClick={onClick}>
+        <div className="project" onClick={projectData.uuid>=0?onClick:undefined}>
             <h2 className="card-title title">{projectData.name}</h2>
             <div className="split-window">
                 <div className="requestor"><p>Aangevraagd door:</p><p>{projectData.requester}</p></div>

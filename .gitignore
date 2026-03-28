@@ -6,3 +6,10 @@ node_modules/
 .env
 
 /frontend/dist/
+
+.devbox
+devbox.d
+devbox.json
+devbox.lock
+process-compose.yml
+devbox_create_database.sql

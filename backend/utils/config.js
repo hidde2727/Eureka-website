@@ -14,9 +14,6 @@ export const Config = {
     },
     google: {
         apiKey:     process.env.GOOGLE_KEY
-    },
-    cloudflare: {
-        token:      process.env.CLOUDFLARE_TOKEN
     }
 };
 export default Config;
